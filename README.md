@@ -1,2 +1,12 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/HLEvEf24)
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=23073883&assignment_repo_type=AssignmentRepo)
+EBU5315
+Group Number: 25/26_EBU5315_G8
+Project Title: Circle Geometry Interactive Learning Platform
+Members:
+Name：何禹锦,Yujin He BUPT Student Number:2024213623, QM Student Number:241118108, Email:3058168199@qq.com
+
+Name：赵晨宇,Chenyu Zhao BUPT Student Number:2024213622, QM Student Number:241118810, Email:2489711640@qq.com
+
+Name：王正,Zheng Wang BUPT Student:2024213610 Number, QM Student Number:241118566, Email:2565342901@qq.com
+Assignment:Yujin He:Homepage 
+          Chenyu Zhao:Game
+          Zheng Wang:Quiz
