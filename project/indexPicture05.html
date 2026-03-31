@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN"> <!-- 会根据语言自动更新 -->
+<head>
+    <meta charset="UTF-8">
+    <title>圆内接四边形定理演示</title> <!-- 会根据语言自动更新 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f2f5;
+            gap: 40px;
+            padding: 20px;
+        }
+        #canvas {
+            border: 2px solid #333;
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+        }
+        .panel {
+            width: 300px;
+            padding: 24px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+        }
+        .panel h2 {
+            color: #2d8cf0;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        .angle-box {
+            margin: 10px 0;
+            padding: 10px 14px;
+            background: #f7f8fa;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        .angle-box span {
+            font-weight: bold;
+            color: #ed3f14;
+        }
+        .sum-box {
+            margin: 12px 0;
+            padding: 12px;
+            background: #e6f7ff;
+            border-radius: 6px;
+            font-weight: bold;
+            color: #2d8cf0;
+            text-align: center;
+        }
+        .tip {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="600" height="600"></canvas>
+    <div class="panel">
+        <h2 id="theorem-title">圆内接四边形定理</h2>
+        <div class="angle-box" id="angleA-box">∠DAB：<span id="angA">0</span>°</div>
+        <div class="angle-box" id="angleB-box">∠ABC：<span id="angB">0</span>°</div>
+        <div class="angle-box" id="angleC-box">∠BCD：<span id="angC">0</span>°</div>
+        <div class="angle-box" id="angleD-box">∠CDA：<span id="angD">0</span>°</div>
+        <div class="sum-box" id="sum1-box">∠DAB + ∠BCD = <span id="sum1">180</span>°</div>
+        <div class="sum-box" id="sum2-box">∠ABC + ∠CDA = <span id="sum2">180</span>°</div>
+        <div class="tip" id="tips">
+            拖动A/B/C/D四点沿圆环移动<br>
+            对角之和始终为180°<br>
+            验证：圆内接四边形对角互补
+        </div>
+    </div>
+
+    <script>
+        // ********** 1. 新增语言文本映射表（核心修改）**********
+        const langTexts = {
+            'zh-CN': { // 中文配置
+                pageTitle: '圆内接四边形定理演示',
+                theoremTitle: '圆内接四边形定理',
+                angleA: '∠DAB：',
+                angleB: '∠ABC：',
+                angleC: '∠BCD：',
+                angleD: '∠CDA：',
+                sum1: '∠DAB + ∠BCD = ',
+                sum2: '∠ABC + ∠CDA = ',
+                tips: '拖动A/B/C/D四点沿圆环移动<br>对角之和始终为180°<br>验证：圆内接四边形对角互补'
+            },
+            'en': { // 英文配置
+                pageTitle: 'Cyclic Quadrilateral Theorem Demonstration',
+                theoremTitle: 'Cyclic Quadrilateral Theorem',
+                angleA: '∠DAB：', // 几何符号保留，符合国际惯例
+                angleB: '∠ABC：',
+                angleC: '∠BCD：',
+                angleD: '∠CDA：',
+                sum1: '∠DAB + ∠BCD = ',
+                sum2: '∠ABC + ∠CDA = ',
+                tips: 'Drag points A/B/C/D along the circle<br>The sum of opposite angles is always 180°<br>Verification: Opposite angles of cyclic quadrilateral are supplementary'
+            }
+        };
+
+        // ********** 2. 读取并初始化当前语言（核心修改）**********
+        // 从localStorage读取主页面选择的语言，默认中文
+        const currentLang = localStorage.getItem('appLang') || 'zh-CN';
+        // 更新HTML根元素的lang属性（适配浏览器）
+        document.documentElement.lang = currentLang;
+        // 获取当前语言对应的文本集
+        const currentTexts = langTexts[currentLang];
+
+        // ********** 3. 初始化页面文本（核心修改）**********
+        function initLangText() {
+            // 更新页面标题
+            document.title = currentTexts.pageTitle;
+            // 更新面板标题
+            document.getElementById('theorem-title').textContent = currentTexts.theoremTitle;
+            // 更新角度框前缀（保留动态数值标签）
+            document.getElementById('angleA-box').innerHTML = currentTexts.angleA + '<span id="angA">0</span>°';
+            document.getElementById('angleB-box').innerHTML = currentTexts.angleB + '<span id="angB">0</span>°';
+            document.getElementById('angleC-box').innerHTML = currentTexts.angleC + '<span id="angC">0</span>°';
+            document.getElementById('angleD-box').innerHTML = currentTexts.angleD + '<span id="angD">0</span>°';
+            // 更新和值框前缀
+            document.getElementById('sum1-box').innerHTML = currentTexts.sum1 + '<span id="sum1">180</span>°';
+            document.getElementById('sum2-box').innerHTML = currentTexts.sum2 + '<span id="sum2">180</span>°';
+            // 更新提示语
+            document.getElementById('tips').innerHTML = currentTexts.tips;
+        }
+        // 页面加载时立即初始化文本
+        initLangText();
+
+        // ********** 原有代码（无需修改核心逻辑）**********
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        //  DOM元素
+        const angA = document.getElementById('angA');
+        const angB = document.getElementById('angB');
+        const angC = document.getElementById('angC');
+        const angD = document.getElementById('angD');
+        const sum1 = document.getElementById('sum1');
+        const sum2 = document.getElementById('sum2');
+
+        // 圆基础参数
+        const cx = 300, cy = 300, radius = 240;
+        // 四点初始位置（均匀分布）
+        let points = {
+            A: getCirclePoint(0),
+            B: getCirclePoint(Math.PI/2),
+            C: getCirclePoint(Math.PI),
+            D: getCirclePoint(Math.PI*1.5)
+        };
+        let dragTarget = null; // 当前拖动的点
+        const pointRadius = 8; // 点的绘制大小
+
+        // 根据弧度获取圆上坐标
+        function getCirclePoint(rad) {
+            return {
+                x: cx + radius * Math.cos(rad),
+                y: cy + radius * Math.sin(rad)
+            };
+        }
+        // 获取点对应的弧度（用于限制在圆上）
+        function getRad(x, y) {
+            return Math.atan2(y - cy, x - cx);
+        }
+        // 坐标转圆上点
+        function clampOnCircle(p) {
+            const rad = getRad(p.x, p.y);
+            return getCirclePoint(rad);
+        }
+        // 计算三点形成的夹角（内角，0-180°）
+        function calcAngle(p1, center, p2) {
+            const v1x = p1.x - center.x;
+            const v1y = p1.y - center.y;
+            const v2x = p2.x - center.x;
+            const v2y = p2.y - center.y;
+            // 向量点积计算夹角
+            const dot = v1x*v2x + v1y*v2y;
+            const mod1 = Math.hypot(v1x, v1y);
+            const mod2 = Math.hypot(v2x, v2y);
+            let rad = Math.acos(Math.max(-1, Math.min(1, dot/(mod1*mod2))));
+            return Number((rad * 180 / Math.PI).toFixed(1));
+        }
+        // 获取鼠标在画布内坐标
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+        // 判断鼠标是否点击到点
+        function checkHitPoint(mouse) {
+            for(let key in points) {
+                const p = points[key];
+                if(Math.hypot(mouse.x - p.x, mouse.y - p.y) < pointRadius + 5) {
+                    return key;
+                }
+            }
+            return null;
+        }
+
+        // 绘制函数
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const A = points.A, B = points.B, C = points.C, D = points.D;
+
+            // 1. 绘制圆
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI*2);
+            ctx.strokeStyle = '#2d8cf0';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 2. 绘制四边形
+            ctx.beginPath();
+            ctx.moveTo(A.x, A.y);
+            ctx.lineTo(B.x, B.y);
+            ctx.lineTo(C.x, C.y);
+            ctx.lineTo(D.x, D.y);
+            ctx.closePath();
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 3. 绘制四个点
+            const colors = {A:'#ed3f14', B:'#00b42a', C:'#ff7d00', D:'#722ed1'};
+            for(let key in points) {
+                const p = points[key];
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, pointRadius, 0, Math.PI*2);
+                ctx.fillStyle = colors[key];
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                // 标注字母
+                ctx.fillStyle = '#333';
+                ctx.font = '18px Arial bold';
+                ctx.fillText(key, p.x + 10, p.y - 10);
+            }
+
+            // 4. 计算四个内角
+            const angleA = calcAngle(D, A, B);
+            const angleB = calcAngle(A, B, C);
+            const angleC = calcAngle(B, C, D);
+            const angleD = calcAngle(C, D, A);
+            // 对角和（浮点精度处理）
+            const s1 = Math.round(angleA + angleC);
+            const s2 = Math.round(angleB + angleD);
+
+            // 5. 更新面板数值
+            angA.textContent = angleA;
+            angB.textContent = angleB;
+            angC.textContent = angleC;
+            angD.textContent = angleD;
+            sum1.textContent = s1;
+            sum2.textContent = s2;
+
+            // 6. 标注角度
+            ctx.fillStyle = '#ed3f14';
+            ctx.font = '16px Arial';
+            ctx.fillText(`${angleA}°`, A.x-30, A.y-20);
+            ctx.fillText(`${angleB}°`, B.x+20, B.y-10);
+            ctx.fillText(`${angleC}°`, C.x+20, C.y+20);
+            ctx.fillText(`${angleD}°`, D.x-30, D.y+20);
+        }
+
+        // 鼠标事件
+        canvas.addEventListener('mousedown', (e) => {
+            const mouse = getMousePos(e);
+            dragTarget = checkHitPoint(mouse);
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            if(!dragTarget) return;
+            const mouse = getMousePos(e);
+            // 拖动时强制点保持在圆上
+            points[dragTarget] = clampOnCircle(mouse);
+            draw();
+        });
+        canvas.addEventListener('mouseup', () => {
+            dragTarget = null;
+        });
+        canvas.addEventListener('mouseleave', () => {
+            dragTarget = null;
+        });
+
+        // 初始化绘制
+        draw();
+    </script>
+</body>
+</html>
