@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 全局样式重置：消除所有默认边距，统一盒模型，基础排版 */
+    /* 全局样式重置：消除所有默认边距，统一盒模型，基础排版 */
         * {
             margin: 0;
             padding: 0;
@@ -19,6 +19,15 @@
             width: 100%;
             height: 100%;
             overflow-x: hidden; /* 禁止横向滚动，适配小屏 */
+            background-image: url("image/bg.jpg");
+      /* 图片不重复平铺 */
+      background-repeat: no-repeat;
+      /* 铺满整个屏幕 */
+      background-size: cover;
+      /* 固定背景，不随滚动条滚动 */
+      background-attachment: fixed;
+      /* 背景居中 */
+      background-position: center;
         }
         a {
             text-decoration: none;
@@ -462,35 +471,35 @@
 <body>
     <!-- 头部：通栏，适配所有屏幕，包含logo/导航/语言/设置/广告 -->
     <header class="header-container">
-        <div class="logo">圆几何交互式学习平台</div>
+        <div class="logo" id="logoText">圆几何交互式学习平台</div>
         <nav class="nav-main">
-            <a href="index.html" class="nav-link">首页</a>
-            <a href="game.html" class="nav-link">游戏</a>
-            <a href="quiz.html" class="nav-link">测试</a>
+            <a href="index.html" class="nav-link" id="navHome">首页</a>
+            <a href="game.html" class="nav-link" id="navGame">游戏</a>
+            <a href="quiz.html" class="nav-link" id="navQuiz">测试</a>
         </nav>
         <div class="header-right">
             <div class="lang-switch">
-                <a href="javascript:;" class="lang-link active" data-lang="zh-CN">简体中文</a>
+                <a href="javascript:;" class="lang-link active" data-lang="zh-CN" id="langZh">简体中文</a>
                 <span>/</span>
-                <a href="javascript:;" class="lang-link" data-lang="en">English</a>
+                <a href="javascript:;" class="lang-link" data-lang="en" id="langEn">English</a>
             </div>
             <div class="setting-wrap">
                 <a href="javascript:;" class="setting-icon"><i class="fas fa-cog"></i></a>
                 <div class="setting-menu">
-                    <a href="javascript:;" class="menu-item" data-style="eye">护眼模式</a>
-                    <a href="javascript:;" class="menu-item" data-style="night">夜晚模式</a>
+                    <a href="javascript:;" class="menu-item" data-style="eye" id="menuEye">护眼模式</a>
+                    <a href="javascript:;" class="menu-item" data-style="night" id="menuNight">夜晚模式</a>
                     <!-- 字体大小滑块 -->
                     <div class="font-size-slider-wrap">
-                        <label class="font-size-label">字体大小调节</label>
+                        <label class="font-size-label" id="fontSizeLabel">字体大小调节</label>
                         <input type="range" class="font-size-slider" id="fontSizeSlider" min="12" max="24" value="16" step="1">
                         <div class="font-size-value" id="fontSizeValue">当前字体：16px</div>
                     </div>
                     <a href="javascript:;" class="menu-item" id="contactUs">联系我们</a>
-                    <a href="#" class="menu-item">使用说明</a>
+                    <a href="#" class="menu-item" id="menuHelp">使用说明</a>
                 </div>
             </div>
             <div class="ad-tip">
-                <a href="#" class="ad-link">关于广告</a>
+                <a href="https://m.zhuanzhuan.com/" class="ad-link" id="adLink">关于广告</a>
             </div>
         </div>
     </header>
@@ -510,10 +519,10 @@
         </div>
 
         <div class="ai-search-container">
-            <h3 class="search-title">AI圆几何知识点问答</h3>
+            <h3 class="search-title" id="searchTitle">AI圆几何知识点问答</h3>
             <div class="search-box">
-                <input type="text" class="search-input" placeholder="请输入圆几何相关知识点，如：圆的垂径定理..." autocomplete="off">
-                <button class="search-btn">发送查询</button>
+                <input type="text" class="search-input" placeholder="请输入圆几何相关知识点，如：圆的垂径定理..." autocomplete="off" id="searchPlaceholder">
+                <button class="search-btn" id="searchBtn">发送查询</button>
             </div>
         </div>
     </main>
@@ -522,7 +531,7 @@
     <div class="ai-modal" id="aiModal">
         <div class="ai-modal-content">
             <span class="modal-close" id="modalClose">&times;</span>
-            <h4 class="modal-title">AI知识点解答</h4>
+            <h4 class="modal-title" id="modalTitle">AI知识点解答</h4>
             <div class="modal-result" id="modalResult"></div>
         </div>
     </div>
@@ -531,8 +540,8 @@
     <div class="contact-modal" id="contactModal">
         <div class="contact-modal-content">
             <span class="modal-close" id="contactModalClose">&times;</span>
-            <h4 class="contact-title">联系我们</h4>
-            <div class="contact-info">
+            <h4 class="contact-title" id="contactTitle">联系我们</h4>
+            <div class="contact-info" id="contactInfo">
                 如果遇到问题，请联系我们的邮箱：<br>
                 <strong>3058168199@qq.com</strong>
             </div>
@@ -541,6 +550,72 @@
 
     <!-- 核心JS：轮播/模式/AI接口/弹窗，全部嵌入 -->
     <script>
+        // ********** 语言文本映射表 **********
+        const langTexts = {
+            'zh-CN': {
+                logoText: '圆几何交互式学习平台',
+                navHome: '首页',
+                navGame: '游戏',
+                navQuiz: '测试',
+                langZh: '简体中文',
+                langEn: 'English',
+                menuEye: '护眼模式',
+                menuNight: '夜晚模式',
+                fontSizeLabel: '字体大小调节',
+                fontSizeValue: '当前字体：{size}px',
+                contactUs: '联系我们',
+                menuHelp: '使用说明',
+                adLink: '关于广告',
+                searchTitle: 'AI圆几何知识点问答',
+                searchPlaceholder: '请输入圆几何相关知识点，如：圆的垂径定理...',
+                searchBtn: '发送查询',
+                modalTitle: 'AI知识点解答',
+                contactTitle: '联系我们',
+                contactInfo: '如果遇到问题，请联系我们的邮箱：<br><strong>3058168199@qq.com</strong>',
+                errorEmpty: '请输入圆几何相关的查询问题！',
+                loading: 'AI正在为你查询，请稍候...',
+                errorNoAnswer: 'AI查询失败：响应中无文本回答！',
+                errorFormat: 'AI查询失败：响应格式异常！响应数据：<br>{data}',
+                errorApi: 'AI查询失败：{code} - {msg}！',
+                errorNetwork: '调用失败（总耗时：{time}ms）：{msg}',
+                errorConsole: '可打开F12控制台查看完整日志',
+                errorCORS: '网络错误：跨域限制！请搭建后端代理或临时禁用浏览器跨域测试。',
+                error401: 'API_KEY无效/过期！请检查你的API_KEY。',
+                errorOther: '网络错误：{msg}，请检查网络或API配置！'
+            },
+            'en': {
+                logoText: 'Interactive Learning Platform for Circle Geometry',
+                navHome: 'Home',
+                navGame: 'Game',
+                navQuiz: 'Quiz',
+                langZh: 'Simplified Chinese',
+                langEn: 'English',
+                menuEye: 'Eye Protection Mode',
+                menuNight: 'Night Mode',
+                fontSizeLabel: 'Font Size Adjustment',
+                fontSizeValue: 'Current Font: {size}px',
+                contactUs: 'Contact Us',
+                menuHelp: 'Usage Instructions',
+                adLink: 'About Ads',
+                searchTitle: 'AI Q&A for Circle Geometry Knowledge',
+                searchPlaceholder: 'Enter circle geometry knowledge, e.g.: Vertical Chord Theorem...',
+                searchBtn: 'Send Query',
+                modalTitle: 'AI Knowledge Answer',
+                contactTitle: 'Contact Us',
+                contactInfo: 'If you encounter problems, please contact our email:<br><strong>3058168199@qq.com</strong>',
+                errorEmpty: 'Please enter a query related to circle geometry!',
+                loading: 'AI is querying for you, please wait...',
+                errorNoAnswer: 'AI query failed: No text answer in response!',
+                errorFormat: 'AI query failed: Abnormal response format! Response data:<br>{data}',
+                errorApi: 'AI query failed: {code} - {msg}!',
+                errorNetwork: 'Call failed (Total time: {time}ms): {msg}',
+                errorConsole: 'Open F12 console to view complete logs',
+                errorCORS: 'Network error: CORS restriction! Please set up a backend proxy or disable browser CORS temporarily for testing.',
+                error401: 'API_KEY is invalid/expired! Please check your API_KEY.',
+                errorOther: 'Network error: {msg}, please check network or API configuration!'
+            }
+        };
+
         // ********** 全局变量 **********
         const carouselList = document.querySelector('.carousel-list');
         const carouselItems = document.querySelectorAll('.carousel-item');
@@ -559,8 +634,51 @@
         let currentIndex = 0;
         const totalCarousel = carouselItems.length;
         let menuHideTimer = null; // 设置菜单隐藏延迟定时器
+        let currentLang = localStorage.getItem('appLang') || 'zh-CN'; // 默认中文
 
-        // ********** 1. 轮播图：自动循环2秒，循环播放5张 **********
+        // ********** 语言切换函数 **********
+        function updateLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('appLang', lang); // 保存到本地存储
+            const texts = langTexts[lang];
+            
+            // 更新页面文本
+            document.getElementById('logoText').textContent = texts.logoText;
+            document.getElementById('navHome').textContent = texts.navHome;
+            document.getElementById('navGame').textContent = texts.navGame;
+            document.getElementById('navQuiz').textContent = texts.navQuiz;
+            document.getElementById('langZh').textContent = texts.langZh;
+            document.getElementById('langEn').textContent = texts.langEn;
+            document.getElementById('menuEye').textContent = texts.menuEye;
+            document.getElementById('menuNight').textContent = texts.menuNight;
+            document.getElementById('fontSizeLabel').textContent = texts.fontSizeLabel;
+            document.getElementById('fontSizeValue').textContent = texts.fontSizeValue.replace('{size}', fontSizeSlider.value);
+            document.getElementById('contactUs').textContent = texts.contactUs;
+            document.getElementById('menuHelp').textContent = texts.menuHelp;
+            document.getElementById('adLink').textContent = texts.adLink;
+            document.getElementById('searchTitle').textContent = texts.searchTitle;
+            document.getElementById('searchPlaceholder').placeholder = texts.searchPlaceholder;
+            document.getElementById('searchBtn').textContent = texts.searchBtn;
+            document.getElementById('modalTitle').textContent = texts.modalTitle;
+            document.getElementById('contactTitle').textContent = texts.contactTitle;
+            document.getElementById('contactInfo').innerHTML = texts.contactInfo;
+            
+            // 更新html lang属性
+            document.documentElement.lang = lang;
+            
+            // 更新语言按钮激活状态
+            document.querySelectorAll('.lang-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.lang === lang) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // ********** 1. 初始化语言 **********
+        updateLang(currentLang);
+
+        // ********** 2. 轮播图：自动循环2秒，循环播放5张 **********
         function carouselPlay() {
             currentIndex = (currentIndex + 1) % totalCarousel;
             carouselList.style.transform = `translateX(-${currentIndex * 20}%)`;
@@ -573,7 +691,7 @@
             contactModal.style.display = 'none';
         };
 
-        // ********** 2. 设置下拉菜单：鼠标悬浮至少停留1秒 **********
+        // ********** 3. 设置下拉菜单：鼠标悬浮至少停留1秒 **********
         settingWrap.addEventListener('mouseenter', () => {
             // 清除延迟隐藏定时器
             clearTimeout(menuHideTimer);
@@ -599,7 +717,7 @@
             }, 1000);
         });
 
-        // ********** 3. 模式切换（护眼/夜晚） **********
+        // ********** 4. 模式切换（护眼/夜晚） **********
         const menuItems = document.querySelectorAll('.menu-item[data-style]');
         const body = document.body;
         menuItems.forEach(item => {
@@ -613,31 +731,28 @@
             });
         });
 
-        // ********** 4. 字体大小滑块控制：等比例缩放所有汉字 **********
+        // ********** 5. 字体大小滑块控制：等比例缩放所有汉字 **********
         const root = document.documentElement;
         // 初始化字体大小
         root.style.setProperty('--font-size', `${fontSizeSlider.value}px`);
-        fontSizeValue.textContent = `当前字体：${fontSizeSlider.value}px`;
+        fontSizeValue.textContent = langTexts[currentLang].fontSizeValue.replace('{size}', fontSizeSlider.value);
 
         // 滑块事件
         fontSizeSlider.addEventListener('input', () => {
             const fontSize = fontSizeSlider.value;
             root.style.setProperty('--font-size', `${fontSize}px`);
-            fontSizeValue.textContent = `当前字体：${fontSize}px`;
+            fontSizeValue.textContent = langTexts[currentLang].fontSizeValue.replace('{size}', fontSize);
         });
 
-        // ********** 5. 语言切换：修改html.lang属性（后续可扩展多语言文本） **********
+        // ********** 6. 语言切换事件 **********
         const langLinks = document.querySelectorAll('.lang-link');
-        const html = document.documentElement;
         langLinks.forEach(link => {
             link.addEventListener('click', () => {
-                langLinks.forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-                html.lang = link.dataset.lang;
+                updateLang(link.dataset.lang);
             });
         });
 
-        // ********** 6. AI弹窗：关闭功能 **********
+        // ********** 7. AI弹窗：关闭功能 **********
         modalClose.addEventListener('click', () => {
             aiModal.style.display = 'none';
             // 清空输入框和弹窗内容
@@ -653,7 +768,7 @@
             }
         });
 
-        // ********** 7. 联系我们弹窗控制 **********
+        // ********** 8. 联系我们弹窗控制 **********
         contactUs.addEventListener('click', () => {
             contactModal.style.display = 'flex';
         });
@@ -669,7 +784,7 @@
             }
         });
 
-       // ********** 8. AI接口调用：真实问答，返回有效结果 **********
+       // ********** 9. AI接口调用：真实问答，返回有效结果 **********
 // 火山方舟API Key（你的密钥）
 const API_KEY = "67805b72-0e18-42da-921d-b6a86a0746da";
 // 火山方舟API地址（替换原豆包地址）
@@ -689,12 +804,13 @@ searchInput.addEventListener('keydown', (e) => {
 // 调用火山方舟API获取答案
 async function getAiAnswer() {
     const question = searchInput.value.trim();
+    const texts = langTexts[currentLang];
     if (!question) {
-        modalResult.innerHTML = '<p style="color: #ef4444;">请输入圆几何相关的查询问题！</p>';
+        modalResult.innerHTML = `<p style="color: #ef4444;">${texts.errorEmpty}</p>`;
         aiModal.style.display = 'flex';
         return;
     }
-    modalResult.innerHTML = '<p style="color: #2563eb; text-align: center;">AI正在为你查询，请稍候...</p>';
+    modalResult.innerHTML = `<p style="color: #2563eb; text-align: center;">${texts.loading}</p>`;
     aiModal.style.display = 'flex';
 
     // 新增：记录请求开始时间（统计耗时）
@@ -771,12 +887,12 @@ async function getAiAnswer() {
             if (answer) {
                 modalResult.innerHTML = answer.replace(/\n/g, '<br>');
             } else {
-                modalResult.innerHTML = '<p style="color: #ef4444;">AI查询失败：响应中无文本回答！</p>';
+                modalResult.innerHTML = `<p style="color: #ef4444;">${texts.errorNoAnswer}</p>`;
             }
         } else if (data.error) {
-            modalResult.innerHTML = `<p style="color: #ef4444;">AI查询失败：${data.error.code || '未知错误'} - ${data.error.message}！</p>`;
+            modalResult.innerHTML = `<p style="color: #ef4444;">${texts.errorApi.replace('{code}', data.error.code || '未知错误').replace('{msg}', data.error.message)}</p>`;
         } else {
-            modalResult.innerHTML = `<p style="color: #ef4444;">AI查询失败：响应格式异常！响应数据：<br>${JSON.stringify(data, null, 2)}</p>`;
+            modalResult.innerHTML = `<p style="color: #ef4444;">${texts.errorFormat.replace('{data}', JSON.stringify(data, null, 2))}</p>`;
         }
 
     } catch (error) {
@@ -784,8 +900,15 @@ async function getAiAnswer() {
         console.error('❌ 调用过程完整错误：', error);
         const costTime = Date.now() - startTime;
         // 友好提示+详细错误
-        modalResult.innerHTML = `<p style="color: #ef4444;">调用失败（总耗时：${costTime}ms）：${error.message}</p>
-        <p style="font-size: 12px; color: #666; margin-top: 8px;">可打开F12控制台查看完整日志</p>`;
+        let errorMsg = texts.errorNetwork.replace('{time}', costTime).replace('{msg}', error.message);
+        if (error.message.includes('CORS')) {
+            errorMsg = `<p style="color: #ef4444;">${texts.errorCORS}</p>`;
+        } else if (error.message.includes('401')) {
+            errorMsg = `<p style="color: #ef4444;">${texts.error401}</p>`;
+        } else if (!error.message.includes('API返回错误')) {
+            errorMsg = `<p style="color: #ef4444;">${texts.errorOther.replace('{msg}', error.message)}</p>`;
+        }
+        modalResult.innerHTML = `${errorMsg}<p style="font-size: 12px; color: #666; margin-top: 8px;">${texts.errorConsole}</p>`;
     }
 }
     </script>

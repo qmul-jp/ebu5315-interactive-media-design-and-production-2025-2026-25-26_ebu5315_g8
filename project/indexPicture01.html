@@ -154,7 +154,7 @@
                 
                 <!-- 圆心角∠AOB的弧 -->
                 <path d="M230,80 A80,80 0 0,1 330,130" class="center-angle-arc" id="centerAngleArc"/>
-                <text x="280" y="100" class="text-label" fill="#9b59b6">∠AOB</text>
+                <text x="280" y="100" class="text-label" fill="#9b59b6" id="centerAngleLabel">∠AOB</text>
                 
                 <!-- 圆周角顶点P（沿圆周运动） -->
                 <circle cx="230" cy="430" r="5" class="point-p" id="pointP"/>
@@ -166,7 +166,7 @@
                 
                 <!-- 圆周角∠APB的弧 -->
                 <path d="M180,400 A50,50 0 0,1 280,400" class="inscribed-angle-arc" id="inscribedAngleArc"/>
-                <text x="230" y="380" class="text-label" fill="#27ae60">∠APB</text>
+                <text x="230" y="380" class="text-label" fill="#27ae60" id="inscribedAngleLabel">∠APB</text>
             </svg>
         </div>
 
@@ -174,15 +174,15 @@
         <div class="control-panel">
             <div class="angle-display">
                 <div class="angle-item">
-                    圆心角 ∠AOB：<span class="center-angle-value" id="centerAngleText">60°</span>
+                    <span class="angle-label" id="centerAngleTextLabel">圆心角 ∠AOB：</span><span class="center-angle-value" id="centerAngleText">60°</span>
                 </div>
                 <div class="angle-item">
-                    圆周角 ∠APB：<span class="inscribed-angle-value" id="inscribedAngleText">30°</span>
+                    <span class="angle-label" id="inscribedAngleTextLabel">圆周角 ∠APB：</span><span class="inscribed-angle-value" id="inscribedAngleText">30°</span>
                 </div>
             </div>
 
             <div class="slider-wrap">
-                <label for="angleSlider">调节圆心角大小（0°-180°）：</label>
+                <label for="angleSlider" id="sliderLabel">调节圆心角大小（0°-180°）：</label>
                 <input type="range" id="angleSlider" min="0" max="180" value="60" step="1">
                 <div class="slider-value" id="sliderValue">当前圆心角：60°</div>
             </div>
@@ -190,6 +190,41 @@
     </div>
 
     <script>
+        // ********** 语言文本映射表 **********
+        const langTexts = {
+            'zh-CN': {
+                pageTitle: '圆心角&圆周角动态演示（修正版）',
+                centerAngleTextLabel: '圆心角 ∠AOB：',
+                inscribedAngleTextLabel: '圆周角 ∠APB：',
+                sliderLabel: '调节圆心角大小（0°-180°）：',
+                sliderValue: '当前圆心角：{angle}°',
+                centerAngleLabel: '∠AOB',
+                inscribedAngleLabel: '∠APB'
+            },
+            'en': {
+                pageTitle: 'Dynamic Demonstration of Central Angle & Inscribed Angle (Revised)',
+                centerAngleTextLabel: 'Central Angle ∠AOB：',
+                inscribedAngleTextLabel: 'Inscribed Angle ∠APB：',
+                sliderLabel: 'Adjust Central Angle (0°-180°)：',
+                sliderValue: 'Current Central Angle：{angle}°',
+                centerAngleLabel: '∠AOB',
+                inscribedAngleLabel: '∠APB'
+            }
+        };
+
+        // ********** 初始化语言 **********
+        const currentLang = localStorage.getItem('appLang') || 'zh-CN';
+        document.documentElement.lang = currentLang;
+        const texts = langTexts[currentLang];
+        
+        // 更新页面文本
+        document.title = texts.pageTitle;
+        document.getElementById('centerAngleTextLabel').textContent = texts.centerAngleTextLabel;
+        document.getElementById('inscribedAngleTextLabel').textContent = texts.inscribedAngleTextLabel;
+        document.getElementById('sliderLabel').textContent = texts.sliderLabel;
+        document.getElementById('centerAngleLabel').textContent = texts.centerAngleLabel;
+        document.getElementById('inscribedAngleLabel').textContent = texts.inscribedAngleLabel;
+
         // 核心参数初始化
         const O = { x: 230, y: 230 }; // 圆心坐标
         const radius = 200; // 圆半径
@@ -213,6 +248,9 @@
         const pointA = document.getElementById('pointA');
         const pointA_X = parseFloat(pointA.getAttribute('cx'));
         const pointA_Y = parseFloat(pointA.getAttribute('cy'));
+
+        // 初始化滑块文本
+        sliderValue.textContent = texts.sliderValue.replace('{angle}', centerAngle);
 
         // 角度转弧度
         function degToRad(deg) {
@@ -263,6 +301,7 @@
             // 6. 更新数值显示
             centerAngleText.textContent = `${centerAngle}°`;
             inscribedAngleText.textContent = `${inscribedAngle}°`;
+            sliderValue.textContent = texts.sliderValue.replace('{angle}', centerAngle);
         }
 
         // P点圆周运动动画（核心修正：使用B点实时坐标更新PB边）
@@ -305,7 +344,6 @@
         angleSlider.addEventListener('input', function() {
             centerAngle = parseInt(this.value);
             inscribedAngle = centerAngle / 2; // 圆周角始终为圆心角的一半
-            sliderValue.textContent = `当前圆心角：${centerAngle}°`;
             updateGeometry(); // 实时更新几何元素
         });
 

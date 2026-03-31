@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN"> <!-- 会根据语言自动更新 -->
 <head>
     <meta charset="UTF-8">
-    <title>圆内接四边形定理演示</title>
+    <title>圆内接四边形定理演示</title> <!-- 会根据语言自动更新 -->
     <style>
         * {
             margin: 0;
@@ -70,14 +70,14 @@
 <body>
     <canvas id="canvas" width="600" height="600"></canvas>
     <div class="panel">
-        <h2>圆内接四边形定理</h2>
-        <div class="angle-box">∠DAB：<span id="angA">0</span>°</div>
-        <div class="angle-box">∠ABC：<span id="angB">0</span>°</div>
-        <div class="angle-box">∠BCD：<span id="angC">0</span>°</div>
-        <div class="angle-box">∠CDA：<span id="angD">0</span>°</div>
-        <div class="sum-box">∠DAB + ∠BCD = <span id="sum1">180</span>°</div>
-        <div class="sum-box">∠ABC + ∠CDA = <span id="sum2">180</span>°</div>
-        <div class="tip">
+        <h2 id="theorem-title">圆内接四边形定理</h2>
+        <div class="angle-box" id="angleA-box">∠DAB：<span id="angA">0</span>°</div>
+        <div class="angle-box" id="angleB-box">∠ABC：<span id="angB">0</span>°</div>
+        <div class="angle-box" id="angleC-box">∠BCD：<span id="angC">0</span>°</div>
+        <div class="angle-box" id="angleD-box">∠CDA：<span id="angD">0</span>°</div>
+        <div class="sum-box" id="sum1-box">∠DAB + ∠BCD = <span id="sum1">180</span>°</div>
+        <div class="sum-box" id="sum2-box">∠ABC + ∠CDA = <span id="sum2">180</span>°</div>
+        <div class="tip" id="tips">
             拖动A/B/C/D四点沿圆环移动<br>
             对角之和始终为180°<br>
             验证：圆内接四边形对角互补
@@ -85,6 +85,61 @@
     </div>
 
     <script>
+        // ********** 1. 新增语言文本映射表（核心修改）**********
+        const langTexts = {
+            'zh-CN': { // 中文配置
+                pageTitle: '圆内接四边形定理演示',
+                theoremTitle: '圆内接四边形定理',
+                angleA: '∠DAB：',
+                angleB: '∠ABC：',
+                angleC: '∠BCD：',
+                angleD: '∠CDA：',
+                sum1: '∠DAB + ∠BCD = ',
+                sum2: '∠ABC + ∠CDA = ',
+                tips: '拖动A/B/C/D四点沿圆环移动<br>对角之和始终为180°<br>验证：圆内接四边形对角互补'
+            },
+            'en': { // 英文配置
+                pageTitle: 'Cyclic Quadrilateral Theorem Demonstration',
+                theoremTitle: 'Cyclic Quadrilateral Theorem',
+                angleA: '∠DAB：', // 几何符号保留，符合国际惯例
+                angleB: '∠ABC：',
+                angleC: '∠BCD：',
+                angleD: '∠CDA：',
+                sum1: '∠DAB + ∠BCD = ',
+                sum2: '∠ABC + ∠CDA = ',
+                tips: 'Drag points A/B/C/D along the circle<br>The sum of opposite angles is always 180°<br>Verification: Opposite angles of cyclic quadrilateral are supplementary'
+            }
+        };
+
+        // ********** 2. 读取并初始化当前语言（核心修改）**********
+        // 从localStorage读取主页面选择的语言，默认中文
+        const currentLang = localStorage.getItem('appLang') || 'zh-CN';
+        // 更新HTML根元素的lang属性（适配浏览器）
+        document.documentElement.lang = currentLang;
+        // 获取当前语言对应的文本集
+        const currentTexts = langTexts[currentLang];
+
+        // ********** 3. 初始化页面文本（核心修改）**********
+        function initLangText() {
+            // 更新页面标题
+            document.title = currentTexts.pageTitle;
+            // 更新面板标题
+            document.getElementById('theorem-title').textContent = currentTexts.theoremTitle;
+            // 更新角度框前缀（保留动态数值标签）
+            document.getElementById('angleA-box').innerHTML = currentTexts.angleA + '<span id="angA">0</span>°';
+            document.getElementById('angleB-box').innerHTML = currentTexts.angleB + '<span id="angB">0</span>°';
+            document.getElementById('angleC-box').innerHTML = currentTexts.angleC + '<span id="angC">0</span>°';
+            document.getElementById('angleD-box').innerHTML = currentTexts.angleD + '<span id="angD">0</span>°';
+            // 更新和值框前缀
+            document.getElementById('sum1-box').innerHTML = currentTexts.sum1 + '<span id="sum1">180</span>°';
+            document.getElementById('sum2-box').innerHTML = currentTexts.sum2 + '<span id="sum2">180</span>°';
+            // 更新提示语
+            document.getElementById('tips').innerHTML = currentTexts.tips;
+        }
+        // 页面加载时立即初始化文本
+        initLangText();
+
+        // ********** 原有代码（无需修改核心逻辑）**********
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         //  DOM元素

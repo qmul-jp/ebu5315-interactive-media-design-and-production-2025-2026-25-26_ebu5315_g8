@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN"> <!-- 会根据语言自动更新 -->
 <head>
     <meta charset="UTF-8">
-    <title>弦切角定理演示</title>
+    <title>弦切角定理演示</title> <!-- 会根据语言自动更新 -->
     <style>
         * {
             margin: 0;
@@ -58,7 +58,8 @@
     <canvas id="canvas" width="600" height="600"></canvas>
     <div class="info">
         <h3 id="theorem-title">弦切角定理</h3>
-        <div class="angle-item" id  ="angle1-item">
+        <!-- 修正：id="angle1-item" 之前多了个空格 -->
+        <div class="angle-item" id="angle1-item">
             弦切角(切线与AB夹角)：<span class="value" id="angle1">0</span>°
         </div>
         <div class="angle-item" id="angle2-item">
@@ -71,20 +72,57 @@
     </div>
 
     <script>
-        // ********** 语言文本映射表 **********
-const langTexts = {
-    'zh-CN': { // 中文配置
-        "theorem-title": '弦切角定理',
-        "angle1-item": '弦切角(切线与AB夹角)：',
-        "angle2-item": '圆周角∠APB：',
-        "relation-item": '两角关系：',
-        "tips": '拖动B点改变弦长<br>P点自动沿圆弧运动'
-    },
-    'en': { // 英文配置
-       
-        // 其他所有英文文本（和中文键名一致）
-    }
-};
+        // ********** 1. 补全语言文本映射表（核心修改1）**********
+        const langTexts = {
+            'zh-CN': { // 中文配置
+                pageTitle: '弦切角定理演示',
+                "theorem-title": '弦切角定理',
+                "angle1-item": '弦切角(切线与AB夹角)：',
+                "angle2-item": '圆周角∠APB：',
+                "relation-item": '两角关系：',
+                "tips": '拖动B点改变弦长<br>P点自动沿圆弧运动',
+                equal: '相等',
+                approxEqual: '近似相等'
+            },
+            'en': { // 英文配置（补全所有键）
+                pageTitle: 'Tangent Chord Angle Theorem Demonstration',
+                "theorem-title": 'Tangent Chord Angle Theorem',
+                "angle1-item": 'Tangent Chord Angle (between tangent and AB)：',
+                "angle2-item": 'Inscribed Angle ∠APB：',
+                "relation-item": 'Relationship between two angles：',
+                "tips": 'Drag point B to change chord length<br>Point P moves along arc automatically',
+                equal: 'Equal',
+                approxEqual: 'Approximately Equal'
+            }
+        };
+
+        // ********** 2. 读取并初始化当前语言（核心修改2）**********
+        // 从localStorage读取主页面选择的语言，默认中文
+        const currentLang = localStorage.getItem('appLang') || 'zh-CN';
+        // 更新HTML根元素的lang属性（适配浏览器）
+        document.documentElement.lang = currentLang;
+        // 获取当前语言对应的文本集
+        const currentTexts = langTexts[currentLang];
+
+        // ********** 3. 初始化页面文本（核心修改3）**********
+        function initLangText() {
+            // 更新页面标题
+            document.title = currentTexts.pageTitle;
+            // 更新静态文本
+            document.getElementById('theorem-title').textContent = currentTexts['theorem-title'];
+            // 注意：angle1-item/angle2-item/relation-item 是“文本前缀+动态值”，需要拆分更新
+            document.getElementById('angle1-item').innerHTML = 
+                currentTexts['angle1-item'] + '<span class="value" id="angle1">0</span>°';
+            document.getElementById('angle2-item').innerHTML = 
+                currentTexts['angle2-item'] + '<span class="value" id="angle2">0</span>°';
+            document.getElementById('relation-item').innerHTML = 
+                currentTexts['relation-item'] + '<span class="value" id="relation">' + currentTexts.equal + '</span>';
+            document.getElementById('tips').innerHTML = currentTexts.tips;
+        }
+        // 页面加载时立即初始化文本
+        initLangText();
+
+        // ********** 原有代码（仅修改动态文本部分）**********
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const angle1El = document.getElementById('angle1');
@@ -118,7 +156,7 @@ const langTexts = {
             return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
         }
 
-        // 绘制函数
+        // 绘制函数（修改动态文本部分）
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
@@ -179,10 +217,13 @@ const langTexts = {
             ctx.fillStyle = '#16a34a';
             ctx.fillText(`${circAngleDeg}°`, P.x + 10, P.y + 20);
             
-            // 8. 更新页面数值
+            // 8. 更新页面数值（核心修改4：动态文本从语言表读取）
             angle1El.textContent = chordAngleDeg;
             angle2El.textContent = circAngleDeg;
-            relationEl.textContent = Math.abs(chordAngleDeg - circAngleDeg) < 0.2 ? '相等' : '近似相等';
+            // 替换硬编码的“相等/近似相等”为语言表中的文本
+            relationEl.textContent = Math.abs(chordAngleDeg - circAngleDeg) < 0.2 
+                ? currentTexts.equal 
+                : currentTexts.approxEqual;
         }
 
         // 动画：P点自动旋转
