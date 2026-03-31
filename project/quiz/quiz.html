@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日一题作答 | 圆几何测试学习中心</title>
+    <link rel="stylesheet" href="quiz.css">
+    <link rel="stylesheet" href="i18n.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body data-page="daily-quiz">
+    <nav class="top-nav">
+        <a href="home.html">首页</a>
+        <a href="#">游戏</a>
+        <a href="home.html" class="active">测试</a>
+    </nav>
+    <main class="quiz-shell">
+        <section class="quiz-session-card" id="quizSessionCard">
+            <div class="session-topbar">
+                <div class="session-title-group"><p class="eyebrow">每日一题</p><h1>每日一题</h1></div>
+                <div class="session-progress-group"><div class="progress-meta"><span>1 / 1</span><strong>100%</strong></div><div class="progress-track"><div class="progress-bar full"></div></div></div>
+            </div>
+            <div class="question-card">
+                <div class="question-head"><span class="question-tag">今日题目</span><span class="question-topic" id="quizTopic">--</span></div>
+                <h2 class="quiz-question-title" id="quizQuestionTitle"></h2>
+                <div class="quiz-options" id="quizOptions"></div>
+            </div>
+            <div class="quiz-meta">
+                <div class="meta-item"><span class="meta-label">本题难度</span><strong id="quizDifficulty">--</strong></div>
+                <div class="meta-item"><span class="meta-label">所属专题</span><strong id="quizMetaTopic">--</strong></div>
+            </div>
+            <div class="quiz-actions"><button class="action-btn primary" id="submitQuizBtn">提交答案</button><button class="action-btn" id="showQuizAiBtn">AI 解释</button></div>
+            <div class="quiz-feedback hidden" id="quizFeedback"><strong id="quizFeedbackState"></strong><p id="quizFeedbackText"></p></div>
+        </section>
+        <section class="quiz-result-card hidden" id="quizResultCard">
+            <div class="result-header"><p class="eyebrow">今日结果</p><h1>今日结果</h1><p id="resultStatusText">今日打卡成功后，可以查看答案、AI 解释和错题收录情况。</p></div>
+            <div class="result-grid">
+                <article class="result-item"><span class="result-label">作答结果</span><strong id="resultOutcome">--</strong></article>
+                <article class="result-item"><span class="result-label">正确答案</span><strong id="resultCorrectAnswer">--</strong></article>
+                <article class="result-item"><span class="result-label">错题是否收录</span><strong id="resultWrongSaved">--</strong></article>
+                <article class="result-item"><span class="result-label">连续打卡天数</span><strong id="resultStreakDays">0 天</strong></article>
+            </div>
+            <section class="result-detail"><div class="card-header"><i class="fas fa-robot"></i><h2>AI 详细解释</h2></div><p id="resultAiExplanation"></p></section>
+            <section class="result-success"><i class="fas fa-circle-check"></i><span>今日打卡成功</span></section>
+            <div class="result-actions"><a class="action-btn" href="home.html">返回首页</a><button class="action-btn" id="viewWrongBookBtn">查看错题本</button><a class="action-btn primary" href="test-topic.html">前往专题练习</a></div>
+        </section>
+    </main>
+    <div class="modal-backdrop hidden" id="quizAiModal"><div class="modal-card"><div class="modal-header"><h3>AI 解释</h3><button class="modal-close" id="closeQuizAiModalBtn" aria-label="关闭">×</button></div><div class="modal-body"><p id="quizAiAnswer"></p><p id="quizAiExplanation"></p></div></div></div>
+    <div class="modal-backdrop hidden" id="wrongBookModal"><div class="modal-card"><div class="modal-header"><h3>错题本</h3><button class="modal-close" id="closeWrongBookModalBtn" aria-label="关闭">×</button></div><div class="modal-body" id="wrongBookList"></div></div></div>
+    <footer class="page-footer"><p>圆几何互动学习网站 © 2026 EBU5315 Coursework</p></footer>
+    <script src="i18n.js" defer></script>
+    <script src="quiz.js" defer></script>
+</body>
+</html>

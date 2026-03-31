@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日一题 | 圆几何测试学习中心</title>
+    <link rel="stylesheet" href="daily.css">
+    <link rel="stylesheet" href="i18n.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body data-page="daily-checkin">
+    <nav class="top-nav">
+        <a href="home.html">首页</a>
+        <a href="#">游戏</a>
+        <a href="home.html" class="active">测试</a>
+    </nav>
+    <div class="daily-shell">
+        <section class="daily-hero">
+            <div>
+                <p class="eyebrow">每日打卡</p>
+                <h1>每日一题打卡页</h1>
+                <p>每天仅限 1 题，完成后即可更新打卡状态，并查看答案、AI 解释和错题记录。</p>
+            </div>
+            <div class="hero-badge"><i class="fas fa-calendar-check"></i></div>
+        </section>
+        <section class="checkin-grid">
+            <article class="info-card"><span class="info-label">今日日期</span><strong id="todayDate">--</strong></article>
+            <article class="info-card"><span class="info-label">打卡状态</span><strong id="checkinStatus">未打卡</strong></article>
+            <article class="info-card"><span class="info-label">连续打卡天数</span><strong id="streakDays">0 天</strong></article>
+        </section>
+        <section class="rules-card">
+            <div class="card-header"><i class="fas fa-lightbulb"></i><h2>规则说明</h2></div>
+            <ul class="rules-list">
+                <li>每天仅限 1 题</li>
+                <li>题目随机来自全专题题库</li>
+                <li>答完即完成今日打卡</li>
+                <li>答错自动存入错题本</li>
+                <li>可查看 AI 详细解释</li>
+            </ul>
+        </section>
+        <section class="start-card" id="startCard">
+            <button class="start-btn" id="startDailyBtn"><i class="fas fa-play"></i><span>开始今日答题</span></button>
+            <p class="start-tip">系统会从题库中随机抽取 1 题，并直接进入今日作答页。</p>
+        </section>
+    </div>
+    <footer class="page-footer"><p>圆几何互动学习网站 © 2026 EBU5315 Coursework</p></footer>
+    <script src="i18n.js" defer></script>
+    <script src="daily.js" defer></script>
+</body>
+</html>
