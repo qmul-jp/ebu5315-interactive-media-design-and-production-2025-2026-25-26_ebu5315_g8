@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>圆几何交互式学习平台 - 游戏中心</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Trebuchet MS", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-strong: #1d4ed8;
+            --text: #1f2937;
+            --muted: #64748b;
+            --bg-color: #f8fafc;
+            --surface: rgba(255, 255, 255, 0.85);
+            --surface-strong: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-lg: 0 24px 60px rgba(31, 41, 55, 0.12);
+            --shadow-md: 0 16px 32px rgba(31, 41, 55, 0.08);
+            --radius-xl: 28px;
+            --radius-lg: 22px;
+            --radius-md: 16px;
+            --font-size: 16px;
+        }
+
+        body {
+            color: var(--text);
+            font-size: var(--font-size);
+            background:
+                radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.1), transparent 22%),
+                radial-gradient(circle at 86% 14%, rgba(37, 99, 235, 0.1), transparent 20%),
+                linear-gradient(rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+                linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: all 0.3s ease-in-out;
+            line-height: 1.6;
+        }
+
+        /* 模式切换：护眼/夜晚，修改CSS变量 */
+        body.eye-mode {
+            --bg-color: #f0f9eb;
+            --surface: rgba(247, 251, 242, 0.88);
+            --text: #166534;
+            --border-color: #c7e3b4;
+            --primary: #438a4c;
+            --primary-strong: #3f6234;
+        }
+        body.night-mode {
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --primary: #60a5fa;
+            --primary-strong: #3b82f6;
+            --surface: rgba(30, 41, 59, 0.88);
+            --surface-strong: #1e293b;
+            --border-color: #475569;
+        }
+
+        /* 头部样式：与 index.html 完全一致 */
+        .header-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            width: 100%;
+            height: 80px;
+            padding: 0 4vw;
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .logo {
+            font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-main {
+            display: flex;
+            gap: 2.5vw;
+            background: rgba(15, 23, 42, 0.04);
+            padding: 6px;
+            border-radius: 100px;
+        }
+        .nav-link {
+            font-size: 0.95rem;
+            color: var(--muted);
+            font-weight: 600;
+            padding: 8px 24px;
+            border-radius: 100px;
+        }
+        .nav-link:hover {
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.8);
+        }
+        .nav-link.active {
+            color: white;
+            background: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5vw;
+        }
+        .lang-switch {
+            font-size: 0.85rem;
+            color: var(--muted);
+            background: var(--surface-strong);
+            padding: 6px 16px;
+            border-radius: 100px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* 主体容器 */
+        .main-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 4vw 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .breadcrumb {
+            width: 100%;
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+        .breadcrumb a { color: var(--primary); font-weight: 600; }
+
+        .game-title {
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            color: var(--primary);
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            width: 100%;
+        }
+
+        .game-card {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 50px 30px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .game-card:hover {
+            transform: translateY(-12px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+            background: var(--surface-strong);
+        }
+        .game-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+        .game-name {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .game-desc {
+            font-size: 1rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .header-container { padding: 0 20px; height: 70px; }
+            .nav-main { display: none; }
+            .main-container { padding-top: 100px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header-container">
+        <div class="logo" id="logoText">圆几何交互式学习平台</div>
+        <nav class="nav-main">
+            <a href="index.html" class="nav-link" id="navHome">首页</a>
+            <a href="game.html" class="nav-link active" id="navGame">游戏</a>
+            <a href="home.html" class="nav-link" id="navQuiz">测试</a>
+        </nav>
+        <div class="header-right">
+            <div class="lang-switch">
+                <span id="currentLangDisplay">简体中文</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="breadcrumb" id="breadcrumb">
+            <a href="index.html" id="breadHome">首页</a> › <span id="breadGame">游戏中心</span>
+        </div>
+        <h1 class="game-title" id="gameCenterTitle">圆几何游戏中心</h1>
+        <div class="game-grid">
+            <div class="game-card" onclick="window.location.href='game first version final.html'">
+                <div class="game-icon">🎯</div>
+                <div class="game-name" id="game1Name">圆周角定理匹配赛</div>
+                <div class="game-desc" id="game1Desc">掌握圆周角定理核心知识点</div>
+            </div>
+            <div class="game-card" onclick="window.location.href='game second version final.html'">
+                <div class="game-icon">直线</div>
+                <div class="game-name" id="game2Name">切线判定闯关</div>
+                <div class="game-desc" id="game2Desc">判断圆的切线是否成立</div>
+            </div>
+            <div class="game-card" onclick="window.location.href='game third version final.html'">
+                <div class="game-icon">🧩</div>
+                <div class="game-name" id="game3Name">圆心角弧长拼图</div>
+                <div class="game-desc" id="game3Desc">匹配圆心角与对应弧长</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const langTexts = {
+            'zh-CN': {
+                logoText: '圆几何交互式学习平台',
+                navHome: '首页',
+                navGame: '游戏',
+                navQuiz: '测试',
+                breadHome: '首页',
+                breadGame: '游戏中心',
+                gameCenterTitle: '圆几何游戏中心',
+                game1Name: '圆周角定理匹配赛',
+                game1Desc: '掌握圆周角定理核心知识点',
+                game2Name: '切线判定闯关',
+                game2Desc: '判断圆的切线是否成立',
+                game3Name: '圆心角弧长拼图',
+                game3Desc: '匹配圆心角与对应弧长',
+                langDisplay: '简体中文'
+            },
+            'en': {
+                logoText: 'Interactive Learning Platform for Circle Geometry',
+                navHome: 'Home',
+                navGame: 'Game',
+                navQuiz: 'Quiz',
+                breadHome: 'Home',
+                breadGame: 'Game Center',
+                gameCenterTitle: 'Circle Geometry Game Center',
+                game1Name: 'Inscribed Angle Match',
+                game1Desc: 'Master the inscribed angle theorem',
+                game2Name: 'Tangent Judgment Challenge',
+                game2Desc: 'Judge the tangent of the circle',
+                game3Name: 'Central Angle & Arc Puzzle',
+                game3Desc: 'Match angle with arc length',
+                langDisplay: 'English'
+            }
+        };
+
+        function applyState() {
+            const lang = localStorage.getItem('appLang') || 'zh-CN';
+            const theme = localStorage.getItem('appTheme') || 'default';
+            const fontSize = localStorage.getItem('appFontSize') || '16';
+            
+            // 应用语言
+            const texts = langTexts[lang];
+            if (texts) {
+                document.getElementById('logoText').textContent = texts.logoText;
+                document.getElementById('navHome').textContent = texts.navHome;
+                document.getElementById('navGame').textContent = texts.navGame;
+                document.getElementById('navQuiz').textContent = texts.navQuiz;
+                document.getElementById('breadHome').textContent = texts.breadHome;
+                document.getElementById('breadGame').textContent = texts.breadGame;
+                document.getElementById('gameCenterTitle').textContent = texts.gameCenterTitle;
+                document.getElementById('game1Name').textContent = texts.game1Name;
+                document.getElementById('game1Desc').textContent = texts.game1Desc;
+                document.getElementById('game2Name').textContent = texts.game2Name;
+                document.getElementById('game2Desc').textContent = texts.game2Desc;
+                document.getElementById('game3Name').textContent = texts.game3Name;
+                document.getElementById('game3Desc').textContent = texts.game3Desc;
+                document.getElementById('currentLangDisplay').textContent = texts.langDisplay;
+                document.documentElement.lang = lang;
+            }
+
+            // 应用主题
+            document.body.classList.remove('eye-mode', 'night-mode');
+            if (theme === 'eye') document.body.classList.add('eye-mode');
+            if (theme === 'night') document.body.classList.add('night-mode');
+
+            // 应用字体
+            document.documentElement.style.setProperty('--font-size', fontSize + 'px');
+        }
+
+        window.onload = applyState;
+        // 监听来自 index.html 的状态变化
+        window.addEventListener('storage', (e) => {
+            if (['appLang', 'appTheme', 'appFontSize'].includes(e.key)) {
+                applyState();
+            }
+        });
+    </script>
+</body>
+</html>
