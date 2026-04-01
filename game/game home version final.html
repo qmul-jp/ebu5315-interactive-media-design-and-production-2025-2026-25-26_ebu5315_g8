@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle Geometry Learning Platform - Game Center</title>
+    <link rel="stylesheet" href="index.css">
+    <style>
+        /* 全局根变量：字体大小控制整个页面 */
+        :root {
+            --main-color: #2563eb;
+            --hover-color: #1d4ed8;
+            --bg-color: #ffffff;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-color: #1e293b;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --base-font-size: 16px;
+            font-size: var(--base-font-size);
+        }
+
+        /* 护眼模式 */
+        body.eye-mode {
+            --bg-color: #f7fbf0;
+            --light-bg: #f2f9e4;
+            --border-color: #d7e4c1;
+            --text-color: #2d3f26;
+            --main-color: #3d9b45;
+            --hover-color: #2b7a32;
+        }
+
+        /* 夜间模式 */
+        body.night-mode {
+            --bg-color: #1a2035;
+            --light-bg: #2d3748;
+            --border-color: #4a5568;
+            --text-color: #e2e8f0;
+            --main-color: #7499d8;
+            --hover-color: #5a80c0;
+        }
+
+        /* 全局应用变量 + 平滑过渡 */
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            font-size: 1rem;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        /* 重置默认样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 头部 */
+        .header-container {
+            padding: 0.9rem 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            padding-top: 3rem;
+        }
+
+        /* 核心：全局最大标题 */
+        .logo {
+            position: absolute;
+            left: 50%;
+            top: 1rem;
+            transform: translateX(-50%);
+            font-size: 2.8rem !important;
+            font-weight: 700;
+            color: var(--text-color);
+            line-height: 1.2;
+            z-index: 900;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        /* 右上角内容固定 */
+        .header-right-wrapper {
+            position: fixed;
+            top: 0.6rem;
+            right: 0.6rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.25rem;
+            z-index: 999;
+        }
+
+        /* 导航 */
+        .nav-main {
+            display: flex;
+            gap: 0.9rem;
+        }
+        .nav-link {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .nav-link.active {
+            color: var(--main-color);
+            font-weight: 600;
+        }
+
+        /* 语言 */
+        .lang-switch .lang-link {
+            color: var(--main-color);
+            text-decoration: none;
+            margin: 0 0.3rem;
+            font-size: 0.9rem;
+        }
+        .lang-link.active {
+            font-weight: 600;
+        }
+
+        /* 设置菜单 */
+        .setting-icon {
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-right: 0.6rem;
+        }
+        .setting-menu {
+            display: none;
+            position: absolute;
+            top: 5rem;
+            right: 1.2rem;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 0.8rem;
+            border-radius: 0.25rem;
+            box-shadow: var(--shadow);
+            z-index: 100;
+        }
+        .menu-item {
+            padding: 0.4rem 0;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .font-size-slider-wrap {
+            margin-top: 0.6rem;
+            font-size: 0.9rem;
+        }
+
+        /* 广告 */
+        .ad-tip .ad-link {
+            font-size: 0.75rem;
+            color: var(--main-color);
+            text-decoration: none;
+        }
+
+        /* 主内容 */
+        .main-container {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.2rem 0;
+        }
+
+        .game-center-breadcrumb {
+            width: 100%;
+            max-width: 62rem;
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 1.8rem;
+            padding-left: 2vw;
+        }
+        .game-center-breadcrumb a {
+            color: var(--main-color);
+            text-decoration: none;
+        }
+
+        /* 游戏标题 */
+        .game-center-title {
+            font-size: 2rem;
+            color: var(--text-color);
+            margin-bottom: 2.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* 按钮组 */
+        .game-btn-container {
+            width: 100%;
+            max-width: 62rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: nowrap;
+        }
+
+        /* 游戏按钮 */
+        .game-btn {
+            flex: 0 1 17.5rem;
+            padding: 2.2rem 1.2rem;
+            background-color: var(--main-color) !important;
+            color: #fff !important;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+        .game-btn:hover {
+            background-color: var(--hover-color) !important;
+            transform: translateY(-0.3rem);
+            box-shadow: 0 0.5rem 1rem rgba(37, 99, 235, 0.2);
+        }
+        .game-btn-icon {
+            font-size: 2.8rem;
+            margin-bottom: 1.2rem;
+        }
+        .game-btn-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.6rem;
+        }
+        .game-btn-desc {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* 手机适配 */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2rem !important;
+                top: 0.8rem;
+            }
+            .header-container {
+                padding-top: 2.5rem;
+            }
+            .game-btn {
+                flex: 0 1 30%;
+                padding: 1.5rem 0.6rem;
+            }
+            .game-btn-icon {
+                font-size: 1.8rem;
+            }
+            .game-center-title {
+                font-size: 1.5rem;
+            }
+        }
+        @media (max-width: 420px) {
+            .logo {
+                font-size: 1.6rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header-container">
+        <div class="logo" id="pageTitle">Circle Geometry Learning Platform</div>
+        <div class="header-right-wrapper">
+            <nav class="nav-main" id="navMenu">
+                <a href="index.html" class="nav-link" id="navHome">Home</a>
+                <a href="game-home.html" class="nav-link active" id="navGameCenter">Game Center</a>
+                <a href="quiz.html" class="nav-link" id="navQuiz">Quiz</a>
+            </nav>
+            <div class="lang-switch" id="langSwitch">
+                <a href="#" class="lang-link active" data-lang="en">EN</a>
+                <span>/</span>
+                <a href="#" class="lang-link" data-lang="cn">CN</a>
+            </div>
+            <div class="header-right-extra">
+                <span class="setting-icon" id="settingIcon">⚙️</span>
+                <div class="setting-menu" id="settingMenu">
+                    <div class="menu-item" id="eyeMode">护眼模式</div>
+                    <div class="menu-item" id="nightMode">夜间模式</div>
+                    <div class="menu-item" id="defaultMode">默认模式</div>
+                    <div class="font-size-slider-wrap">
+                        <label class="font-size-label">字体大小</label>
+                        <input type="range" min="12" max="24" value="16" class="font-size-slider" id="fontSizeSlider">
+                        <div class="font-size-value" id="fontSizeValue">16px</div>
+                    </div>
+                </div>
+                <div class="ad-tip">
+                    <a href="#" class="ad-link" id="adText">Ad - Learn Math with Us</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="game-center-breadcrumb" id="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <span>Game Center</span>
+        </div>
+        <h1 class="game-center-title" id="gameCenterTitle">Circle Geometry Game Center</h1>
+        <div class="game-btn-container">
+            <div class="game-btn" onclick="window.location.href='game1.html'">
+                <div class="game-btn-icon">🎯</div>
+                <div class="game-btn-name" id="game1Name">Inscribed Angle Match</div>
+                <div class="game-btn-desc" id="game1Desc">Master the inscribed angle theorem</div>
+            </div>
+            <div class="game-btn" onclick="window.location.href='game2.html'">
+                <div class="game-btn-icon">🚪</div>
+                <div class="game-btn-name" id="game2Name">Tangent Judgment Challenge</div>
+                <div class="game-btn-desc" id="game2Desc">Judge the tangent of the circle</div>
+            </div>
+            <div class="game-btn" onclick="window.location.href='game3.html'">
+                <div class="game-btn-icon">🧩</div>
+                <div class="game-btn-name" id="game3Name">Central Angle & Arc Puzzle</div>
+                <div class="game-btn-desc" id="game3Desc">Match angle with arc length</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 设置菜单
+        const settingIcon = document.getElementById('settingIcon');
+        const settingMenu = document.getElementById('settingMenu');
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        const root = document.documentElement;
+        const body = document.body;
+
+        // 切换菜单显示
+        settingIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            settingMenu.style.display = settingMenu.style.display === 'block' ? 'none' : 'block';
+        });
+        document.addEventListener('click', () => {
+            settingMenu.style.display = 'none';
+        });
+
+        // 字体缩放
+        fontSizeSlider.addEventListener('input', () => {
+            const size = fontSizeSlider.value;
+            fontSizeValue.textContent = `${size}px`;
+            root.style.setProperty('--base-font-size', `${size}px`);
+            localStorage.setItem('pageFontSize', size);
+        });
+
+        // 初始化字体
+        window.addEventListener('load', () => {
+            const savedSize = localStorage.getItem('pageFontSize') || 16;
+            fontSizeSlider.value = savedSize;
+            fontSizeValue.textContent = `${savedSize}px`;
+            root.style.setProperty('--base-font-size', `${savedSize}px`);
+            
+            // 初始化主题
+            const savedTheme = localStorage.getItem('siteTheme') || '';
+            body.className = savedTheme;
+        });
+
+        // 主题切换 + 本地保存
+        document.getElementById('eyeMode').onclick = () => {
+            body.className = 'eye-mode';
+            localStorage.setItem('siteTheme', 'eye-mode');
+        };
+        document.getElementById('nightMode').onclick = () => {
+            body.className = 'night-mode';
+            localStorage.setItem('siteTheme', 'night-mode');
+        };
+        document.getElementById('defaultMode').onclick = () => {
+            body.className = '';
+            localStorage.setItem('siteTheme', '');
+        };
+
+        // 语言切换
+        const langLinks = document.querySelectorAll('.lang-link');
+        const langData = {
+            en: {
+                pageTitle: 'Circle Geometry Learning Platform', 
+                navHome: 'Home', 
+                navGameCenter: 'Game Center', 
+                navQuiz: 'Quiz',
+                adText: 'Ad - Learn Math with Us', 
+                breadcrumb: '<a href="index.html">Home</a><span>›</span><span>Game Center</span>',
+                gameCenterTitle: 'Circle Geometry Game Center', 
+                game1Name: 'Inscribed Angle Match', 
+                game1Desc: 'Master the inscribed angle theorem',
+                game2Name: 'Tangent Judgment Challenge', 
+                game2Desc: 'Judge the tangent of the circle',
+                game3Name: 'Central Angle & Arc Puzzle', 
+                game3Desc: 'Match angle with arc length',
+                eyeMode: 'Eye Protection Mode', 
+                nightMode: 'Night Mode', 
+                defaultMode: 'Default Mode', 
+                fontSizeLabel: 'Font Size'
+            },
+            cn: {
+                pageTitle: '圆形几何学习平台', 
+                navHome: '首页', 
+                navGameCenter: '游戏中心', 
+                navQuiz: '测验',
+                adText: '广告 - 学习数学知识', 
+                breadcrumb: '<a href="index.html">首页</a><span>›</span><span>游戏中心</span>',
+                gameCenterTitle: '圆形几何 游戏中心', 
+                game1Name: '圆周角定理匹配赛', 
+                game1Desc: '掌握圆周角定理核心知识点',
+                game2Name: '切线判定闯关', 
+                game2Desc: '判断圆的切线是否成立',
+                game3Name: '圆心角弧长拼图', 
+                game3Desc: '匹配圆心角与对应弧长',
+                eyeMode: '护眼模式', 
+                nightMode: '夜间模式', 
+                defaultMode: '默认模式', 
+                fontSizeLabel: '字体大小'
+            }
+        };
+
+        function switchLang(lang) {
+            langLinks.forEach(link => link.classList.toggle('active', link.dataset.lang === lang));
+            for (let key in langData[lang]) {
+                if (key === 'breadcrumb') {
+                    document.getElementById(key).innerHTML = langData[lang][key];
+                } else if (document.getElementById(key)) {
+                    document.getElementById(key).textContent = langData[lang][key];
+                }
+            }
+            localStorage.setItem('cgLang', lang);
+        }
+
+        langLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchLang(link.dataset.lang);
+            });
+        });
+
+        const initLang = localStorage.getItem('cgLang') || 'en';
+        switchLang(initLang);
+    </script>
+</body>
+</html>

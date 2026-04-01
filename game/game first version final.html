@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscribed Angle Match - Circle Geometry</title>
+    <style>
+        :root {
+            --main-color: #2563eb;
+            --hover-color: #1d4ed8;
+            --bg-color: #ffffff;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-color: #1e293b;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --base-font-size: 16px;
+            font-size: var(--base-font-size);
+        }
+
+        body.eye-mode {
+            --bg-color: #f7fbf0;
+            --light-bg: #f2f9e4;
+            --border-color: #d7e4c1;
+            --text-color: #2d3f26;
+            --main-color: #3d9b45;
+            --hover-color: #2b7a32;
+        }
+
+        body.night-mode {
+            --bg-color: #1a2035;
+            --light-bg: #2d3748;
+            --border-color: #4a5568;
+            --text-color: #e2e8f0;
+            --main-color: #7499d8;
+            --hover-color: #5a80c0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            font-size: 1rem;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .header-container {
+            padding: 0.9rem 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            padding-top: 3rem;
+        }
+
+        .logo {
+            position: absolute;
+            left: 50%;
+            top: 1rem;
+            transform: translateX(-50%);
+            font-size: 2.8rem !important;
+            font-weight: 700;
+            color: var(--text-color);
+            line-height: 1.2;
+            z-index: 900;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .header-right-wrapper {
+            position: fixed;
+            top: 0.6rem;
+            right: 0.6rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.25rem;
+            z-index: 999;
+        }
+
+        .nav-main {
+            display: flex;
+            gap: 0.9rem;
+        }
+        .nav-link {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .nav-link.active {
+            color: var(--main-color);
+            font-weight: 600;
+        }
+
+        .lang-switch .lang-link {
+            color: var(--main-color);
+            text-decoration: none;
+            margin: 0 0.3rem;
+            font-size: 0.9rem;
+        }
+        .lang-link.active {
+            font-weight: 600;
+        }
+
+        .setting-icon {
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-right: 0.6rem;
+        }
+        .setting-menu {
+            display: none;
+            position: absolute;
+            top: 5rem;
+            right: 1.2rem;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 0.8rem;
+            border-radius: 0.25rem;
+            box-shadow: var(--shadow);
+            z-index: 100;
+        }
+        .menu-item {
+            padding: 0.4rem 0;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .font-size-slider-wrap {
+            margin-top: 0.6rem;
+            font-size: 0.9rem;
+        }
+
+        .ad-tip .ad-link {
+            font-size: 0.75rem;
+            color: var(--main-color);
+            text-decoration: none;
+        }
+
+        .main-container {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.2rem 0;
+        }
+
+        .game-breadcrumb {
+            width: 100%;
+            max-width: 62rem;
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 1.8rem;
+            padding-left: 2vw;
+        }
+        .game-breadcrumb a {
+            color: var(--main-color);
+            text-decoration: none;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .game-info-item {
+            font-size: clamp(calc(16px / 16 * var(--base-font-size)), 2vw, calc(18px / 16 * var(--base-font-size)));
+            color: var(--text-color);
+            font-weight: 500;
+        }
+        .game-info-item span {
+            color: var(--main-color);
+            font-size: 20px;
+        }
+
+        .circle-display {
+            width: 200px;
+            height: 200px;
+            border: 3px solid var(--main-color);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .central-angle {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: var(--text-color);
+            font-weight: 700;
+        }
+
+        .option-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+        .option-btn {
+            padding: 15px 0;
+            background: var(--light-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 18px;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .option-btn:hover {
+            border-color: var(--main-color);
+        }
+        .option-btn.correct {
+            background: #dcfce7;
+            border-color: #22c55e;
+            color: #166534;
+        }
+        .option-btn.wrong {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .game-control-btn {
+            padding: 10px 30px;
+            margin: 0 10px;
+            background-color: var(--main-color);
+            color: #fff !important;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .game-control-btn:hover {
+            background-color: var(--hover-color);
+        }
+        .back-btn-text {
+            display: inline-block;
+        }
+
+        .game-tip {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            display: none;
+            /* 新增：弹窗相对定位，用于放置关闭按钮 */
+            position: relative;
+        }
+        .game-over h3 {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+        .game-over-btn {
+            padding: 8px 20px;
+            margin: 10px 5px;
+            background: var(--main-color);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        /* 新增：关闭按钮样式 */
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            font-size: 18px;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 5px;
+        }
+        .close-btn:hover {
+            color: var(--main-color);
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2rem !important;
+                top: 0.8rem;
+            }
+            .header-container {
+                padding-top: 2.5rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .circle-display {
+                width: 150px;
+                height: 150px;
+            }
+            .game-control-btn {
+                padding: 8px 20px;
+                margin: 0 5px;
+                margin-bottom: 10px;
+                display: block;
+                width: 80%;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .logo {
+                font-size: 1.6rem !important;
+            }
+            .option-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header-container">
+        <div class="logo" id="pageTitle">Circle Geometry Learning Platform</div>
+        <div class="header-right-wrapper">
+            <nav class="nav-main" id="navMenu">
+                <a href="index.html" class="nav-link" id="navHome">Home</a>
+                <a href="game-home.html" class="nav-link" id="navGameCenter">Game Center</a>
+                <a href="game1.html" class="nav-link active" id="navGame1">Game 1</a>
+            </nav>
+            <div class="lang-switch" id="langSwitch">
+                <a href="#" class="lang-link active" data-lang="en">EN</a>
+                <span>/</span>
+                <a href="#" class="lang-link" data-lang="cn">CN</a>
+            </div>
+            <div class="header-right-extra">
+                <span class="setting-icon" id="settingIcon">⚙️</span>
+                <div class="setting-menu" id="settingMenu">
+                    <div class="menu-item" id="eyeMode">护眼模式</div>
+                    <div class="menu-item" id="nightMode">夜间模式</div>
+                    <div class="menu-item" id="defaultMode">默认模式</div>
+                    <div class="font-size-slider-wrap">
+                        <label class="font-size-label" id="fontSizeLabel">字体大小</label>
+                        <input type="range" min="12" max="24" value="16" class="font-size-slider" id="fontSizeSlider">
+                        <div class="font-size-value" id="fontSizeValue">16px</div>
+                    </div>
+                </div>
+                <div class="ad-tip">
+                    <a href="#" class="ad-link" id="adText">Ad - Learn Math with Us</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="game-breadcrumb" id="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <a href="game-home.html">Game Center</a>
+            <span>›</span>
+            <span>Inscribed Angle Match</span>
+        </div>
+        <div class="game-container">
+            <h2 id="gameTitle">Inscribed Angle Theorem Match</h2>
+            <p class="game-tip" id="gameTip">The inscribed angle is half of the central angle! Choose the correct inscribed angle.</p>
+            
+            <div class="game-info">
+                <!-- 重构：拆分文本和数值，避免语言切换覆盖ID -->
+                <div class="game-info-item">
+                    <span id="scoreLabel">分数:</span> 
+                    <span id="score">0</span>
+                </div>
+                <div class="game-info-item">
+                    <span id="timeLabel">时间:</span> 
+                    <span id="time">10</span>
+                    <span id="timeUnit">秒</span>
+                </div>
+            </div>
+
+            <div class="circle-display">
+                <span class="central-angle" id="centralAngle">?</span>°
+                <span id="centralAngleText" style="font-size: 14px;">圆心角</span>
+            </div>
+
+            <h3 id="chooseText" style="color: var(--text-color);">选择正确的圆周角度数（°）</h3>
+            <div class="option-container" id="optionContainer"></div>
+
+            <div class="game-control">
+                <button class="game-control-btn" id="startBtn">开始游戏</button>
+                <button class="game-control-btn" id="backToGameCenter">
+                    <span class="back-btn-text">返回游戏中心</span>
+                </button>
+                <button class="game-control-btn" id="backToHome">
+                    <span class="back-btn-text">返回首页</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <div class="game-over" id="gameOverModal">
+        <!-- 新增：关闭按钮 -->
+        <button class="close-btn" id="closeBtn">×</button>
+        <h3 id="gameOverTitle">游戏结束！</h3>
+        <!-- 重构：拆分最终分数文本和数值 -->
+        <p>
+            <span id="finalScoreText">最终分数:</span> 
+            <span id="finalScore">0</span>
+        </p>
+        <!-- 新增：题目完成数显示 -->
+        <p id="questionCountText">总题目数: 0 / 10</p>
+        <button class="game-over-btn" id="restartGameBtn">重新开始游戏</button>
+        <button class="game-over-btn" id="backToHomeBtn">返回首页</button>
+    </div>
+
+    <script>
+        // 基础设置逻辑
+        const settingIcon = document.getElementById('settingIcon');
+        const settingMenu = document.getElementById('settingMenu');
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        const root = document.documentElement;
+        const body = document.body;
+
+        settingIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            settingMenu.style.display = settingMenu.style.display === 'block' ? 'none' : 'block';
+        });
+        document.addEventListener('click', () => {
+            settingMenu.style.display = 'none';
+        });
+
+        fontSizeSlider.addEventListener('input', () => {
+            const size = fontSizeSlider.value;
+            fontSizeValue.textContent = `${size}px`;
+            root.style.setProperty('--base-font-size', `${size}px`);
+            localStorage.setItem('pageFontSize', size);
+        });
+
+        // 核心变量（新增：题目计数）
+        let score = 0;
+        let timeLeft = 10;
+        let timer = null;
+        let isGameRunning = false;
+        let currentQuestion = 0; // 当前题目数
+        const totalQuestions = 10; // 总题目数（固定10题）
+
+        // DOM元素（新增：关闭按钮、题目数文本）
+        const scoreElement = document.getElementById('score');
+        const scoreLabel = document.getElementById('scoreLabel'); // 分数标签
+        const timeElement = document.getElementById('time');
+        const timeLabel = document.getElementById('timeLabel'); // 时间标签
+        const timeUnit = document.getElementById('timeUnit'); // 时间单位
+        const centralAngleElement = document.getElementById('centralAngle');
+        const optionContainer = document.getElementById('optionContainer');
+        const startBtn = document.getElementById('startBtn');
+        const gameOverModal = document.getElementById('gameOverModal');
+        const finalScoreElement = document.getElementById('finalScore');
+        const finalScoreText = document.getElementById('finalScoreText'); // 最终分数标签
+        const questionCountText = document.getElementById('questionCountText'); // 题目数文本
+        const restartGameBtn = document.getElementById('restartGameBtn');
+        const backToHomeBtn = document.getElementById('backToHomeBtn');
+        const backToGameCenterBtn = document.getElementById('backToGameCenter');
+        const backToHomeBtnMain = document.getElementById('backToHome');
+        const closeBtn = document.getElementById('closeBtn'); // 关闭按钮
+
+        // 页面加载完成后初始化
+        window.onload = function() {
+            // 初始化字体和主题
+            const savedSize = localStorage.getItem('pageFontSize') || 16;
+            fontSizeSlider.value = savedSize;
+            fontSizeValue.textContent = `${savedSize}px`;
+            root.style.setProperty('--base-font-size', `${savedSize}px`);
+            
+            const savedTheme = localStorage.getItem('siteTheme') || '';
+            body.className = savedTheme;
+
+            // 初始化语言（优先本地存储）
+            const initLang = localStorage.getItem('cgLang') || 'cn';
+            switchLang(initLang);
+
+            // 绑定所有事件
+            bindAllEvents();
+        };
+
+        // 主题切换
+        document.getElementById('eyeMode').onclick = () => {
+            body.className = 'eye-mode';
+            localStorage.setItem('siteTheme', 'eye-mode');
+        };
+        document.getElementById('nightMode').onclick = () => {
+            body.className = 'night-mode';
+            localStorage.setItem('siteTheme', 'night-mode');
+        };
+        document.getElementById('defaultMode').onclick = () => {
+            body.className = '';
+            localStorage.setItem('siteTheme', '');
+        };
+
+        // 语言切换核心函数（新增：得分/倒计时/题目数的中英文适配）
+        function switchLang(lang) {
+            // 更新语言激活状态
+            const langLinks = document.querySelectorAll('.lang-link');
+            langLinks.forEach(l => l.classList.toggle('active', l.dataset.lang === lang));
+            localStorage.setItem('cgLang', lang);
+
+            // 语言包（覆盖所有文本，包括新增的分数/时间标签）
+            const langData = {
+                cn: {
+                    pageTitle: '圆形几何学习平台',
+                    navHome: '首页',
+                    navGameCenter: '游戏中心',
+                    navGame1: '游戏1',
+                    adText: '广告 - 学习数学知识',
+                    breadcrumb: '<a href="index.html">首页</a><span>›</span><a href="game-home.html">游戏中心</a><span>›</span><span>圆周角定理匹配赛</span>',
+                    gameTitle: '圆周角定理匹配赛',
+                    gameTip: '圆周角是圆心角的一半！选择正确的圆周角度数。',
+                    scoreLabel: '分数:',
+                    timeLabel: '时间:',
+                    timeUnit: '秒',
+                    centralAngleText: '圆心角',
+                    chooseText: '选择正确的圆周角度数（°）',
+                    startBtn: '开始游戏',
+                    backToGameCenter: '返回游戏中心',
+                    backToHome: '返回首页',
+                    gameOverTitle: '游戏结束！',
+                    finalScoreText: '最终分数:',
+                    questionCountText: `总题目数: ${currentQuestion} / ${totalQuestions}`,
+                    restartGameBtn: '重新开始游戏',
+                    backToHomeBtn: '返回首页',
+                    eyeMode: '护眼模式',
+                    nightMode: '夜间模式',
+                    defaultMode: '默认模式',
+                    fontSizeLabel: '字体大小'
+                },
+                en: {
+                    pageTitle: 'Circle Geometry Learning Platform',
+                    navHome: 'Home',
+                    navGameCenter: 'Game Center',
+                    navGame1: 'Game 1',
+                    adText: 'Ad - Learn Math with Us',
+                    breadcrumb: '<a href="index.html">Home</a><span>›</span><a href="game-home.html">Game Center</a><span>›</span><span>Inscribed Angle Match</span>',
+                    gameTitle: 'Inscribed Angle Theorem Match',
+                    gameTip: 'The inscribed angle is half of the central angle! Choose the correct inscribed angle.',
+                    scoreLabel: 'Score:',
+                    timeLabel: 'Time:',
+                    timeUnit: 's',
+                    centralAngleText: 'Central Angle',
+                    chooseText: 'Choose the correct Inscribed Angle (°)',
+                    startBtn: 'Start Game',
+                    backToGameCenter: 'Back to Game Center',
+                    backToHome: 'Back to Home',
+                    gameOverTitle: 'Game Over!',
+                    finalScoreText: 'Final Score:',
+                    questionCountText: `Total Questions: ${currentQuestion} / ${totalQuestions}`,
+                    restartGameBtn: 'Restart Game',
+                    backToHomeBtn: 'Back to Home',
+                    eyeMode: 'Eye Protection Mode',
+                    nightMode: 'Night Mode',
+                    defaultMode: 'Default Mode',
+                    fontSizeLabel: 'Font Size'
+                }
+            };
+
+            // 更新静态文本
+            document.getElementById('pageTitle').textContent = langData[lang].pageTitle;
+            document.getElementById('navHome').textContent = langData[lang].navHome;
+            document.getElementById('navGameCenter').textContent = langData[lang].navGameCenter;
+            document.getElementById('navGame1').textContent = langData[lang].navGame1;
+            document.getElementById('adText').textContent = langData[lang].adText;
+            document.getElementById('breadcrumb').innerHTML = langData[lang].breadcrumb;
+            document.getElementById('gameTitle').textContent = langData[lang].gameTitle;
+            document.getElementById('gameTip').textContent = langData[lang].gameTip;
+            document.getElementById('centralAngleText').textContent = langData[lang].centralAngleText;
+            document.getElementById('chooseText').textContent = langData[lang].chooseText;
+            document.getElementById('startBtn').textContent = langData[lang].startBtn;
+            document.getElementById('backToGameCenter').querySelector('.back-btn-text').textContent = langData[lang].backToGameCenter;
+            document.getElementById('backToHome').querySelector('.back-btn-text').textContent = langData[lang].backToHome;
+            document.getElementById('gameOverTitle').textContent = langData[lang].gameOverTitle;
+            document.getElementById('restartGameBtn').textContent = langData[lang].restartGameBtn;
+            document.getElementById('backToHomeBtn').textContent = langData[lang].backToHomeBtn;
+            document.getElementById('eyeMode').textContent = langData[lang].eyeMode;
+            document.getElementById('nightMode').textContent = langData[lang].nightMode;
+            document.getElementById('defaultMode').textContent = langData[lang].defaultMode;
+            document.getElementById('fontSizeLabel').textContent = langData[lang].fontSizeLabel;
+
+            // 更新动态标签（得分/倒计时）
+            scoreLabel.textContent = langData[lang].scoreLabel;
+            timeLabel.textContent = langData[lang].timeLabel;
+            timeUnit.textContent = langData[lang].timeUnit;
+            finalScoreText.textContent = langData[lang].finalScoreText;
+            questionCountText.textContent = langData[lang].questionCountText;
+        }
+
+        // 绑定语言切换事件
+        document.querySelectorAll('.lang-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchLang(link.dataset.lang);
+            });
+        });
+
+        // 绑定所有事件
+        function bindAllEvents() {
+            // 返回按钮
+            backToGameCenterBtn.addEventListener('click', () => window.location.href = 'game-home.html');
+            backToHomeBtnMain.addEventListener('click', () => window.location.href = 'index.html');
+            backToHomeBtn.addEventListener('click', () => window.location.href = 'index.html');
+            
+            // 新增：关闭按钮事件
+            closeBtn.addEventListener('click', () => {
+                gameOverModal.style.display = 'none';
+            });
+            
+            // 游戏核心按钮
+            startBtn.addEventListener('click', startGame);
+            restartGameBtn.addEventListener('click', restartGame);
+        }
+
+        // 倒计时函数
+        function startTimer() {
+            if (timer) clearInterval(timer);
+            timer = setInterval(() => {
+                timeLeft--;
+                timeElement.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        // 重置倒计时
+        function resetTimer() {
+            clearInterval(timer);
+            timeLeft = 10;
+            timeElement.textContent = timeLeft;
+            startTimer();
+        }
+
+        // 开始游戏（新增：重置题目数）
+        function startGame() {
+            if (isGameRunning) return;
+            
+            // 重置所有游戏状态
+            score = 0;
+            timeLeft = 10;
+            currentQuestion = 0; // 重置题目数
+            isGameRunning = true;
+            
+            // 更新显示
+            scoreElement.textContent = score;
+            timeElement.textContent = timeLeft;
+            gameOverModal.style.display = 'none';
+
+            // 生成第一题
+            generateQuestion();
+
+            // 启动倒计时
+            startTimer();
+        }
+
+        // 生成题目（新增：10题限制）
+        function generateQuestion() {
+            if (!isGameRunning) return;
+            
+            // 新增：判断是否完成10题，完成则结束游戏
+            if (currentQuestion >= totalQuestions) {
+                endGame();
+                return;
+            }
+
+            // 随机圆心角（20-180偶数）
+            const centralAngle = Math.floor(Math.random() * 9) * 20 + 20;
+            const correctAnswer = centralAngle / 2;
+            centralAngleElement.textContent = centralAngle;
+
+            // 生成4个选项（含正确答案）
+            const options = new Set([correctAnswer]);
+            while (options.size < 4) {
+                const fake = correctAnswer + (Math.floor(Math.random() * 60) - 30);
+                if (fake > 0 && fake < 180) options.add(fake);
+            }
+            const optionsArr = Array.from(options).sort(() => Math.random() - 0.5);
+
+            // 清空并渲染选项
+            optionContainer.innerHTML = '';
+            optionsArr.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = function() {
+                    if (!isGameRunning) return;
+
+                    // 答题判断 + 更新分数
+                    if (parseInt(opt) === correctAnswer) {
+                        btn.classList.add('correct');
+                        score += 10;
+                    } else {
+                        btn.classList.add('wrong');
+                        score = Math.max(0, score - 5);
+                    }
+                    scoreElement.textContent = score;
+
+                    // 禁用所有选项
+                    optionContainer.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+
+                    // 新增：题目数+1
+                    currentQuestion++;
+
+                    // 1秒后生成新题+重置倒计时（未到10题时）
+                    setTimeout(() => {
+                        generateQuestion();
+                        resetTimer();
+                    }, 1000);
+                };
+                optionContainer.appendChild(btn);
+            });
+        }
+
+        // 结束游戏（新增：更新最终得分和题目数，适配语言）
+        function endGame() {
+            isGameRunning = false;
+            clearInterval(timer);
+            
+            // 更新最终分数
+            finalScoreElement.textContent = score;
+            
+            // 更新题目数文本（适配当前语言）
+            const currentLang = localStorage.getItem('cgLang') || 'cn';
+            questionCountText.textContent = currentLang === 'cn' 
+                ? `总题目数: ${currentQuestion} / ${totalQuestions}` 
+                : `Total Questions: ${currentQuestion} / ${totalQuestions}`;
+            
+            // 显示弹窗
+            gameOverModal.style.display = 'block';
+        }
+
+        // 重新开始游戏
+        function restartGame() {
+            gameOverModal.style.display = 'none';
+            startGame();
+        }
+    </script>
+</body>
+</html>
