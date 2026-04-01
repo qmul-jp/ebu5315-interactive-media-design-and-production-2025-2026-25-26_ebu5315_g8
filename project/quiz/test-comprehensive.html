@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>综合练习 | 圆几何测试学习中心</title>
+    <link rel="stylesheet" href="practice.css">
+    <link rel="stylesheet" href="i18n.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body data-page="comprehensive-practice">
+    <div class="lang-switcher">
+        <button type="button" class="active" data-lang="zh" onclick="window.G8I18n.setLang('zh')">简体中文</button>
+        <span>/</span>
+        <button type="button" data-lang="en" onclick="window.G8I18n.setLang('en')">English</button>
+    </div>
+    <nav class="top-nav">
+        <a href="home.html">首页</a>
+        <a href="#">游戏</a>
+        <a href="home.html" class="active">测试</a>
+    </nav>
+
+    <div class="container">
+        <aside class="sidebar">
+            <ul class="menu-list">
+                <li><a href="test-prep.html">使用教程</a></li>
+                <li><a href="test-topic.html">专题练习</a></li>
+                <li><a href="test-comprehensive.html" class="active">综合练习</a></li>
+                <li><a href="daily.html">每日一题</a></li>
+            </ul>
+        </aside>
+
+        <main class="practice-content">
+            <section class="topic-config-shell" id="topicConfigShell">
+                <div class="page-intro">
+                    <p class="eyebrow">综合练习配置</p>
+                    <h1>综合练习配置页</h1>
+                    <p>
+                        综合练习会按难度从共享题库中混合抽题，适合完成阶段性回顾与整体检测。
+                    </p>
+                </div>
+
+                <div class="config-grid">
+                    <article class="config-card">
+                        <div class="config-card-header">
+                            <i class="fas fa-layer-group"></i>
+                            <div>
+                                <h2>练习范围</h2>
+                                <p>综合练习默认覆盖当前共享题库中的多个专题。</p>
+                            </div>
+                        </div>
+                        <div class="choice-grid">
+                            <button class="choice-chip active static-chip" type="button">全题库综合抽题</button>
+                            <button class="choice-chip active static-chip" type="button">覆盖多个专题知识点</button>
+                        </div>
+                    </article>
+
+                    <article class="config-card">
+                        <div class="config-card-header">
+                            <i class="fas fa-signal"></i>
+                            <div>
+                                <h2>选择难度</h2>
+                                <p>从基础到提高，按当前复习阶段安排练习。</p>
+                            </div>
+                        </div>
+                        <div class="choice-grid compact compact-three" id="difficultyChoices">
+                            <button class="choice-chip active" data-group="difficulty" data-value="basic">基础</button>
+                            <button class="choice-chip" data-group="difficulty" data-value="intermediate">进阶</button>
+                            <button class="choice-chip" data-group="difficulty" data-value="advanced">提高</button>
+                        </div>
+                    </article>
+
+                    <article class="config-card">
+                        <div class="config-card-header">
+                            <i class="fas fa-hashtag"></i>
+                            <div>
+                                <h2>选择题量</h2>
+                                <p>当前题量上限为 40 题。</p>
+                            </div>
+                        </div>
+                        <div class="choice-grid compact" id="amountChoices">
+                            <button class="choice-chip active" data-group="amount" data-value="5">5 题</button>
+                            <button class="choice-chip" data-group="amount" data-value="10">10 题</button>
+                            <button class="choice-chip" data-group="amount" data-value="20">20 题</button>
+                            <button class="choice-chip" data-group="amount" data-value="40">40 题</button>
+                        </div>
+                        <label class="amount-input-wrap" for="amountInput">
+                            <span>自定义题量</span>
+                            <input type="number" id="amountInput" min="1" max="40" value="5">
+                        </label>
+                    </article>
+                </div>
+
+                <section class="config-summary">
+                    <div class="summary-item">
+                        <span class="summary-label">当前范围</span>
+                        <strong id="summaryTopic">综合练习</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">当前难度</span>
+                        <strong id="summaryDifficulty">基础</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">当前题量</span>
+                        <strong id="summaryAmount">5 题</strong>
+                    </div>
+                    <button class="start-practice-btn" id="startPracticeBtn">
+                        <i class="fas fa-play"></i>
+                        <span>开始练习</span>
+                    </button>
+                </section>
+
+                <p class="config-feedback" id="configFeedback" aria-live="polite"></p>
+            </section>
+
+            <section class="topic-session-shell hidden" id="topicSessionShell">
+                <div class="session-topbar">
+                    <div class="session-title-group">
+                        <p class="eyebrow">练习进行中</p>
+                        <h2 id="sessionTitle">综合练习</h2>
+                    </div>
+
+                    <div class="session-progress-group">
+                        <div class="progress-meta">
+                            <span id="progressText">第 1/5 题</span>
+                            <strong id="progressPercent">0%</strong>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                    </div>
+
+                    <div class="session-actions-top">
+                        <button class="back-config-btn" id="backConfigBtn">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>返回配置</span>
+                        </button>
+                        <button class="back-config-btn reset-btn" id="resetPracticeBtn">
+                            <i class="fas fa-rotate-right"></i>
+                            <span>重置练习</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="question-pagination" id="questionPagination"></div>
+
+                <div class="question-card">
+                    <div class="question-card-head">
+                        <span class="question-badge" id="questionBadge">第 1 题</span>
+                        <span class="question-meta-tag" id="questionTopicTag">综合练习</span>
+                    </div>
+
+                    <div class="question-title" id="questionTitle"></div>
+                    <div class="question-options" id="questionOptions"></div>
+                </div>
+
+                <div class="feedback-panel hidden" id="feedbackPanel">
+                    <div class="feedback-state" id="feedbackState"></div>
+                    <p class="feedback-answer" id="feedbackAnswer"></p>
+                </div>
+
+                <div class="question-footer">
+                    <div class="question-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">所属范围</span>
+                            <strong id="metaTopic">综合练习</strong>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">本题难度</span>
+                            <strong id="metaDifficulty">基础</strong>
+                        </div>
+                    </div>
+
+                    <div class="question-actions">
+                        <button class="action-btn primary-action" id="submitAnswerBtn">提交答案</button>
+                        <button class="action-btn" id="redoQuestionBtn">重做本题</button>
+                        <button class="action-btn" id="showAiExplainBtn">AI 解释</button>
+                        <button class="action-btn" id="viewWrongBtn">查看错题</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="topic-result-shell hidden" id="topicResultShell">
+                <div class="page-intro result-intro">
+                    <p class="eyebrow">练习结果</p>
+                    <h1>综合练习结果页</h1>
+                    <p id="resultSubtitle">系统会根据本次作答生成成绩、错题列表和 AI 评估总结。</p>
+                </div>
+
+                <div class="result-grid">
+                    <article class="result-card score-card">
+                        <span class="result-label">最终得分</span>
+                        <strong class="result-emphasis" id="finalScore">0 分</strong>
+                        <p>按本次答对题数换算为百分制成绩。</p>
+                    </article>
+                    <article class="result-card">
+                        <span class="result-label">正确率</span>
+                        <strong class="result-emphasis" id="accuracyRate">0%</strong>
+                        <p>用于快速判断当前掌握程度。</p>
+                    </article>
+                    <article class="result-card">
+                        <span class="result-label">做对题数</span>
+                        <strong class="result-emphasis" id="correctCount">0</strong>
+                        <p>本次练习中回答正确的题目数量。</p>
+                    </article>
+                    <article class="result-card">
+                        <span class="result-label">错题数量</span>
+                        <strong class="result-emphasis" id="wrongCount">0</strong>
+                        <p>答错题目会自动进入综合错题记录。</p>
+                    </article>
+                </div>
+
+                <div class="result-panels">
+                    <article class="result-panel">
+                        <div class="panel-header">
+                            <h3>错题列表</h3>
+                            <span id="wrongListHint">点击可回看题目详情</span>
+                        </div>
+                        <div class="result-wrong-list" id="resultWrongList"></div>
+                    </article>
+
+                    <article class="result-panel ai-summary-panel">
+                        <div class="panel-header">
+                            <h3>AI 评估总结</h3>
+                        </div>
+                        <p id="aiSummaryText"></p>
+                    </article>
+                </div>
+
+                <div class="result-actions">
+                    <button class="action-btn primary-action" id="redoWrongBtn">重做错题</button>
+                    <button class="action-btn" id="backTopicHomeBtn">返回综合首页</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="modal-backdrop hidden" id="aiModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>AI 解释</h3>
+                <button class="modal-close" id="closeAiModalBtn" aria-label="关闭">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="aiAnswerText"></p>
+                <p id="aiExplanationText"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="drawer-backdrop hidden" id="wrongDrawer">
+        <aside class="drawer-card">
+            <div class="modal-header">
+                <h3>本轮错题</h3>
+                <button class="modal-close" id="closeWrongDrawerBtn" aria-label="关闭">×</button>
+            </div>
+            <div class="drawer-body" id="wrongList"></div>
+        </aside>
+    </div>
+
+    <footer class="page-footer">
+        <p>圆几何互动学习网站 © 2026 EBU5315 Coursework</p>
+    </footer>
+
+    <script src="i18n.js" defer></script>
+    <script src="practice.js" defer></script>
+</body>
+</html>

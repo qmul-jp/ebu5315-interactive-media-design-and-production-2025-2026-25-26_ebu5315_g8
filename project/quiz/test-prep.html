@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用教程 | 圆几何测试学习中心</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="i18n.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="script.js" defer></script>
+    <script src="i18n.js" defer></script>
+</head>
+<body data-page="usage-guide">
+    <div class="lang-switcher">
+        <button type="button" class="active" data-lang="zh" onclick="window.G8I18n.setLang('zh')">简体中文</button>
+        <span>/</span>
+        <button type="button" data-lang="en" onclick="window.G8I18n.setLang('en')">English</button>
+    </div>
+    <nav class="guide-nav">
+        <a href="home.html">首页</a>
+        <a href="#">游戏</a>
+        <a href="home.html" class="active">测试</a>
+    </nav>
+
+    <main class="guide-shell">
+        <section class="guide-hero">
+            <div class="guide-hero-copy">
+                <p class="guide-eyebrow">USAGE GUIDE</p>
+                <h1>使用教程</h1>
+                <p class="guide-summary">
+                    这个页面会带你快速了解目前已经完成的三个核心模块：专题练习、综合练习、每日一题。
+                    你可以先逐个查看使用流程，确认后再从对应教程底部进入目标页面。
+                </p>
+                <div class="hero-highlight-grid">
+                    <article class="hero-highlight">
+                        <i class="fas fa-route"></i>
+                        <div>
+                            <h3>先看流程再进入</h3>
+                            <p>先理解页面结构和基本操作，再进入对应模块，会更容易上手。</p>
+                        </div>
+                    </article>
+                    <article class="hero-highlight">
+                        <i class="fas fa-bullseye"></i>
+                        <div>
+                            <h3>按目标选择模块</h3>
+                            <p>补薄弱点适合专题练习，做复盘适合综合练习，保持节奏适合每日一题。</p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            <div class="guide-hero-card">
+                <div class="mini-stat">
+                    <span>当前模块</span>
+                    <strong>3 个</strong>
+                </div>
+                <div class="mini-stat">
+                    <span>练习形式</span>
+                    <strong>专题 / 综合 / 打卡</strong>
+                </div>
+                <div class="mini-stat">
+                    <span>核心能力</span>
+                    <strong>筛题、作答、结果反馈</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="guide-overview">
+            <article class="overview-card">
+                <i class="fas fa-layer-group"></i>
+                <h2>专题练习</h2>
+                <p>围绕单一知识点组织训练入口，便于针对性练习。</p>
+            </article>
+            <article class="overview-card">
+                <i class="fas fa-shuffle"></i>
+                <h2>综合练习</h2>
+                <p>按难度混合抽题，适合完成阶段性回顾与整体检测。</p>
+            </article>
+            <article class="overview-card">
+                <i class="fas fa-calendar-check"></i>
+                <h2>每日一题</h2>
+                <p>每天仅限 1 题，答完即可完成打卡并查看解析。</p>
+            </article>
+        </section>
+
+        <section class="guide-layout">
+            <aside class="guide-sidebar">
+                <button class="guide-tab active" data-target="topic-guide">专题练习怎么用</button>
+                <button class="guide-tab" data-target="comprehensive-guide">综合练习怎么用</button>
+                <button class="guide-tab" data-target="daily-guide">每日一题怎么用</button>
+                <button class="guide-tab" data-target="tips-guide">使用建议</button>
+            </aside>
+
+            <section class="guide-content">
+                <article class="guide-panel active" id="topic-guide">
+                    <div class="panel-header">
+                        <p class="guide-eyebrow">TOPIC PRACTICE</p>
+                        <h2>专题练习使用流程</h2>
+                    </div>
+                    <ol class="step-list">
+                        <li>从首页点击“专题练习”进入专题配置页。</li>
+                        <li>先选择专题，再选择难度和题量，当前题量上限为 40 题。</li>
+                        <li>点击“开始练习”后，系统会按你选择的条件从题库筛题并进入做题页面。</li>
+                        <li>做题过程中可以提交答案、重做本题、查看 AI 解释，也可以快速查看本专题错题。</li>
+                        <li>全部答完后进入结果页，查看得分、正确率、错题列表和 AI 评估总结。</li>
+                    </ol>
+                    <div class="feature-box">
+                        <h3>你会看到的功能</h3>
+                        <p>固定进度栏、即时反馈、自动记录错题、结果统计、重做错题、AI 解释。</p>
+                    </div>
+                    <div class="panel-action">
+                        <a class="guide-btn primary" href="test-topic.html">进入专题练习</a>
+                    </div>
+                </article>
+
+                <article class="guide-panel" id="comprehensive-guide">
+                    <div class="panel-header">
+                        <p class="guide-eyebrow">COMPREHENSIVE PRACTICE</p>
+                        <h2>综合练习使用流程</h2>
+                    </div>
+                    <ol class="step-list">
+                        <li>从首页点击“综合练习”进入综合配置页。</li>
+                        <li>先选择难度，再设置题量，系统会按条件从共享题库中混合抽题。</li>
+                        <li>点击“开始练习”后进入做题页面，整体操作方式与专题练习保持一致。</li>
+                        <li>提交每题后会给出互动反馈，并自动记录对错、错题和整体进度。</li>
+                        <li>全部作答完成后进入结果页，统一查看得分、错题和 AI 总结。</li>
+                    </ol>
+                    <div class="feature-box">
+                        <h3>适合什么时候用</h3>
+                        <p>当你想在多个知识点之间切换、做阶段性复盘时，综合练习更适合。</p>
+                    </div>
+                    <div class="panel-action">
+                        <a class="guide-btn primary" href="test-comprehensive.html">进入综合练习</a>
+                    </div>
+                </article>
+
+                <article class="guide-panel" id="daily-guide">
+                    <div class="panel-header">
+                        <p class="guide-eyebrow">DAILY QUIZ</p>
+                        <h2>每日一题使用流程</h2>
+                    </div>
+                    <ol class="step-list">
+                        <li>从首页点击“每日一题”进入每日打卡页。</li>
+                        <li>页面会显示今日日期、打卡状态和连续打卡天数。</li>
+                        <li>点击“开始答题”后，系统会从题库随机抽取 1 题进入做题页。</li>
+                        <li>提交后会显示对错、正确答案和 AI 解释，答错题目会自动进入错题记录。</li>
+                        <li>完成后进入当日结果页，并更新连续打卡状态。</li>
+                    </ol>
+                    <div class="feature-box">
+                        <h3>适合什么时候用</h3>
+                        <p>每日一题适合保持练习节奏，即使时间不多，也能每天维持题感。</p>
+                    </div>
+                    <div class="panel-action">
+                        <a class="guide-btn primary" href="daily.html">进入每日一题</a>
+                    </div>
+                </article>
+
+                <article class="guide-panel" id="tips-guide">
+                    <div class="panel-header">
+                        <p class="guide-eyebrow">SUGGESTIONS</p>
+                        <h2>使用建议</h2>
+                    </div>
+                    <ul class="tip-list">
+                        <li>如果你刚开始使用，建议先看教程，再进入对应模块。</li>
+                        <li>基础薄弱时优先做专题练习，再切到综合练习检查复习效果。</li>
+                        <li>每天时间有限时，可以先完成每日一题，再逐步回看错题。</li>
+                        <li>当前页面主要用于练习与反馈，后续还会继续扩展更多功能。</li>
+                    </ul>
+                    <div class="feature-box accent">
+                        <h3>推荐路径</h3>
+                        <p>使用教程 → 专题练习 → 综合练习 → 每日一题，逐步建立稳定的圆几何解题能力。</p>
+                    </div>
+                </article>
+            </section>
+        </section>
+    </main>
+
+    <footer class="guide-footer">
+        <p>圆几何互动学习网站 © 2026 EBU5315 Coursework</p>
+    </footer>
+</body>
+</html>

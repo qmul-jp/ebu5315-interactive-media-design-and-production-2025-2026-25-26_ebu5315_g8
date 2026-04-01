@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试首页 | 圆几何测试学习中心</title>
+    <link rel="stylesheet" href="test-home.css">
+    <link rel="stylesheet" href="i18n.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="lang-switcher">
+        <button type="button" class="active" data-lang="zh" onclick="window.G8I18n.setLang('zh')">简体中文</button>
+        <span>/</span>
+        <button type="button" data-lang="en" onclick="window.G8I18n.setLang('en')">English</button>
+    </div>
+    <div class="page-shell">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="home.html" class="brand-mark">
+                    <span class="brand-badge"><i class="fas fa-compass"></i></span>
+                    <span class="brand-text">
+                        <strong>圆几何测试中心</strong>
+                        <small>Circle Geometry Lab</small>
+                    </span>
+                </a>
+                <div class="nav-links">
+                    <a href="home.html" class="nav-link active"><i class="fas fa-home"></i><span>首页</span></a>
+                    <a href="#" class="nav-link"><i class="fas fa-gamepad"></i><span>游戏</span></a>
+                    <a href="home.html" class="nav-link current"><i class="fas fa-clipboard-check"></i><span>测试</span></a>
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-wrapper">
+            <section class="hero-card">
+                <div class="hero-copy">
+                    <p class="eyebrow">Circle Geometry Learning Hub</p>
+                    <h1>圆几何测试学习中心</h1>
+                    <p class="hero-description">
+                        通过专题练习、综合训练与每日一题巩固圆几何知识，用更清晰的视觉分区、卡片化结构和重点强调提升使用体验。
+                    </p>
+                </div>
+
+                <div class="hero-visual" aria-hidden="true">
+                    <div class="orbit orbit-large"></div>
+                    <div class="orbit orbit-small"></div>
+                    <div class="visual-card main">
+                        <i class="fas fa-drafting-compass"></i>
+                        <span>几何图形</span>
+                    </div>
+                    <div class="visual-card sub visual-card-top">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>解题思路</span>
+                    </div>
+                    <div class="visual-card sub visual-card-bottom">
+                        <i class="fas fa-chart-line"></i>
+                        <span>训练反馈</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="content-grid">
+                <aside class="sidebar">
+                    <div class="sidebar-header">
+                        <span class="sidebar-icon"><i class="fas fa-book-open"></i></span>
+                        <div>
+                            <h2>测试中心</h2>
+                            <p>选择你想进入的学习模式</p>
+                        </div>
+                    </div>
+
+                    <ul class="sidebar-menu">
+                        <li>
+                            <a href="test-prep.html">
+                                <i class="fas fa-book-reader"></i>
+                                <span>使用教程</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="test-topic.html">
+                                <i class="fas fa-layer-group"></i>
+                                <span>专题练习</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="test-comprehensive.html">
+                                <i class="fas fa-project-diagram"></i>
+                                <span>综合练习</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="daily.html">
+                                <i class="fas fa-calendar-day"></i>
+                                <span>每日一题</span>
+                            </a>
+                        </li>
+                    </ul>
+                </aside>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>圆几何互动学习网站 © 2026 EBU5315 Coursework</p>
+        </footer>
+    </div>
+    <script src="i18n.js" defer></script>
+</body>
+</html>
