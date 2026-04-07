@@ -8,75 +8,74 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-    /* 全局样式重置：消除所有默认边距，统一盒模型，基础排版 */
+    /* 全局样式重置 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Microsoft YaHei", Arial, Helvetica, sans-serif;
+            font-family: "Trebuchet MS", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
         }
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow-x: hidden; /* 禁止横向滚动，适配小屏 */
-            background-image: url("image/bg.jpg");
-      /* 图片不重复平铺 */
-      background-repeat: no-repeat;
-      /* 铺满整个屏幕 */
-      background-size: cover;
-      /* 固定背景，不随滚动条滚动 */
-      background-attachment: fixed;
-      /* 背景居中 */
-      background-position: center;
+
+        :root {
+            --primary: #2563eb;
+            --primary-strong: #1d4ed8;
+            --text: #1f2937;
+            --muted: #64748b;
+            --bg-color: #f8fafc;
+            --surface: rgba(255, 255, 255, 0.85);
+            --surface-strong: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-lg: 0 24px 60px rgba(31, 41, 55, 0.12);
+            --shadow-md: 0 16px 32px rgba(31, 41, 55, 0.08);
+            --radius-xl: 28px;
+            --radius-lg: 22px;
+            --radius-md: 16px;
+            --font-size: 16px;
         }
+
+        body {
+            color: var(--text);
+            font-size: var(--font-size);
+            background:
+                radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.1), transparent 22%),
+                radial-gradient(circle at 86% 14%, rgba(37, 99, 235, 0.1), transparent 20%),
+                linear-gradient(rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+                linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: all 0.3s ease-in-out;
+            line-height: 1.6;
+        }
+
+        /* 模式切换：护眼/夜晚，修改CSS变量 */
+        body.eye-mode {
+            --bg-color: #f0f9eb;
+            --surface: rgba(247, 251, 242, 0.88);
+            --text: #166534;
+            --border-color: #c7e3b4;
+            --primary: #438a4c;
+            --primary-strong: #3f6234;
+        }
+        body.night-mode {
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --primary: #60a5fa;
+            --primary-strong: #3b82f6;
+            --surface: rgba(30, 41, 59, 0.88);
+            --surface-strong: #1e293b;
+            --border-color: #475569;
+        }
+
         a {
             text-decoration: none;
-            color: #333;
-            transition: all 0.3s ease;
-        }
-        ul, li {
-            list-style: none;
-        }
-        img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* 图片自适应，不变形 */
-        }
-        button {
-            border: none;
-            outline: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        input {
-            border: none;
-            outline: none;
-            background: none;
+            color: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 基础变量：便于统一修改 */
-        :root {
-            --main-color: #2563eb;
-            --hover-color: #1d4ed8;
-            --bg-color: #ffffff;
-            --text-color: #333333;
-            --light-bg: #f8fafc;
-            --border-color: #e2e8f0;
-            --shadow: 0 2px 10px rgba(0,0,0,0.08);
-            --font-size: 16px; /* 基础字体大小，用于等比例缩放 */
-        }
-
-        /* 页面主体样式：默认主题，平滑过渡 */
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-size: var(--font-size);
-            line-height: 1.5;
-            transition: all 0.3s ease-in-out;
-        }
-
-        /* 头部容器：通栏，flex布局，适配所有屏幕，固定顶部 */
+        /* 头部样式：现代化设计 */
         .header-container {
             position: fixed;
             top: 0;
@@ -84,387 +83,219 @@
             z-index: 9999;
             width: 100%;
             height: 80px;
-            padding: 0 2vw; /* 用vw适配不同屏幕边距 */
-            background-color: var(--light-bg);
+            padding: 0 4vw;
+            background: var(--surface);
+            backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: var(--shadow-md);
         }
-        /* 左上角logo：适配大小屏 */
+
         .logo {
-            font-size: clamp(calc(18px / 16 * var(--font-size)), 2vw, calc(22px / 16 * var(--font-size))); /* 按基础字体等比例缩放 */
-            font-weight: 700;
-            color: var(--main-color);
-        }
-        /* 中间导航：向下偏移5px，原需求 */
-        .nav-main {
-            position: relative;
-            top: 5px;
+            font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
             display: flex;
-            gap: clamp(15px, 3vw, 30px); /* 间距自适应 */
+            align-items: center;
+            gap: 10px;
+        }
+        .logo i { font-size: 1.4rem; }
+
+        .nav-main {
+            display: flex;
+            gap: 2.5vw;
+            background: rgba(15, 23, 42, 0.04);
+            padding: 6px;
+            border-radius: 100px;
         }
         .nav-link {
-            font-size: clamp(calc(16px / 16 * var(--font-size)), 1.8vw, calc(18px / 16 * var(--font-size)));
-            color: var(--text-color);
-            font-weight: 500;
+            font-size: 0.95rem;
+            color: var(--muted);
+            font-weight: 600;
+            padding: 8px 24px;
+            border-radius: 100px;
         }
-        .nav-link:hover, .nav-link:active {
-            color: var(--main-color);
+        .nav-link:hover {
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.8);
         }
-        /* 右侧容器：语言+设置+广告，flex对齐 */
+        .nav-link.active {
+            color: white;
+            background: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
         .header-right {
             display: flex;
             align-items: center;
-            gap: clamp(10px, 2vw, 20px);
-            position: relative;
+            gap: 1.5vw;
         }
-        /* 语言切换：小字，适配 */
+
         .lang-switch {
-            font-size: clamp(calc(12px / 16 * var(--font-size)), 1.2vw, calc(14px / 16 * var(--font-size)));
-            color: #64748b;
+            font-size: 0.85rem;
+            color: var(--muted);
+            background: var(--surface-strong);
+            padding: 6px 16px;
+            border-radius: 100px;
+            border: 1px solid var(--border-color);
         }
-        .lang-link {
-            color: #64748b;
-        }
-        .lang-link.active {
-            color: var(--main-color);
-            font-weight: 700;
-        }
-        /* 设置图标：大小自适应 */
+        .lang-link { color: var(--muted); cursor: pointer; }
+        .lang-link.active { color: var(--primary); font-weight: 700; }
+
         .setting-icon {
-            font-size: clamp(calc(18px / 16 * var(--font-size)), 1.8vw, calc(20px / 16 * var(--font-size)));
-            color: #64748b;
+            font-size: 1.2rem;
+            color: var(--muted);
+            width: 42px;
+            height: 42px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--surface-strong);
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
             cursor: pointer;
         }
         .setting-icon:hover {
-            color: var(--main-color);
+            color: var(--primary);
+            transform: rotate(45deg);
         }
-        /* 设置下拉菜单：绝对定位，自适应宽度，默认隐藏 */
+
         .setting-menu {
             display: none;
             position: absolute;
-            top: calc(100% + 10px);
-            right: 0;
-            width: clamp(180px, 15vw, 220px); /* 加宽适配滑块 */
-            background-color: var(--bg-color);
+            top: 90px;
+            right: 4vw;
+            width: 240px;
+            background: var(--surface-strong);
+            border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
-            border-radius: 6px;
-            box-shadow: var(--shadow);
-            padding: 10px 12px;
-            z-index: 9999;
+            box-shadow: var(--shadow-lg);
+            padding: 16px;
+            z-index: 10000;
+            animation: slideDown 0.3s ease-out;
         }
-        .setting-menu .menu-item {
-            display: block;
-            padding: 8px 10px;
-            font-size: clamp(calc(12px / 16 * var(--font-size)), 1.2vw, calc(14px / 16 * var(--font-size)));
-            color: var(--text-color);
-            border-radius: 4px;
-            margin-bottom: 5px;
-        }
-        .setting-menu .menu-item:hover {
-            background-color: #f1f5f9;
-            color: var(--main-color);
-        }
-        /* 字体大小滑块样式 */
-        .font-size-slider-wrap {
-            padding: 8px 10px;
-            margin: 5px 0;
-        }
-        .font-size-label {
-            font-size: clamp(calc(12px / 16 * var(--font-size)), 1.2vw, calc(14px / 16 * var(--font-size)));
-            color: var(--text-color);
-            margin-bottom: 6px;
-            display: block;
-        }
-        .font-size-slider {
-            width: 100%;
-            height: 6px;
-            accent-color: var(--main-color);
-            cursor: pointer;
-        }
-        .font-size-value {
-            font-size: clamp(calc(11px / 16 * var(--font-size)), 1vw, calc(13px / 16 * var(--font-size)));
-            color: #64748b;
-            text-align: center;
-            margin-top: 6px;
-        }
-        /* 关于广告：设置下方，绝对定位，小字 */
-        .ad-tip {
-            position: absolute;
-            top: calc(100% + 5px);
-            right: 0;
-            font-size: clamp(calc(10px / 16 * var(--font-size)), 1vw, calc(12px / 16 * var(--font-size)));
-            color: #94a3b8;
-        }
-        .ad-link {
-            color: #94a3b8;
-        }
-        .ad-link:hover {
-            color: var(--main-color);
-            text-decoration: underline;
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 主体容器：适配顶部固定导航，padding-top预留空间，通栏 */
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            color: var(--text);
+            border-radius: 10px;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+        .menu-item:hover {
+            background: var(--bg-color);
+            color: var(--primary);
+        }
+
+        .font-size-slider-wrap {
+            padding: 14px;
+            background: var(--bg-color);
+            border-radius: 12px;
+            margin: 10px 0;
+        }
+        .font-size-label { font-size: 0.85rem; margin-bottom: 8px; font-weight: 600; }
+        .font-size-slider { width: 100%; cursor: pointer; }
+        .font-size-value { font-size: 0.75rem; text-align: center; margin-top: 6px; color: var(--muted); }
+
+        .ad-tip {
+            position: absolute;
+            bottom: -25px;
+            right: 0;
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        /* 主体内容布局 */
         .main-container {
             width: 100%;
-            padding: calc(80px + 30px) 2vw 50px; /* 适配固定头部 */
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 120px 4vw 60px;
             display: flex;
             flex-direction: column;
-            gap: 40px;
+            gap: 60px;
             align-items: center;
         }
 
-        /* 轮播图容器：适配所有屏幕，固定宽高比，最大宽度1200px */
         .carousel-container {
             width: 100%;
             max-width: 1200px;
-            height: 0;
-            padding-bottom: 33.33%; /* 宽高比3:1，适配所有屏幕，不变形 */
-            position: relative;
+            border-radius: var(--radius-xl);
             overflow: hidden;
-            border-radius: 8px;
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
         }
-        .carousel-wrap {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        /* 轮播图列表：flex，5张图占500%宽度 */
-        .carousel-list {
-            width: 500%;
-            height: 100%;
-            display: flex;
-            transition: transform 0.5s ease-in-out;
-        }
-        .carousel-item {
-            width: 20%; /* 5张图，每张占20% */
-            height: 100%;
-        }
+        .carousel-wrap { position: relative; width: 100%; padding-bottom: 40%; }
+        .carousel-list { position: absolute; top: 0; left: 0; width: 500%; height: 100%; display: flex; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .carousel-item { width: 20%; height: 100%; }
 
-        /* AI搜索栏容器：最大宽度800px，适配小屏占满，大屏居中 */
         .ai-search-container {
             width: 100%;
-            max-width: 800px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            align-items: center;
-        }
-        .search-title {
-            font-size: clamp(calc(18px / 16 * var(--font-size)), 2vw, calc(24px / 16 * var(--font-size)));
-            color: var(--main-color);
-            font-weight: 600;
-        }
-        /* 搜索框：flex，输入框占满，按钮固定宽度 */
-        .search-box {
-            width: 100%;
-            display: flex;
-            gap: 10px;
-            height: clamp(40px, 5vw, 50px);
-        }
-        .search-input {
-            flex: 1;
-            padding: 0 20px;
+            max-width: 900px;
+            background: var(--surface);
+            padding: 50px;
+            border-radius: var(--radius-xl);
             border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background-color: var(--light-bg);
-            font-size: clamp(calc(14px / 16 * var(--font-size)), 1.5vw, calc(16px / 16 * var(--font-size)));
-            color: var(--text-color);
-        }
-        .search-input:focus {
-            border-color: var(--main-color);
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-        }
-        .search-btn {
-            padding: 0 clamp(15px, 3vw, 30px);
-            background-color: var(--main-color);
-            color: #fff;
-            border-radius: 6px;
-            font-size: clamp(calc(14px / 16 * var(--font-size)), 1.5vw, calc(16px / 16 * var(--font-size)));
-        }
-        .search-btn:hover {
-            background-color: var(--hover-color);
-        }
-
-        /* AI回复弹窗：遮罩层，全屏，默认隐藏，居中显示 */
-        .ai-modal {
-            display: none; /* 默认隐藏 */
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 99999;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5); /* 半透明遮罩 */
-            backdrop-filter: blur(3px); /* 模糊背景，提升体验 */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2vw;
-        }
-        /* 弹窗内容：自适应宽度，最大宽度600px，圆角，阴影 */
-        .ai-modal-content {
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            background-color: var(--bg-color);
-            border-radius: 8px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-            padding: clamp(20px, 3vw, 30px);
-        }
-        /* 弹窗关闭按钮：右上角，圆形，悬浮效果 */
-        .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: calc(24px / 16 * var(--font-size));
-            color: #94a3b8;
-            cursor: pointer;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-close:hover {
-            background-color: #f1f5f9;
-            color: #ef4444;
-        }
-        /* 弹窗标题 */
-        .modal-title {
-            font-size: clamp(calc(16px / 16 * var(--font-size)), 2vw, calc(20px / 16 * var(--font-size)));
-            color: var(--main-color);
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        /* 弹窗回复内容：自适应，换行，最大高度60vh，滚动 */
-        .modal-result {
-            font-size: clamp(calc(14px / 16 * var(--font-size)), 1.5vw, calc(16px / 16 * var(--font-size)));
-            line-height: 1.8;
-            color: var(--text-color);
-            max-height: 60vh;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-        /* 滚动条美化：适配弹窗 */
-        .modal-result::-webkit-scrollbar {
-            width: 6px;
-        }
-        .modal-result::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 3px;
-        }
-
-        /* 联系我们弹窗样式 */
-        .contact-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 999999;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(3px);
-            justify-content: center;
-            align-items: center;
-            padding: 2vw;
-        }
-        .contact-modal-content {
-            width: 100%;
-            max-width: 400px;
-            background-color: var(--bg-color);
-            border-radius: 8px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-            padding: clamp(20px, 3vw, 30px);
+            box-shadow: var(--shadow-md);
             text-align: center;
         }
-        .contact-title {
-            font-size: clamp(calc(16px / 16 * var(--font-size)), 2vw, calc(20px / 16 * var(--font-size)));
-            color: var(--main-color);
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .contact-info {
-            font-size: clamp(calc(14px / 16 * var(--font-size)), 1.5vw, calc(16px / 16 * var(--font-size)));
-            color: var(--text-color);
-            line-height: 1.8;
-        }
+        .search-title { font-size: 2rem; margin-bottom: 30px; font-weight: 800; color: var(--primary); }
+        .search-box { display: flex; gap: 12px; background: var(--surface-strong); padding: 8px; border-radius: 100px; border: 2px solid var(--border-color); transition: all 0.3s; }
+        .search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        .search-input { flex: 1; padding: 0 24px; font-size: 1.1rem; border: none; background: transparent; }
+        .search-btn { background: var(--primary); color: white; padding: 12px 32px; border-radius: 100px; font-weight: 700; font-size: 1rem; }
+        .search-btn:hover { background: var(--primary-strong); transform: scale(1.02); }
 
-        /* 模式切换：护眼/夜晚，修改CSS变量 */
-        body.eye-mode {
-            --bg-color: #f0f9eb;
-            --light-bg: #f7fbf2;
-            --text-color: #166534;
-            --border-color: #c7e3b4;
+        /* 弹窗样式统一 */
+        .ai-modal, .contact-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; z-index: 100000;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            justify-content: center; align-items: center;
+            padding: 20px;
         }
-        body.night-mode {
-            --bg-color: #1e293b;
-            --light-bg: #2d3748;
-            --text-color: #f1f5f9;
-            --border-color: #475569;
-            --main-color: #60a5fa;
-            --hover-color: #3b82f6;
-        }
-
-        /* 跳转页面（game/quiz）通用样式 */
-        .page-container {
+        .ai-modal-content, .contact-modal-content {
+            background: var(--surface-strong);
+            padding: 40px;
+            border-radius: var(--radius-xl);
+            max-width: 700px;
             width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            padding: 2vw;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
         }
-        .page-title {
-            font-size: clamp(calc(24px / 16 * var(--font-size)), 4vw, calc(36px / 16 * var(--font-size)));
-            color: var(--main-color);
-            margin-bottom: 20px;
+        .modal-close {
+            position: absolute; top: 20px; right: 20px;
+            font-size: 1.5rem; color: var(--muted); cursor: pointer;
+            width: 40px; height: 40px; display: flex; justify-content: center; align-items: center;
+            border-radius: 50%; transition: all 0.3s;
         }
-        .page-desc {
-            font-size: clamp(calc(16px / 16 * var(--font-size)), 2vw, calc(18px / 16 * var(--font-size)));
-            margin-bottom: 30px;
-            color: #64748b;
-        }
-        .page-back {
-            padding: 10px 30px;
-            background-color: var(--main-color);
-            color: #fff;
-            border-radius: 6px;
-            font-size: calc(16px / 16 * var(--font-size));
-        }
-        .page-back:hover {
-            background-color: var(--hover-color);
-        }
+        .modal-close:hover { background: #fee2e2; color: #ef4444; }
+        .modal-title, .contact-title { font-size: 1.6rem; font-weight: 800; color: var(--primary); margin-bottom: 24px; }
+        .modal-result, .contact-info { font-size: 1.1rem; line-height: 1.8; color: var(--text); }
 
-        /* 媒体查询：针对超小屏（手机竖屏）优化 */
-        @media (max-width: 480px) {
-            .header-container {
-                height: 70px;
-            }
-            .main-container {
-                padding-top: calc(70px + 20px);
-                gap: 20px;
-            }
-            .search-box {
-                height: 40px;
-            }
-            .ai-modal-content, .contact-modal-content {
-                padding: 20px 15px;
-            }
-            .setting-menu {
-                width: 160px;
-            }
+        @media (max-width: 768px) {
+            .header-container { padding: 0 20px; height: 70px; }
+            .nav-main { display: none; } /* 移动端简化导航 */
+            .main-container { padding-top: 100px; gap: 40px; }
+            .ai-search-container { padding: 30px 20px; }
+            .search-title { font-size: 1.5rem; }
+            .search-box { flex-direction: column; border-radius: 20px; }
+            .search-btn { border-radius: 16px; }
         }
     </style>
 </head>
@@ -475,7 +306,7 @@
         <nav class="nav-main">
             <a href="index.html" class="nav-link" id="navHome">首页</a>
             <a href="game.html" class="nav-link" id="navGame">游戏</a>
-            <a href="quiz.html" class="nav-link" id="navQuiz">测试</a>
+            <a href="home.html" class="nav-link" id="navQuiz">测试</a>
         </nav>
         <div class="header-right">
             <div class="lang-switch">
@@ -488,6 +319,7 @@
                 <div class="setting-menu">
                     <a href="javascript:;" class="menu-item" data-style="eye" id="menuEye">护眼模式</a>
                     <a href="javascript:;" class="menu-item" data-style="night" id="menuNight">夜晚模式</a>
+                    <a href="javascript:;" class="menu-item" data-style="default" id="menuDefault">默认模式</a>
                     <!-- 字体大小滑块 -->
                     <div class="font-size-slider-wrap">
                         <label class="font-size-label" id="fontSizeLabel">字体大小调节</label>
@@ -561,6 +393,7 @@
                 langEn: 'English',
                 menuEye: '护眼模式',
                 menuNight: '夜晚模式',
+                menuDefault: '默认模式',
                 fontSizeLabel: '字体大小调节',
                 fontSizeValue: '当前字体：{size}px',
                 contactUs: '联系我们',
@@ -592,6 +425,7 @@
                 langEn: 'English',
                 menuEye: 'Eye Protection Mode',
                 menuNight: 'Night Mode',
+                menuDefault: 'Default Mode',
                 fontSizeLabel: 'Font Size Adjustment',
                 fontSizeValue: 'Current Font: {size}px',
                 contactUs: 'Contact Us',
@@ -635,6 +469,21 @@
         const totalCarousel = carouselItems.length;
         let menuHideTimer = null; // 设置菜单隐藏延迟定时器
         let currentLang = localStorage.getItem('appLang') || 'zh-CN'; // 默认中文
+        let currentTheme = localStorage.getItem('appTheme') || 'default'; // 默认主题
+
+        // ********** 1. 初始化语言和主题 **********
+        updateLang(currentLang);
+        applyTheme(currentTheme);
+
+        // ********** 模式切换（护眼/夜晚）函数 **********
+        function applyTheme(theme) {
+            currentTheme = theme;
+            localStorage.setItem('appTheme', theme);
+            const body = document.body;
+            body.classList.remove('eye-mode', 'night-mode');
+            if (theme === 'eye') body.classList.add('eye-mode');
+            if (theme === 'night') body.classList.add('night-mode');
+        }
 
         // ********** 语言切换函数 **********
         function updateLang(lang) {
@@ -651,6 +500,7 @@
             document.getElementById('langEn').textContent = texts.langEn;
             document.getElementById('menuEye').textContent = texts.menuEye;
             document.getElementById('menuNight').textContent = texts.menuNight;
+            document.getElementById('menuDefault').textContent = texts.menuDefault;
             document.getElementById('fontSizeLabel').textContent = texts.fontSizeLabel;
             document.getElementById('fontSizeValue').textContent = texts.fontSizeValue.replace('{size}', fontSizeSlider.value);
             document.getElementById('contactUs').textContent = texts.contactUs;
@@ -674,9 +524,6 @@
                 }
             });
         }
-
-        // ********** 1. 初始化语言 **********
-        updateLang(currentLang);
 
         // ********** 2. 轮播图：自动循环2秒，循环播放5张 **********
         function carouselPlay() {
@@ -719,27 +566,24 @@
 
         // ********** 4. 模式切换（护眼/夜晚） **********
         const menuItems = document.querySelectorAll('.menu-item[data-style]');
-        const body = document.body;
         menuItems.forEach(item => {
             item.addEventListener('click', () => {
-                // 移除所有模式，避免冲突
-                body.classList.remove('eye-mode', 'night-mode');
-                // 护眼模式
-                if (item.dataset.style === 'eye') body.classList.add('eye-mode');
-                // 夜晚模式
-                if (item.dataset.style === 'night') body.classList.add('night-mode');
+                applyTheme(item.dataset.style);
             });
         });
 
         // ********** 5. 字体大小滑块控制：等比例缩放所有汉字 **********
         const root = document.documentElement;
         // 初始化字体大小
-        root.style.setProperty('--font-size', `${fontSizeSlider.value}px`);
-        fontSizeValue.textContent = langTexts[currentLang].fontSizeValue.replace('{size}', fontSizeSlider.value);
+        const savedFontSize = localStorage.getItem('appFontSize') || '16';
+        fontSizeSlider.value = savedFontSize;
+        root.style.setProperty('--font-size', `${savedFontSize}px`);
+        fontSizeValue.textContent = langTexts[currentLang].fontSizeValue.replace('{size}', savedFontSize);
 
         // 滑块事件
         fontSizeSlider.addEventListener('input', () => {
             const fontSize = fontSizeSlider.value;
+            localStorage.setItem('appFontSize', fontSize); // 保存到本地存储
             root.style.setProperty('--font-size', `${fontSize}px`);
             fontSizeValue.textContent = langTexts[currentLang].fontSizeValue.replace('{size}', fontSize);
         });

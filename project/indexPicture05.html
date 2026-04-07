@@ -15,9 +15,41 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: #f0f2f5;
+            background-color: var(--bg-color, #f0f2f5);
+            color: var(--text-color, #333);
             gap: 40px;
             padding: 20px;
+            transition: all 0.3s ease-in-out;
+            font-size: var(--font-size, 16px);
+        }
+        /* 模式切换：护眼/夜晚，修改CSS变量 */
+        body.eye-mode {
+            --bg-color: #f0f9eb;
+            --text-color: #166534;
+        }
+        body.night-mode {
+            --bg-color: #1e293b;
+            --text-color: #f1f5f9;
+        }
+        /* 针对不同模式调整容器和面板背景 */
+        body.eye-mode #canvas, body.eye-mode .panel {
+            background-color: #f7fbf2;
+            border-color: #c7e3b4;
+        }
+        body.night-mode #canvas, body.night-mode .panel {
+            background-color: #2d3748;
+            border-color: #475569;
+        }
+        body.night-mode .angle-box {
+            background-color: #374151;
+            color: #cbd5e1;
+        }
+        body.night-mode .sum-box {
+            background-color: #1e3a8a;
+            color: #60a5fa;
+        }
+        body.night-mode .tip {
+            color: #94a3b8;
         }
         #canvas {
             border: 2px solid #333;
@@ -111,13 +143,32 @@
             }
         };
 
-        // ********** 2. 读取并初始化当前语言（核心修改）**********
-        // 从localStorage读取主页面选择的语言，默认中文
+        // ********** 2. 读取并初始化当前语言和主题（核心修改）**********
         const currentLang = localStorage.getItem('appLang') || 'zh-CN';
-        // 更新HTML根元素的lang属性（适配浏览器）
+        const currentTheme = localStorage.getItem('appTheme') || 'default';
+        const currentFontSize = localStorage.getItem('appFontSize') || '16';
+        
         document.documentElement.lang = currentLang;
-        // 获取当前语言对应的文本集
         const currentTexts = langTexts[currentLang];
+
+        function applyTheme(theme) {
+            const body = document.body;
+            body.classList.remove('eye-mode', 'night-mode');
+            if (theme === 'eye') body.classList.add('eye-mode');
+            if (theme === 'night') body.classList.add('night-mode');
+        }
+        function applyFontSize(size) {
+            document.documentElement.style.setProperty('--font-size', `${size}px`);
+        }
+        applyTheme(currentTheme);
+        applyFontSize(currentFontSize);
+
+        // 监听来自其他页面的主题/语言/字体变化
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'appTheme') applyTheme(e.newValue);
+            if (e.key === 'appFontSize') applyFontSize(e.newValue);
+            if (e.key === 'appLang') location.reload();
+        });
 
         // ********** 3. 初始化页面文本（核心修改）**********
         function initLangText() {
@@ -125,6 +176,7 @@
             document.title = currentTexts.pageTitle;
             // 更新面板标题
             document.getElementById('theorem-title').textContent = currentTexts.theoremTitle;
+            document.getElementById('backBtn').querySelector('span').textContent = currentTexts.backBtn;
             // 更新角度框前缀（保留动态数值标签）
             document.getElementById('angleA-box').innerHTML = currentTexts.angleA + '<span id="angA">0</span>°';
             document.getElementById('angleB-box').innerHTML = currentTexts.angleB + '<span id="angB">0</span>°';
