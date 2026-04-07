@@ -189,7 +189,7 @@
             padding: 10px 14px;
             font-size: 0.9rem;
             color: var(--text);
-            border-radius: 100px;
+            border-radius: 10px;
             margin-bottom: 4px;
             cursor: pointer;
         }
@@ -469,6 +469,21 @@
         const totalCarousel = carouselItems.length;
         let menuHideTimer = null; // 设置菜单隐藏延迟定时器
         let currentLang = localStorage.getItem('appLang') || 'zh-CN'; // 默认中文
+        let currentTheme = localStorage.getItem('appTheme') || 'default'; // 默认主题
+
+        // ********** 1. 初始化语言和主题 **********
+        updateLang(currentLang);
+        applyTheme(currentTheme);
+
+        // ********** 模式切换（护眼/夜晚）函数 **********
+        function applyTheme(theme) {
+            currentTheme = theme;
+            localStorage.setItem('appTheme', theme);
+            const body = document.body;
+            body.classList.remove('eye-mode', 'night-mode');
+            if (theme === 'eye') body.classList.add('eye-mode');
+            if (theme === 'night') body.classList.add('night-mode');
+        }
 
         // ********** 语言切换函数 **********
         function updateLang(lang) {
@@ -510,9 +525,6 @@
             });
         }
 
-        // ********** 1. 初始化语言 **********
-        updateLang(currentLang);
-
         // ********** 2. 轮播图：自动循环2秒，循环播放5张 **********
         function carouselPlay() {
             currentIndex = (currentIndex + 1) % totalCarousel;
@@ -552,19 +564,8 @@
             }, 1000);
         });
 
-        // ********** 4. 模式切换（护眼/夜晚/默认） **********
+        // ********** 4. 模式切换（护眼/夜晚） **********
         const menuItems = document.querySelectorAll('.menu-item[data-style]');
-        function applyTheme(theme) {
-            localStorage.setItem('appTheme', theme);
-            document.body.classList.remove('eye-mode', 'night-mode');
-            if (theme === 'eye') document.body.classList.add('eye-mode');
-            if (theme === 'night') document.body.classList.add('night-mode');
-        }
-
-        // 初始化加载保存的主题
-        const savedTheme = localStorage.getItem('appTheme') || 'default';
-        applyTheme(savedTheme);
-
         menuItems.forEach(item => {
             item.addEventListener('click', () => {
                 applyTheme(item.dataset.style);
@@ -582,7 +583,7 @@
         // 滑块事件
         fontSizeSlider.addEventListener('input', () => {
             const fontSize = fontSizeSlider.value;
-            localStorage.setItem('appFontSize', fontSize);
+            localStorage.setItem('appFontSize', fontSize); // 保存到本地存储
             root.style.setProperty('--font-size', `${fontSize}px`);
             fontSizeValue.textContent = langTexts[currentLang].fontSizeValue.replace('{size}', fontSize);
         });

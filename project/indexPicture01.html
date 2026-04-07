@@ -12,8 +12,67 @@
             font-family: "Microsoft YaHei", sans-serif;
         }
         body {
-            background-color: #f8f9fa;
+            background-color: var(--bg-color, #f8f9fa);
+            color: var(--text-color, #333);
             padding: 20px;
+            transition: all 0.3s ease-in-out;
+            font-size: var(--font-size, 16px);
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            background-color: #2563eb;
+            color: white;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+        .back-btn:hover {
+            background-color: #1d4ed8;
+            transform: translateX(-4px);
+        }
+        /* 模式切换：护眼/夜晚，修改CSS变量 */
+        body.eye-mode {
+            --bg-color: #f0f9eb;
+            --text-color: #166534;
+        }
+        body.night-mode {
+            --bg-color: #1e293b;
+            --text-color: #f1f5f9;
+        }
+        /* 针对不同模式调整容器和面板背景 */
+        body.eye-mode .svg-wrap, body.eye-mode .control-panel {
+            background-color: #f7fbf2;
+            border: 1px solid #c7e3b4;
+        }
+        body.night-mode .svg-wrap, body.night-mode .control-panel {
+            background-color: #2d3748;
+            border: 1px solid #475569;
+        }
+        body.night-mode .angle-item {
+            background-color: #374151;
+        }
+        body.night-mode .angle-label {
+            color: #cbd5e1;
+        }
+        body.night-mode .slider-wrap label {
+            color: #cbd5e1;
+        }
+        body.night-mode .circle {
+            stroke: #94a3b8;
+        }
+        body.night-mode .center-point {
+            fill: #94a3b8;
+        }
+        body.night-mode .radius {
+            stroke: #94a3b8;
+        }
+        body.night-mode .text-label {
+            fill: #cbd5e1 !important;
         }
         .container {
             display: flex;
@@ -127,6 +186,7 @@
     </style>
 </head>
 <body>
+    <a href="index.html" class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i> <span>返回首页</span></a>
     <div class="container">
         <!-- 左侧SVG绘图区 -->
         <div class="svg-wrap">
@@ -199,7 +259,8 @@
                 sliderLabel: '调节圆心角大小（0°-180°）：',
                 sliderValue: '当前圆心角：{angle}°',
                 centerAngleLabel: '∠AOB',
-                inscribedAngleLabel: '∠APB'
+                inscribedAngleLabel: '∠APB',
+                backBtn: '返回首页'
             },
             'en': {
                 pageTitle: 'Dynamic Demonstration of Central Angle & Inscribed Angle (Revised)',
@@ -208,13 +269,36 @@
                 sliderLabel: 'Adjust Central Angle (0°-180°)：',
                 sliderValue: 'Current Central Angle：{angle}°',
                 centerAngleLabel: '∠AOB',
-                inscribedAngleLabel: '∠APB'
+                inscribedAngleLabel: '∠APB',
+                backBtn: 'Back to Home'
             }
         };
 
-        // ********** 初始化语言 **********
+        // ********** 初始化语言和主题 **********
         const currentLang = localStorage.getItem('appLang') || 'zh-CN';
+        const currentTheme = localStorage.getItem('appTheme') || 'default';
+        const currentFontSize = localStorage.getItem('appFontSize') || '16';
         document.documentElement.lang = currentLang;
+        
+        function applyTheme(theme) {
+            const body = document.body;
+            body.classList.remove('eye-mode', 'night-mode');
+            if (theme === 'eye') body.classList.add('eye-mode');
+            if (theme === 'night') body.classList.add('night-mode');
+        }
+        function applyFontSize(size) {
+            document.documentElement.style.setProperty('--font-size', `${size}px`);
+        }
+        applyTheme(currentTheme);
+        applyFontSize(currentFontSize);
+
+        // 监听来自其他页面的主题/语言/字体变化
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'appTheme') applyTheme(e.newValue);
+            if (e.key === 'appFontSize') applyFontSize(e.newValue);
+            if (e.key === 'appLang') location.reload(); // 语言变化简单处理，直接刷新
+        });
+
         const texts = langTexts[currentLang];
         
         // 更新页面文本
@@ -224,6 +308,7 @@
         document.getElementById('sliderLabel').textContent = texts.sliderLabel;
         document.getElementById('centerAngleLabel').textContent = texts.centerAngleLabel;
         document.getElementById('inscribedAngleLabel').textContent = texts.inscribedAngleLabel;
+        document.getElementById('backBtn').querySelector('span').textContent = texts.backBtn;
 
         // 核心参数初始化
         const O = { x: 230, y: 230 }; // 圆心坐标

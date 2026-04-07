@@ -12,13 +12,63 @@
             font-family: "Microsoft YaHei", sans-serif;
         }
         body {
-            background-color: #f5f5f5;
+            background-color: var(--bg-color, #f5f5f5);
+            color: var(--text-color, #333);
             padding: 20px;
+            transition: all 0.3s ease-in-out;
+            font-size: var(--font-size, 16px);
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            background-color: #2563eb;
+            color: white;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+        .back-btn:hover {
+            background-color: #1d4ed8;
+            transform: translateX(-4px);
+        }
+        /* 模式切换：护眼/夜晚，修改CSS变量 */
+        body.eye-mode {
+            --bg-color: #f0f9eb;
+            --text-color: #166534;
+        }
+        body.night-mode {
+            --bg-color: #1e293b;
+            --text-color: #f1f5f9;
+        }
+        /* 针对不同模式调整容器和面板背景 */
+        body.eye-mode .svg-container {
+            background-color: #f7fbf2;
+            border: 1px solid #c7e3b4;
+        }
+        body.night-mode .svg-container {
+            background-color: #2d3748;
+            border: 1px solid #475569;
+        }
+        body.night-mode circle[stroke="#2c3e50"] {
+            stroke: #94a3b8;
+        }
+        body.night-mode line[stroke="#2c3e50"] {
+            stroke: #94a3b8;
+        }
+        body.night-mode text[fill="#2c3e50"] {
+            fill: #cbd5e1;
         }
         h1 {
             text-align: center;
-            color: #2c3e50;
+            color: var(--main-color, #2c3e50);
             margin-bottom: 30px;
+        }
+        body.night-mode h1 {
+            --main-color: #60a5fa;
         }
         .svg-container {
             width: 100%;
@@ -57,6 +107,7 @@
     </style>
 </head>
 <body>
+    <a href="index.html" class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i> <span>返回首页</span></a>
     <h1>弧、弦、圆心角核心知识点</h1>
     <div class="svg-container">
         <svg width="600" height="500" viewBox="0 0 600 500">
@@ -113,6 +164,62 @@
     <div class="tooltip" id="tooltip"></div>
 
     <script>
+        // ********** 语言文本映射表 **********
+        const langTexts = {
+            'zh-CN': {
+                pageTitle: '弧、弦、圆心角核心知识点',
+                h1Title: '弧、弦、圆心角核心知识点',
+                chordInfo: '弦：连接圆上两点的线段（如AB）。在同圆/等圆中：相等圆心角 ⇔ 所对弦相等；相等弦 ⇔ 所对圆心角相等。',
+                arcInfo: '弧：圆上两点间的部分（如弧AB）。在同圆/等圆中：相等圆心角 ⇔ 所对弧相等；相等弧 ⇔ 所对圆心角相等。',
+                angleInfo: '圆心角：顶点在圆心的角（如∠AOB=∠1）。核心定理：在同圆/等圆中，圆心角、弦、弧三者‘知一推二’（相等则其余都相等）。',
+                backBtn: '返回首页'
+            },
+            'en': {
+                pageTitle: 'Core Knowledge: Arc, Chord, Central Angle',
+                h1Title: 'Core Knowledge: Arc, Chord, Central Angle',
+                chordInfo: 'Chord: A line segment connecting two points on a circle (e.g., AB). In the same or equal circles: Equal central angles ⇔ Equal corresponding chords; Equal chords ⇔ Equal corresponding central angles.',
+                arcInfo: 'Arc: A part of the circumference between two points (e.g., Arc AB). In the same or equal circles: Equal central angles ⇔ Equal corresponding arcs; Equal arcs ⇔ Equal corresponding central angles.',
+                angleInfo: 'Central Angle: An angle whose vertex is the center of the circle (e.g., ∠AOB=∠1). Core Theorem: In the same or equal circles, any one of central angle, chord, and arc determines the other two (if one is equal, the others are equal).',
+                backBtn: 'Back to Home'
+            }
+        };
+
+        // ********** 初始化语言和主题 **********
+        const currentLang = localStorage.getItem('appLang') || 'zh-CN';
+        const currentTheme = localStorage.getItem('appTheme') || 'default';
+        const currentFontSize = localStorage.getItem('appFontSize') || '16';
+        document.documentElement.lang = currentLang;
+        const texts = langTexts[currentLang];
+
+        function applyTheme(theme) {
+            const body = document.body;
+            body.classList.remove('eye-mode', 'night-mode');
+            if (theme === 'eye') body.classList.add('eye-mode');
+            if (theme === 'night') body.classList.add('night-mode');
+        }
+        function applyFontSize(size) {
+            document.documentElement.style.setProperty('--font-size', `${size}px`);
+        }
+        applyTheme(currentTheme);
+        applyFontSize(currentFontSize);
+
+        // 更新页面文本
+        document.title = texts.pageTitle;
+        document.querySelector('h1').textContent = texts.h1Title;
+        document.getElementById('backBtn').querySelector('span').textContent = texts.backBtn;
+        
+        // 更新 data-info
+        document.querySelectorAll('line[data-info*="弦"]').forEach(el => el.setAttribute('data-info', texts.chordInfo));
+        document.querySelectorAll('path[data-info*="弧"]').forEach(el => el.setAttribute('data-info', texts.arcInfo));
+        document.querySelectorAll('path[data-info*="圆心角"]').forEach(el => el.setAttribute('data-info', texts.angleInfo));
+
+        // 监听来自其他页面的主题/语言/字体变化
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'appTheme') applyTheme(e.newValue);
+            if (e.key === 'appFontSize') applyFontSize(e.newValue);
+            if (e.key === 'appLang') location.reload();
+        });
+
         const tooltip = document.getElementById('tooltip');
         const clickableEls = document.querySelectorAll('.clickable');
 
