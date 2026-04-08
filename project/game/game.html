@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>圆几何交互式学习平台 - 游戏中心</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 全局样式重置 - 完全对齐 index.html */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Trebuchet MS", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-strong: #1d4ed8;
+            --text: #1f2937;
+            --muted: #64748b;
+            --bg-color: #f8fafc;
+            --surface: rgba(255, 255, 255, 0.85);
+            --surface-strong: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-lg: 0 24px 60px rgba(31, 41, 55, 0.12);
+            --shadow-md: 0 16px 32px rgba(31, 41, 55, 0.08);
+            --radius-xl: 28px;
+            --radius-lg: 22px;
+            --radius-md: 16px;
+            --font-size: 16px;
+        }
+
+        body {
+            color: var(--text);
+            font-size: var(--font-size);
+            /* 背景与 index.html 完全一致 */
+            background:
+                radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.1), transparent 22%),
+                radial-gradient(circle at 86% 14%, rgba(37, 99, 235, 0.1), transparent 20%),
+                linear-gradient(rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+                linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: all 0.3s ease-in-out;
+            line-height: 1.6;
+        }
+
+        /* 模式切换：护眼/夜晚 */
+        body.eye-mode {
+            --bg-color: #f0f9eb;
+            --surface: rgba(247, 251, 242, 0.88);
+            --text: #166534;
+            --border-color: #c7e3b4;
+            --primary: #438a4c;
+            --primary-strong: #3f6234;
+        }
+        body.night-mode {
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --primary: #60a5fa;
+            --primary-strong: #3b82f6;
+            --surface: rgba(30, 41, 59, 0.88);
+            --surface-strong: #1e293b;
+            --border-color: #475569;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 头部导航：像素级复用 index.html */
+        .header-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            width: 100%;
+            height: 80px;
+            padding: 0 4vw;
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .logo {
+            font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-main {
+            display: flex;
+            gap: 2.5vw;
+            background: rgba(15, 23, 42, 0.04);
+            padding: 6px;
+            border-radius: 100px;
+        }
+        .nav-link {
+            font-size: 0.95rem;
+            color: var(--muted);
+            font-weight: 600;
+            padding: 8px 24px;
+            border-radius: 100px;
+        }
+        .nav-link:hover {
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.8);
+        }
+        .nav-link.active {
+            color: white;
+            background: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5vw;
+        }
+
+        .lang-switch {
+            font-size: 0.85rem;
+            color: var(--muted);
+            background: var(--surface-strong);
+            padding: 6px 16px;
+            border-radius: 100px;
+            border: 1px solid var(--border-color);
+        }
+        .lang-link { color: var(--muted); cursor: pointer; }
+        .lang-link.active { color: var(--primary); font-weight: 700; }
+
+        .setting-icon {
+            font-size: 1.2rem;
+            color: var(--muted);
+            width: 42px;
+            height: 42px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--surface-strong);
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .setting-menu {
+            display: none;
+            position: absolute;
+            top: 90px;
+            right: 4vw;
+            width: 240px;
+            background: var(--surface-strong);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            padding: 16px;
+            z-index: 10000;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            color: var(--text);
+            border-radius: 10px;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+        .menu-item:hover {
+            background: var(--bg-color);
+            color: var(--primary);
+        }
+
+        /* 游戏中心主体 */
+        .main-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 4vw 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .breadcrumb {
+            width: 100%;
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+        .breadcrumb a { color: var(--primary); font-weight: 600; }
+
+        .game-title {
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            font-weight: 800;
+            color: var(--text);
+            text-align: center;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            width: 100%;
+        }
+
+        .game-card {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .game-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* 统一 SVG 图标样式 */
+        .game-icon-svg {
+            width: 80px;
+            height: 80px;
+            color: var(--primary);
+            transition: transform 0.3s ease;
+        }
+        .game-card:hover .game-icon-svg {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .game-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .game-desc {
+            font-size: 0.95rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .header-container { padding: 0 20px; height: 70px; }
+            .nav-main { display: none; }
+            .main-container { padding-top: 100px; }
+            .game-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header-container">
+        <div class="logo" id="logoText">圆几何交互式学习平台</div>
+        <nav class="nav-main">
+            <a href="index.html" class="nav-link" id="navHome">首页</a>
+            <a href="game.html" class="nav-link active" id="navGame">游戏</a>
+            <a href="home.html" class="nav-link" id="navQuiz">测试</a>
+        </nav>
+        <div class="header-right">
+            <div class="lang-switch">
+                <a href="javascript:;" class="lang-link active" data-lang="zh-CN" id="langZh">简体中文</a>
+                <span>/</span>
+                <a href="javascript:;" class="lang-link" data-lang="en" id="langEn">English</a>
+            </div>
+            <div class="setting-wrap">
+                <a href="javascript:;" class="setting-icon"><i class="fas fa-cog"></i></a>
+                <div class="setting-menu">
+                    <a href="javascript:;" class="menu-item" data-style="eye" id="menuEye">护眼模式</a>
+                    <a href="javascript:;" class="menu-item" data-style="night" id="menuNight">夜晚模式</a>
+                    <a href="javascript:;" class="menu-item" data-style="default" id="menuDefault">默认模式</a>
+                    <a href="javascript:;" class="menu-item" id="contactUs">联系我们</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="breadcrumb" id="breadcrumb">
+            <a href="index.html" id="breadHome">首页</a> › <span id="breadGame">游戏中心</span>
+        </div>
+        <h1 class="game-title" id="gameCenterTitle">圆几何游戏中心</h1>
+        
+        <div class="game-grid">
+            <!-- 游戏1：圆周角定理 -->
+            <div class="game-card" onclick="window.location.href='game first version final.html'">
+                <div class="game-icon-svg">
+                    <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="256" cy="256" r="230" stroke="currentColor" stroke-width="32"/>
+                        <path d="M256 256L371 141M256 256L371 371" stroke="currentColor" stroke-width="32" stroke-linecap="round"/>
+                        <path d="M141 256L371 141M141 256L371 371" stroke="currentColor" stroke-width="24" stroke-dasharray="8 8"/>
+                        <circle cx="256" cy="256" r="12" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="game-name" id="game1Name">圆周角定理匹配赛</div>
+                <div class="game-desc" id="game1Desc">掌握圆周角定理核心知识点，挑战你的空间想象力。</div>
+            </div>
+
+            <!-- 游戏2：切线判定 (中间按钮，已替换直线汉字) -->
+            <div class="game-card" onclick="window.location.href='game second version final.html'">
+                <div class="game-icon-svg">
+                    <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="256" cy="256" r="200" stroke="currentColor" stroke-width="32"/>
+                        <line x1="56" y1="456" x2="456" y2="56" stroke="currentColor" stroke-width="32" stroke-linecap="round"/>
+                        <circle cx="256" cy="256" r="10" fill="currentColor"/>
+                        <path d="M256 256L397 397" stroke="currentColor" stroke-width="20" stroke-dasharray="6 6"/>
+                    </svg>
+                </div>
+                <div class="game-name" id="game2Name">切线判定闯关</div>
+                <div class="game-desc" id="game2Desc">判断直线与圆的位置关系，精准掌握切线性质。</div>
+            </div>
+
+            <!-- 游戏3：圆心角弧长 -->
+            <div class="game-card" onclick="window.location.href='game third version final.html'">
+                <div class="game-icon-svg">
+                    <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M256 56C145.5 56 56 145.5 56 256S145.5 456 256 456" stroke="currentColor" stroke-width="32" stroke-linecap="round"/>
+                        <path d="M256 256L436 152M256 256L436 360" stroke="currentColor" stroke-width="32" stroke-linecap="round"/>
+                        <path d="M436 152C456 182 468 218 468 256C468 294 456 330 436 360" stroke="currentColor" stroke-width="48" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="game-name" id="game3Name">圆心角弧长拼图</div>
+                <div class="game-desc" id="game3Desc">匹配圆心角与对应弧长，在拼图中理解比例关系。</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const langTexts = {
+            'zh-CN': {
+                logoText: '圆几何交互式学习平台',
+                navHome: '首页',
+                navGame: '游戏',
+                navQuiz: '测试',
+                langZh: '简体中文',
+                langEn: 'English',
+                menuEye: '护眼模式',
+                menuNight: '夜晚模式',
+                menuDefault: '默认模式',
+                contactUs: '联系我们',
+                breadHome: '首页',
+                breadGame: '游戏中心',
+                gameCenterTitle: '圆几何游戏中心',
+                game1Name: '圆周角定理匹配赛',
+                game1Desc: '掌握圆周角定理核心知识点，挑战你的空间想象力。',
+                game2Name: '切线判定闯关',
+                game2Desc: '判断直线与圆的位置关系，精准掌握切线性质。',
+                game3Name: '圆心角弧长拼图',
+                game3Desc: '匹配圆心角与对应弧长，在拼图中理解比例关系。'
+            },
+            'en': {
+                logoText: 'Interactive Learning Platform for Circle Geometry',
+                navHome: 'Home',
+                navGame: 'Game',
+                navQuiz: 'Quiz',
+                langZh: 'Simplified Chinese',
+                langEn: 'English',
+                menuEye: 'Eye Protection',
+                menuNight: 'Night Mode',
+                menuDefault: 'Default Mode',
+                contactUs: 'Contact Us',
+                breadHome: 'Home',
+                breadGame: 'Game Center',
+                gameCenterTitle: 'Circle Geometry Game Center',
+                game1Name: 'Inscribed Angle Match',
+                game1Desc: 'Master inscribed angle theorem and challenge your imagination.',
+                game2Name: 'Tangent Judgment Challenge',
+                game2Desc: 'Judge the relationship between line and circle precisely.',
+                game3Name: 'Central Angle & Arc Puzzle',
+                game3Desc: 'Match angles with arc lengths and understand proportions.',
+            }
+        };
+
+        const settingWrap = document.querySelector('.setting-wrap');
+        const settingMenu = document.querySelector('.setting-menu');
+        let menuHideTimer = null;
+
+        function applyState() {
+            const lang = localStorage.getItem('appLang') || 'zh-CN';
+            const theme = localStorage.getItem('appTheme') || 'default';
+            const fontSize = localStorage.getItem('appFontSize') || '16';
+            
+            const texts = langTexts[lang];
+            document.getElementById('logoText').textContent = texts.logoText;
+            document.getElementById('navHome').textContent = texts.navHome;
+            document.getElementById('navGame').textContent = texts.navGame;
+            document.getElementById('navQuiz').textContent = texts.navQuiz;
+            document.getElementById('langZh').textContent = texts.langZh;
+            document.getElementById('langEn').textContent = texts.langEn;
+            document.getElementById('menuEye').textContent = texts.menuEye;
+            document.getElementById('menuNight').textContent = texts.menuNight;
+            document.getElementById('menuDefault').textContent = texts.menuDefault;
+            document.getElementById('contactUs').textContent = texts.contactUs;
+            document.getElementById('breadHome').textContent = texts.breadHome;
+            document.getElementById('breadGame').textContent = texts.breadGame;
+            document.getElementById('gameCenterTitle').textContent = texts.gameCenterTitle;
+            document.getElementById('game1Name').textContent = texts.game1Name;
+            document.getElementById('game1Desc').textContent = texts.game1Desc;
+            document.getElementById('game2Name').textContent = texts.game2Name;
+            document.getElementById('game2Desc').textContent = texts.game2Desc;
+            document.getElementById('game3Name').textContent = texts.game3Name;
+            document.getElementById('game3Desc').textContent = texts.game3Desc;
+            document.documentElement.lang = lang;
+
+            document.body.classList.remove('eye-mode', 'night-mode');
+            if (theme === 'eye') document.body.classList.add('eye-mode');
+            if (theme === 'night') document.body.classList.add('night-mode');
+            document.documentElement.style.setProperty('--font-size', fontSize + 'px');
+
+            document.querySelectorAll('.lang-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.lang === lang) link.classList.add('active');
+            });
+        }
+
+        // 语言切换
+        document.querySelectorAll('.lang-link').forEach(link => {
+            link.onclick = () => {
+                localStorage.setItem('appLang', link.dataset.lang);
+                applyState();
+            };
+        });
+
+        // 模式切换
+        document.querySelectorAll('.menu-item[data-style]').forEach(item => {
+            item.onclick = () => {
+                localStorage.setItem('appTheme', item.dataset.style);
+                applyState();
+            };
+        });
+
+        // 设置菜单悬浮逻辑
+        settingWrap.onmouseenter = () => { clearTimeout(menuHideTimer); settingMenu.style.display = 'block'; };
+        settingWrap.onmouseleave = () => { menuHideTimer = setTimeout(() => { settingMenu.style.display = 'none'; }, 1000); };
+        settingMenu.onmouseenter = () => clearTimeout(menuHideTimer);
+
+        window.onload = applyState;
+        window.addEventListener('storage', (e) => {
+            if (['appLang', 'appTheme', 'appFontSize'].includes(e.key)) applyState();
+        });
+    </script>
+</body>
+</html>
