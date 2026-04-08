@@ -593,6 +593,7 @@ body.night-mode {
     <div class="modal-backdrop hidden" id="wrongBookModal"><div class="modal-card"><div class="modal-header"><h3 id="wrongBookTitle">错题本</h3><button class="modal-close" id="closeWrongBookModalBtn" aria-label="关闭">×</button></div><div class="modal-body" id="wrongBookList"></div></div></div>
     <footer class="page-footer"><p id="footerText">圆几何互动学习网站 © 2026 EBU5315 Coursework</p></footer>
 
+    <script src="question-bank.js"></script>
     <script>
         // 核心逻辑保留并适配
         (function() {
@@ -654,33 +655,44 @@ body.night-mode {
             // --- 业务逻辑开始 ---
             // 这里放入原本 quiz.html 中的逻辑，主要包括题目加载、答题、错题本等
             // 由于逻辑较多，我会简化并确保它能运行
-            const QUESTIONS = [
-                {
-                    id: 1,
-                    topic: "圆基础",
-                    topicEn: "Circle Basics",
-                    difficulty: "基础",
-                    difficultyEn: "Basic",
-                    question: "在圆中，最长的弦是？",
-                    questionEn: "In a circle, the longest chord is?",
-                    options: ["半径 (Radius)", "直径 (Diameter)", "切线 (Tangent)", "割线 (Secant)"],
-                    optionsEn: ["Radius", "Diameter", "Tangent", "Secant"],
-                    answer: 1,
-                    explanation: "直径是圆中最长的弦，它经过圆心。",
-                    explanationEn: "The diameter is the longest chord in a circle, passing through the center."
-                }
-                // ... 可以后续添加更多题目
-            ];
+            const WRONG_BOOK_KEY = 'quizWrongBookV1';
+            function loadWrongBook() {
+                return JSON.parse(localStorage.getItem(WRONG_BOOK_KEY) || '[]');
+            }
+            function saveWrongBook(items) {
+                localStorage.setItem(WRONG_BOOK_KEY, JSON.stringify(items));
+            }
+            function syncWrongBook(question) {
+                const id = 'daily-' + question.id;
+                const items = loadWrongBook().filter(item => item.id !== id);
+                items.push({
+                    id,
+                    source: 'daily',
+                    sourceLabel: '每日一题',
+                    topic: question.topic,
+                    question: question.question,
+                    answer: question.options[question.answer],
+                    explanation: question.explanation,
+                    savedAt: new Date().toLocaleString('zh-CN')
+                });
+                saveWrongBook(items);
+            }
 
-            let currentQuestion = QUESTIONS[0];
+            const QUESTIONS = (window.QuizQuestionBank && window.QuizQuestionBank.daily) || [];
+
+            const daySeed = new Date().getDate() + new Date().getMonth() * 31 + new Date().getFullYear();
+            let currentQuestion = QUESTIONS.length ? QUESTIONS[daySeed % QUESTIONS.length] : null;
             let userSelected = null;
 
             function initQuiz() {
+                if (!currentQuestion) return;
                 const lang = localStorage.getItem('appLang') || 'zh-CN';
                 const q = currentQuestion;
                 document.getElementById('quizTopic').textContent = lang === 'zh-CN' ? q.topic : q.topicEn;
                 document.getElementById('quizMetaTopic').textContent = lang === 'zh-CN' ? q.topic : q.topicEn;
-                document.getElementById('quizDifficulty').textContent = lang === 'zh-CN' ? q.difficulty : q.difficultyEn;
+                document.getElementById('quizDifficulty').textContent = lang === 'zh-CN'
+                    ? (q.difficultyLabel || q.difficulty || '--')
+                    : (q.difficultyLabelEn || q.difficultyEn || '--');
                 document.getElementById('quizQuestionTitle').textContent = lang === 'zh-CN' ? q.question : q.questionEn;
                 
                 const optionsContainer = document.getElementById('quizOptions');
@@ -713,6 +725,15 @@ body.night-mode {
                 document.getElementById('quizFeedback').classList.remove('hidden');
                 document.getElementById('quizFeedback').className = `quiz-feedback ${isCorrect ? 'correct' : 'wrong'}`;
                 document.getElementById('quizFeedbackState').textContent = isCorrect ? (lang === 'zh-CN' ? '回答正确！' : 'Correct!') : (lang === 'zh-CN' ? '回答错误' : 'Wrong');
+                document.getElementById('quizFeedbackText').textContent = isCorrect
+                    ? (lang === 'zh-CN' ? currentQuestion.explanation : currentQuestion.explanationEn)
+                    : (lang === 'zh-CN'
+                        ? '这道题已自动加入错题本，建议稍后回顾解析。'
+                        : 'This question has been added to the wrong-book for later review.');
+
+                if (!isCorrect) {
+                    syncWrongBook(currentQuestion);
+                }
                 
                 // 显示结果卡片
                 setTimeout(() => {
@@ -733,6 +754,10 @@ body.night-mode {
 
             document.getElementById('closeQuizAiModalBtn').onclick = () => {
                 document.getElementById('quizAiModal').classList.add('hidden');
+            };
+
+            document.getElementById('viewWrongBookBtn').onclick = () => {
+                window.location.href = 'wrong-book.html';
             };
 
             initQuiz();

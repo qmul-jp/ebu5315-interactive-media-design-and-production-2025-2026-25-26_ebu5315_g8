@@ -618,6 +618,12 @@ a {
                                 <span id="menuDaily">每日一题</span>
                             </a>
                         </li>
+                        <li>
+                            <a href="wrong-book.html">
+                                <i class="fas fa-bookmark"></i>
+                                <span id="menuWrongBook">错题本</span>
+                            </a>
+                        </li>
                     </ul>
                 </aside>
             </div>
@@ -648,6 +654,7 @@ a {
                 menuTopic: '专题练习',
                 menuComp: '综合练习',
                 menuDaily: '每日一题',
+                menuWrongBook: '错题本',
                 footerText: '圆几何互动学习网站 © 2026 EBU5315 Coursework'
             },
             'en': {
@@ -668,6 +675,7 @@ a {
                 menuTopic: 'Topic Practice',
                 menuComp: 'Mixed Practice',
                 menuDaily: 'Daily Quiz',
+                menuWrongBook: 'Wrong Book',
                 footerText: 'Circle Geometry Learning © 2026 EBU5315 Coursework'
             }
         };
@@ -696,6 +704,7 @@ a {
             document.getElementById('menuTopic').textContent = texts.menuTopic;
             document.getElementById('menuComp').textContent = texts.menuComp;
             document.getElementById('menuDaily').textContent = texts.menuDaily;
+            document.getElementById('menuWrongBook').textContent = texts.menuWrongBook;
             document.getElementById('footerText').textContent = texts.footerText;
             document.documentElement.lang = lang;
 
