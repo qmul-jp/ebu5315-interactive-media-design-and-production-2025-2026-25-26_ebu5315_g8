@@ -159,6 +159,7 @@
         }
         function applyFontSize(size) {
             document.documentElement.style.setProperty('--font-size', `${size}px`);
+            document.documentElement.style.fontSize = `${size}px`;
         }
         applyTheme(currentTheme);
         applyFontSize(currentFontSize);
