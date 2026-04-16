@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>圆几何交互式学习平台 - 圆心角与弧长匹配</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 全局样式重置 - 完全对齐 index.html */
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: "Trebuchet MS", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-strong: #1d4ed8;
+            --text: #1f2937;
+            --muted: #64748b;
+            --bg-color: #f8fafc;
+            --surface: rgba(255, 255, 255, 0.85);
+            --surface-strong: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-lg: 0 24px 60px rgba(31, 41, 55, 0.12);
+            --shadow-md: 0 16px 32px rgba(31, 41, 55, 0.08);
+            --radius-xl: 28px;
+            --radius-lg: 22px;
+            --radius-md: 16px;
+            --font-size: 16px;
+        }
+
+        body {
+            color: var(--text); font-size: var(--font-size);
+            background:
+                radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.1), transparent 22%),
+                radial-gradient(circle at 86% 14%, rgba(37, 99, 235, 0.1), transparent 20%),
+                linear-gradient(rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+                linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+            background-attachment: fixed;
+            min-height: 100vh; overflow-x: hidden; transition: all 0.3s ease-in-out; line-height: 1.6;
+        }
+
+        body.eye-mode {
+            --bg-color: #f0f9eb; --surface: rgba(247, 251, 242, 0.88);
+            --text: #166534; --border-color: #c7e3b4; --primary: #438a4c; --primary-strong: #3f6234;
+        }
+        body.night-mode {
+            --text: #f1f5f9; --muted: #94a3b8; --primary: #60a5fa; --primary-strong: #3b82f6;
+            --surface: rgba(30, 41, 59, 0.88); --surface-strong: #1e293b; --border-color: #475569;
+        }
+
+        /* 头部导航 - 复用 index.html */
+        .header-container {
+            position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; height: 80px; padding: 0 4vw;
+            background: var(--surface); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-md);
+        }
+        .logo { font-size: clamp(1.2rem, 2.5vw, 1.6rem); font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .nav-main { display: flex; gap: 2.5vw; background: rgba(15, 23, 42, 0.04); padding: 6px; border-radius: 100px; }
+        .nav-link { font-size: 0.95rem; color: var(--muted); font-weight: 600; padding: 8px 24px; border-radius: 100px; text-decoration: none; transition: 0.3s; }
+        .nav-link:hover { color: var(--primary); background: rgba(255, 255, 255, 0.8); }
+        .nav-link.active { color: white; background: var(--primary); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+
+        /* 游戏主体容器 */
+        .main-container {
+            width: 100%; max-width: 900px; margin: 0 auto; padding: 120px 4vw 60px;
+            display: flex; flex-direction: column; gap: 25px; align-items: center;
+        }
+        .breadcrumb { width: 100%; font-size: 0.9rem; color: var(--muted); }
+        .breadcrumb a { color: var(--primary); font-weight: 600; text-decoration: none; }
+
+        .game-card-main {
+            width: 100%; background: var(--surface); backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color); border-radius: var(--radius-xl);
+            padding: 40px; box-shadow: var(--shadow-lg); text-align: center;
+        }
+
+        .game-info {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);
+        }
+        .info-item { font-size: 1.1rem; font-weight: 700; }
+        .info-item span { color: var(--primary); }
+
+        .canvas-container {
+            width: 300px; height: 300px; margin: 0 auto 30px; border: 3px solid var(--primary);
+            border-radius: 20px; background: var(--surface-strong);
+            display: flex; justify-content: center; align-items: center; box-shadow: var(--shadow-md);
+        }
+        #arcCanvas { width: 280px; height: 280px; }
+
+        .slider-wrap { width: 100%; max-width: 500px; margin: 25px auto; }
+        .slider-labels { display: flex; justify-content: space-between; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
+        .arc-slider { width: 100%; height: 10px; accent-color: var(--primary); cursor: pointer; }
+
+        .feedback-msg { margin: 20px 0; font-size: 1.3rem; font-weight: 800; min-height: 1.5em; }
+        .feedback-correct { color: #22c55e; }
+        .feedback-wrong { color: #ef4444; }
+
+        .btn-action {
+            padding: 12px 35px; background: var(--primary); color: white; border: none;
+            border-radius: 100px; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: all 0.3s;
+        }
+        .btn-action:hover { background: var(--primary-strong); transform: scale(1.05); }
+        .btn-action:disabled { background: var(--muted); cursor: not-allowed; transform: none; }
+
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 10000;
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: var(--surface-strong); padding: 40px; border-radius: var(--radius-xl);
+            max-width: 400px; width: 90%; text-align: center; box-shadow: var(--shadow-lg);
+        }
+
+        @media (max-width: 768px) {
+            .header-container { padding: 0 20px; height: 70px; }
+            .nav-main { display: none; }
+            .canvas-container { width: 260px; height: 260px; }
+            #arcCanvas { width: 240px; height: 240px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header-container">
+        <div class="logo" id="logoText">圆几何交互式学习平台</div>
+        <nav class="nav-main">
+            <a href="index.html" class="nav-link" id="navHome">首页</a>
+            <a href="game.html" class="nav-link active" id="navGame">游戏</a>
+            <a href="home.html" class="nav-link" id="navQuiz">测试</a>
+        </nav>
+        <div class="header-right">
+            <div class="lang-switch">
+                <a href="javascript:;" class="lang-link active" data-lang="zh-CN" id="langZh">简体中文</a>
+                <span>/</span>
+                <a href="javascript:;" class="lang-link" data-lang="en" id="langEn">English</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="breadcrumb">
+            <a href="index.html" id="breadHome">首页</a> › <a href="game.html" id="breadGame">游戏中心</a> › <span id="breadCurrent">圆心角与弧长匹配</span>
+        </div>
+
+        <div class="game-card-main">
+            <h2 id="gameTitle" style="font-size: 2rem; margin-bottom: 10px;">圆心角与弧长匹配</h2>
+            <p id="gameTip" style="color: var(--muted); margin-bottom: 30px;">根据目标角度调整弧长，拖动滑块！</p>
+
+            <div class="game-info">
+                <div class="info-item"><span id="scoreTxt">分数</span>: <span id="score">0</span></div>
+                <div class="info-item"><span id="timeTxt">时间</span>: <span id="time">10</span><span id="unit">秒</span></div>
+                <div class="info-item"><span id="levelTxt">关卡</span>: <span id="puzzleNum">1</span>/8</div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="arcCanvas"></canvas>
+            </div>
+
+            <div class="slider-wrap">
+                <div class="slider-labels"><span id="sShort">短</span><span id="sLong">长</span></div>
+                <input type="range" min="1" max="100" value="10" class="arc-slider" id="arcSlider">
+            </div>
+
+            <div style="font-size: 1.4rem; margin-bottom: 20px; font-weight: 800;">
+                <span id="targetTxt">目标角度</span>: <span id="targetAngle" style="color: var(--primary);">?</span>°
+            </div>
+
+            <div class="feedback-msg" id="feedback"></div>
+
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn-action" id="startBtn">开始</button>
+                <button class="btn-action" id="checkBtn" disabled>检查</button>
+                <button class="btn-action" id="restartBtn" disabled style="background: var(--muted);">重置</button>
+                <button class="btn-action" onclick="window.location.href='game.html'" id="backBtn" style="background: var(--muted);">返回</button>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="gameOverModal">
+        <div class="modal-content">
+            <h3 id="overTitle" style="font-size: 1.8rem; color: var(--primary); margin-bottom: 20px;">游戏结束</h3>
+            <p style="font-size: 1.2rem; margin-bottom: 10px;"><span id="finalTxt">最终分数</span>: <span id="finalScore" style="font-weight: 800; color: var(--primary);">0</span></p>
+            <p style="margin-bottom: 30px;"><span id="finLevelTxt">关卡</span>: <span id="finalLevel">0</span>/8</p>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button class="btn-action" onclick="startGame()">再来一次</button>
+                <button class="btn-action" onclick="window.location.href='index.html'" id="backToHomeBtn" style="background: var(--muted);">返回首页</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const langData = {
+            'zh-CN': {
+                logoText: '圆几何交互式学习平台', navHome: '首页', navGame: '游戏', navQuiz: '测试',
+                langZh: '简体中文', langEn: 'English', breadHome: '首页', breadGame: '游戏中心',
+                breadCurrent: '圆心角与弧长匹配', gameTitle: '圆心角与弧长匹配',
+                gameTip: '根据目标角度调整弧长，拖动滑块！',
+                scoreTxt: '分数', timeTxt: '时间', levelTxt: '关卡', targetTxt: '目标角度',
+                sShort: '短', sLong: '长', startBtn: '开始', checkBtn: '检查',
+                restartBtn: '重置', backBtn: '返回', unit: '秒', overTitle: '游戏结束',
+                youWin: '恭喜通关！', finalTxt: '最终分数', finLevelTxt: '关卡',
+                backToHomeBtn: '返回首页', perfect: '正确！误差：{error}%', tryAgain: '超时/错误！误差：{error}%'
+            },
+            'en': {
+                logoText: 'Circle Geometry', navHome: 'Home', navGame: 'Game', navQuiz: 'Quiz',
+                langZh: 'ZH', langEn: 'EN', breadHome: 'Home', breadGame: 'Game Center',
+                breadCurrent: 'Arc Puzzle', gameTitle: 'Arc Length Puzzle',
+                gameTip: 'Adjust arc by target angle!',
+                scoreTxt: 'Score', timeTxt: 'Time', levelTxt: 'Level', targetTxt: 'Target Angle',
+                sShort: 'Short', sLong: 'Long', startBtn: 'Start', checkBtn: 'Check',
+                restartBtn: 'Reset', backBtn: 'Back', unit: 's', overTitle: 'Game Over',
+                youWin: 'You Win!', finalTxt: 'Final Score', finLevelTxt: 'Level',
+                backToHomeBtn: 'Home', perfect: 'Correct! Error: {error}%', tryAgain: 'Wrong! Error: {error}%'
+            }
+        };
+
+        const canvas = document.getElementById('arcCanvas');
+        const ctx = canvas.getContext('2d');
+        let score = 0, timeLeft = 10, timer, currentPuzzle = 1, isPlaying = false, targetAngle, userArcPercent = 10;
+
+        function applyState() {
+            const lang = localStorage.getItem('appLang') || 'zh-CN';
+            const theme = localStorage.getItem('appTheme') || 'default';
+            const fontSize = localStorage.getItem('appFontSize') || '16';
+            const texts = langData[lang];
+
+            document.getElementById('logoText').textContent = texts.logoText;
+            document.getElementById('navHome').textContent = texts.navHome;
+            document.getElementById('navGame').textContent = texts.navGame;
+            document.getElementById('navQuiz').textContent = texts.navQuiz;
+            document.getElementById('langZh').textContent = texts.langZh;
+            document.getElementById('langEn').textContent = texts.langEn;
+            document.getElementById('breadHome').textContent = texts.breadHome;
+            document.getElementById('breadGame').textContent = texts.breadGame;
+            document.getElementById('breadCurrent').textContent = texts.breadCurrent;
+            document.getElementById('gameTitle').textContent = texts.gameTitle;
+            document.getElementById('gameTip').textContent = texts.gameTip;
+            document.getElementById('scoreTxt').textContent = texts.scoreTxt;
+            document.getElementById('timeTxt').textContent = texts.timeTxt;
+            document.getElementById('levelTxt').textContent = texts.levelTxt;
+            document.getElementById('targetTxt').textContent = texts.targetTxt;
+            document.getElementById('sShort').textContent = texts.sShort;
+            document.getElementById('sLong').textContent = texts.sLong;
+            document.getElementById('startBtn').textContent = texts.startBtn;
+            document.getElementById('checkBtn').textContent = texts.checkBtn;
+            document.getElementById('restartBtn').textContent = texts.restartBtn;
+            document.getElementById('backBtn').textContent = texts.backBtn;
+            document.getElementById('unit').textContent = texts.unit;
+            document.getElementById('finalTxt').textContent = texts.finalTxt;
+            document.getElementById('finLevelTxt').textContent = texts.finLevelTxt;
+            document.getElementById('backToHomeBtn').textContent = texts.backToHomeBtn;
+            document.documentElement.lang = lang;
+
+            document.body.classList.remove('eye-mode', 'night-mode');
+            if (theme === 'eye') document.body.classList.add('eye-mode');
+            if (theme === 'night') document.body.classList.add('night-mode');
+            document.documentElement.style.setProperty('--font-size', fontSize + 'px');
+            document.documentElement.style.fontSize = fontSize + 'px';
+            
+            document.querySelectorAll('.lang-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.lang === lang) link.classList.add('active');
+            });
+            draw();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2, cy = canvas.height / 2, r = canvas.width * 0.4;
+            const mainColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+            
+            ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.strokeStyle = '#ddd'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + r, cy); ctx.strokeStyle = mainColor; ctx.lineWidth = 3; ctx.stroke();
+            const rad = userArcPercent / 100 * Math.PI * 2;
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + r * Math.cos(rad), cy + r * Math.sin(rad)); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx, cy, r, 0, rad); ctx.lineWidth = 6; ctx.stroke();
+        }
+
+        function startGame() {
+            score = 0; currentPuzzle = 1; isPlaying = true;
+            document.getElementById('score').textContent = 0;
+            document.getElementById('puzzleNum').textContent = 1;
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('checkBtn').disabled = false;
+            document.getElementById('restartBtn').disabled = false;
+            document.getElementById('gameOverModal').style.display = 'none';
+            newQuestion(); resetTimer();
+        }
+
+        function newQuestion() {
+            targetAngle = Math.floor(Math.random() * 341) + 10;
+            document.getElementById('targetAngle').textContent = targetAngle;
+            userArcPercent = 10; document.getElementById('arcSlider').value = 10;
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = 'feedback-msg';
+            draw();
+        }
+
+        function resetTimer() {
+            clearInterval(timer); timeLeft = 10; document.getElementById('time').textContent = 10;
+            timer = setInterval(() => {
+                timeLeft--; document.getElementById('time').textContent = timeLeft;
+                if (timeLeft <= 0) { clearInterval(timer); check(false); }
+            }, 1000);
+        }
+
+        function check(isManual = true) {
+            if (!isPlaying) return;
+            const lang = localStorage.getItem('appLang') || 'zh-CN';
+            const correct = Math.round(targetAngle / 360 * 100);
+            const err = Math.abs((userArcPercent - correct) / correct * 100).toFixed(1);
+            const ok = parseFloat(err) <= 8;
+
+            const feedbackEl = document.getElementById('feedback');
+            if (ok) {
+                feedbackEl.textContent = langData[lang].perfect.replace('{error}', err);
+                feedbackEl.className = 'feedback-msg feedback-correct';
+                score += 10; document.getElementById('score').textContent = score;
+            } else {
+                feedbackEl.textContent = langData[lang].tryAgain.replace('{error}', err);
+                feedbackEl.className = 'feedback-msg feedback-wrong';
+            }
+
+            setTimeout(() => {
+                currentPuzzle++;
+                if (currentPuzzle > 8) {
+                    isPlaying = false; clearInterval(timer);
+                    document.getElementById('overTitle').textContent = ok ? langData[lang].youWin : langData[lang].overTitle;
+                    document.getElementById('finalScore').textContent = score;
+                    document.getElementById('finalLevel').textContent = 8;
+                    document.getElementById('gameOverModal').style.display = 'flex';
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('checkBtn').disabled = true;
+                    document.getElementById('restartBtn').disabled = true;
+                    return;
+                }
+                document.getElementById('puzzleNum').textContent = currentPuzzle; newQuestion(); resetTimer();
+            }, 1500);
+        }
+
+        document.getElementById('arcSlider').oninput = (e) => { if (isPlaying) { userArcPercent = +e.target.value; draw(); } };
+        document.getElementById('startBtn').onclick = startGame;
+        document.getElementById('checkBtn').onclick = () => check(true);
+        document.getElementById('restartBtn').onclick = () => { newQuestion(); resetTimer(); };
+        document.querySelectorAll('.lang-link').forEach(link => {
+            link.onclick = () => { localStorage.setItem('appLang', link.dataset.lang); applyState(); };
+        });
+        window.onload = () => { canvas.width = 280; canvas.height = 280; applyState(); };
+        window.addEventListener('storage', (e) => { if (['appLang', 'appTheme', 'appFontSize'].includes(e.key)) applyState(); });
+    </script>
+</body>
+</html>
