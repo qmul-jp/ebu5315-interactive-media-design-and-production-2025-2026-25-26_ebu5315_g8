@@ -216,6 +216,7 @@ body.night-mode {
             if (theme === 'eye') document.body.classList.add('eye-mode');
             if (theme === 'night') document.body.classList.add('night-mode');
             document.documentElement.style.setProperty('--font-size', fontSize + 'px');
+            document.documentElement.style.fontSize = fontSize + 'px';
 
             const texts = {
                 'zh-CN': {

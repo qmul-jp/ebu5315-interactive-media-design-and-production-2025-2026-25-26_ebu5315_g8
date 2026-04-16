@@ -32,7 +32,22 @@
 </main>
 <footer class="page-footer"><p>圆几何互动学习网站 © 2026 EBU5315 Coursework</p></footer>
 <script>
-(()=>{const KEY="quizWrongBookV1";const get=()=>JSON.parse(localStorage.getItem(KEY)||"[]");const set=v=>localStorage.setItem(KEY,JSON.stringify(v));function render(){const items=get();document.getElementById("totalCount").textContent=items.length;document.getElementById("topicCount").textContent=items.filter(i=>i.source==="topic").length;document.getElementById("compCount").textContent=items.filter(i=>i.source==="comprehensive").length;document.getElementById("dailyCount").textContent=items.filter(i=>i.source==="daily").length;const list=document.getElementById("wrongList");list.innerHTML="";if(!items.length){list.innerHTML='<div class="empty"><h3>当前还没有错题记录</h3><p>去做题后，答错的题目会自动同步到这里。</p></div>';return}items.slice().reverse().forEach((item,idx)=>{const el=document.createElement("article");el.className="item";el.innerHTML=`<h3>${item.question}</h3><div class="meta"><span>来源：${item.sourceLabel}</span><span>专题：${item.topic}</span><span>正确答案：${item.answer}</span><span>记录时间：${item.savedAt}</span></div><p class="explain">${item.explanation}</p><div class="actions"><button class="btn" data-id="${item.id}">移除这道题</button></div>`;el.querySelector("button").onclick=()=>{const data=get().filter(x=>x.id!==item.id);set(data);render()};list.appendChild(el)})}document.getElementById("clearBtn").onclick=()=>{set([]);render()};window.addEventListener("load",()=>{const t=localStorage.getItem("appTheme")||"default",fs=localStorage.getItem("appFontSize")||"16";document.body.classList.remove("eye-mode","night-mode");if(t==="eye")document.body.classList.add("eye-mode");if(t==="night")document.body.classList.add("night-mode");document.documentElement.style.setProperty("--font-size",fs+"px");render()})})();
+(()=>{const KEY="quizWrongBookV1";const get=()=>JSON.parse(localStorage.getItem(KEY)||"[]");const set=v=>localStorage.setItem(KEY,JSON.stringify(v));function render(){const items=get();document.getElementById("totalCount").textContent=items.length;document.getElementById("topicCount").textContent=items.filter(i=>i.source==="topic").length;document.getElementById("compCount").textContent=items.filter(i=>i.source==="comprehensive").length;document.getElementById("dailyCount").textContent=items.filter(i=>i.source==="daily").length;const list=document.getElementById("wrongList");list.innerHTML="";if(!items.length){list.innerHTML='<div class="empty"><h3>当前还没有错题记录</h3><p>去做题后，答错的题目会自动同步到这里。</p></div>';return}items.slice().reverse().forEach((item,idx)=>{const el=document.createElement("article");el.className="item";el.innerHTML=`<h3>${item.question}</h3><div class="meta"><span>来源：${item.sourceLabel}</span><span>专题：${item.topic}</span><span>正确答案：${item.answer}</span><span>记录时间：${item.savedAt}</span></div><p class="explain">${item.explanation}</p><div class="actions"><button class="btn" data-id="${item.id}">移除这道题</button></div>`;el.querySelector("button").onclick=()=>{const data=get().filter(x=>x.id!==item.id);set(data);render()};list.appendChild(el)})}document.getElementById("clearBtn").onclick=()=>{set([]);render()};function applyState() {
+    const t=localStorage.getItem("appTheme")||"default",fs=localStorage.getItem("appFontSize")||"16";
+    document.body.classList.remove("eye-mode","night-mode");
+    if(t==="eye")document.body.classList.add("eye-mode");
+    if(t==="night")document.body.classList.add("night-mode");
+    document.documentElement.style.setProperty("--font-size",fs+"px");
+    document.documentElement.style.fontSize = fs + "px";
+}
+window.addEventListener("load",()=>{
+    applyState();
+    render()
+});
+window.addEventListener("storage", (e) => {
+    if (["appTheme", "appFontSize"].includes(e.key)) applyState();
+});
+})();
 </script>
 </body>
 </html>
