@@ -35,5 +35,265 @@ window.addEventListener("storage", (e) => {
 });
 })();
 </script>
+<script>
+(() => {
+    const KEY = "quizWrongBookV1";
+    const BANK = (window.QuizQuestionBank && window.QuizQuestionBank.topic) || [];
+    const groups = Array.from(document.querySelectorAll("#configView .choice-grid"));
+    const topicGroup = groups[0];
+    const difficultyGroup = groups[1];
+    const countGroup = groups[2];
+    const state = {
+        questions: [],
+        i: 0,
+        sel: [],
+        wrong: new Set()
+    };
+    const targetDifficulty = {
+        "基础": 2,
+        "进阶": 3,
+        "提高": 4
+    };
+
+    function getActiveText(group) {
+        const chip = group && group.querySelector(".chip.active");
+        return chip ? chip.textContent.trim() : "";
+    }
+
+    function parseCount(text) {
+        const match = text.match(/\d+/);
+        return match ? Number(match[0]) : 0;
+    }
+
+    function stars(value) {
+        const score = Math.max(0, Math.min(5, Math.round(value)));
+        return "★★★★★".slice(0, score) + "☆☆☆☆☆".slice(0, 5 - score);
+    }
+
+    function loadBook() {
+        return JSON.parse(localStorage.getItem(KEY) || "[]");
+    }
+
+    function saveBook(value) {
+        localStorage.setItem(KEY, JSON.stringify(value));
+    }
+
+    function syncWrong(index) {
+        const raw = state.questions[index];
+        if (!raw) return;
+        const data = loadBook().filter((item) => item.id !== raw.id);
+        data.push({
+            id: raw.id,
+            source: "topic",
+            sourceLabel: "专题练习",
+            topic: raw.topic,
+            question: raw.question,
+            answer: String.fromCharCode(65 + raw.answer),
+            explanation: raw.explanation,
+            savedAt: new Date().toLocaleString("zh-CN")
+        });
+        saveBook(data);
+    }
+
+    function show(id) {
+        ["configView", "quizView", "resultView"].forEach((viewId) => {
+            document.getElementById(viewId).classList.toggle("hidden", viewId !== id);
+        });
+    }
+
+    function buildQuestions() {
+        const topic = getActiveText(topicGroup);
+        const difficulty = getActiveText(difficultyGroup);
+        const count = parseCount(getActiveText(countGroup));
+        const target = targetDifficulty[difficulty] || 3;
+        const available = BANK.filter((item) => item.topic === topic);
+
+        if (available.length < count) {
+            window.alert(`当前专题只有 ${available.length} 道题，请选择不超过 ${available.length} 题。`);
+            return null;
+        }
+
+        return available
+            .slice()
+            .sort((a, b) => {
+                const diffGap = Math.abs(a.difficulty - target) - Math.abs(b.difficulty - target);
+                if (diffGap !== 0) return diffGap;
+                if (a.difficulty !== b.difficulty) return a.difficulty - b.difficulty;
+                return a.id.localeCompare(b.id);
+            })
+            .slice(0, count);
+    }
+
+    function resetSession(questions) {
+        state.questions = questions;
+        state.i = 0;
+        state.sel = Array(questions.length).fill(null);
+        state.wrong = new Set();
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById("grid");
+        grid.innerHTML = "";
+        state.questions.forEach((question, index) => {
+            const answered = state.sel[index] !== null;
+            const button = document.createElement("button");
+            button.className = "num" +
+                (answered ? " done" : "") +
+                (index === state.i ? " current" : "") +
+                (state.wrong.has(index) ? " wrong" : "");
+            button.textContent = index + 1;
+            button.onclick = () => {
+                state.i = index;
+                render();
+            };
+            grid.appendChild(button);
+        });
+    }
+
+    function render() {
+        const question = state.questions[state.i];
+        if (!question) return;
+
+        const selected = state.sel[state.i];
+        document.getElementById("topicName").textContent = question.topic || "";
+        document.getElementById("summaryMeta").textContent = `当前进度 ${state.i + 1} / ${state.questions.length}`;
+        document.getElementById("qIndex").textContent = state.i + 1;
+        document.getElementById("qTitle").textContent = question.question;
+        document.getElementById("diffStars").textContent = stars(question.difficulty);
+        document.getElementById("diffValue").textContent = `(${question.difficulty.toFixed(1)})`;
+        document.getElementById("masterStars").textContent = stars(question.mastery);
+        document.getElementById("prevBtn").disabled = state.i === 0;
+        document.getElementById("nextBtn").disabled = state.i === state.questions.length - 1;
+        document.getElementById("wrongBtn").textContent = `查看错题 (${state.wrong.size})`;
+
+        renderGrid();
+
+        const wrap = document.getElementById("opts");
+        wrap.innerHTML = "";
+        question.options.forEach((option, index) => {
+            const button = document.createElement("button");
+            button.className = "opt" +
+                (selected === index ? " selected" : "") +
+                (selected !== null && index === question.answer ? " correct" : "") +
+                (selected !== null && selected === index && selected !== question.answer ? " wrong" : "");
+            button.innerHTML = `<span class="dot"></span><span>${String.fromCharCode(65 + index)}. ${option}</span>`;
+            button.onclick = () => {
+                state.sel[state.i] = index;
+                if (index !== question.answer) {
+                    state.wrong.add(state.i);
+                    syncWrong(state.i);
+                } else {
+                    state.wrong.delete(state.i);
+                }
+                render();
+            };
+            wrap.appendChild(button);
+        });
+
+        const feedback = document.getElementById("feedback");
+        if (selected === null) {
+            feedback.className = "feedback hidden";
+            feedback.textContent = "";
+            return;
+        }
+
+        const isCorrect = selected === question.answer;
+        feedback.className = `feedback ${isCorrect ? "correct" : "wrong"}`;
+        feedback.textContent = isCorrect
+            ? `回答正确。${question.explanation}`
+            : `回答不正确，正确答案是 ${question.options[question.answer]}。${question.explanation}`;
+    }
+
+    function renderResult() {
+        const total = state.questions.length || 1;
+        const correct = state.sel.filter((answer, index) => answer === state.questions[index].answer).length;
+        const done = state.sel.filter((value) => value !== null).length;
+        const wrong = done - correct;
+        const score = Math.round(correct / total * 100);
+
+        document.getElementById("scoreStat").textContent = `${score} 分`;
+        document.getElementById("accuracyStat").textContent = `${score}%`;
+        document.getElementById("correctStat").textContent = correct;
+        document.getElementById("wrongStat").textContent = wrong;
+        document.getElementById("aiSummary").textContent = wrong === 0
+            ? "本次专题练习完成得很好，基础概念和性质判断比较稳定，可以继续挑战更高难度。"
+            : "本次专题练习已经具备一定基础，但部分知识点还不够稳定。建议优先重做错题，再回到基础内容继续巩固。";
+
+        const list = document.getElementById("wrongList");
+        list.innerHTML = "";
+        if (!state.wrong.size) {
+            list.innerHTML = '<div class="wrong-item"><strong>本次没有错题</strong><span>保持这个状态继续练习即可。</span></div>';
+            return;
+        }
+
+        Array.from(state.wrong).forEach((index) => {
+            const question = state.questions[index];
+            syncWrong(index);
+            const item = document.createElement("div");
+            item.className = "wrong-item";
+            item.innerHTML = `<strong>${question.question}</strong><p>所属专题: ${question.topic}。正确答案: ${String.fromCharCode(65 + question.answer)}</p><button class="btn" data-i="${index}">查看该题</button>`;
+            item.querySelector("button").onclick = () => {
+                state.i = index;
+                show("quizView");
+                render();
+            };
+            list.appendChild(item);
+        });
+    }
+
+    document.getElementById("startBtn").onclick = () => {
+        const questions = buildQuestions();
+        if (!questions || !questions.length) return;
+        resetSession(questions);
+        show("quizView");
+        render();
+    };
+
+    document.getElementById("backBtn").onclick = () => show("configView");
+    document.getElementById("prevBtn").onclick = () => {
+        if (state.i > 0) {
+            state.i -= 1;
+            render();
+        }
+    };
+    document.getElementById("nextBtn").onclick = () => {
+        if (state.i < state.questions.length - 1) {
+            state.i += 1;
+            render();
+        }
+    };
+    document.getElementById("finishBtn").onclick = () => {
+        renderResult();
+        show("resultView");
+    };
+    document.getElementById("redoBtn").onclick = () => {
+        state.sel = Array(state.questions.length).fill(null);
+        state.i = state.wrong.size ? Array.from(state.wrong)[0] : 0;
+        show("quizView");
+        render();
+    };
+    document.getElementById("resultHomeBtn").onclick = () => show("configView");
+    document.getElementById("aiBtn").onclick = () => {
+        const feedback = document.getElementById("feedback");
+        feedback.className = "feedback";
+        feedback.textContent = "AI 提示：先抓住圆心、半径、弦、切线之间的关系，再排除错误选项。";
+    };
+    document.getElementById("markBtn").onclick = () => {
+        if (state.wrong.has(state.i)) {
+            state.wrong.delete(state.i);
+        } else {
+            state.wrong.add(state.i);
+            syncWrong(state.i);
+        }
+        renderGrid();
+        const feedback = document.getElementById("feedback");
+        feedback.className = "feedback";
+        feedback.textContent = "该题已加入错题标记。";
+    };
+    document.getElementById("wrongBtn").onclick = () => {
+        window.location.href = "wrong-book.html";
+    };
+})();
+</script>
 </body>
 </html>
