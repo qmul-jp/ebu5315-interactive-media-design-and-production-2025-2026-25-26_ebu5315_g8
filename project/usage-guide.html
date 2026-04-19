@@ -48,13 +48,17 @@
         body.night-mode {
             --text: #e2e8f0;
             --muted: #94a3b8;
-            --surface: rgba(15, 23, 42, 0.85);
-            --border: #475569;
+            --surface: rgba(15, 23, 42, 0.9);
+            --border: #334155;
             --primary: #60a5fa;
             --primary-soft: #93c5fd;
             background:
-                radial-gradient(circle at 15% 10%, rgba(96, 165, 250, 0.16), transparent 25%),
-                linear-gradient(180deg, #0f172a 0%, #111827 100%);
+                radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.15), transparent 25%),
+                radial-gradient(circle at 86% 14%, rgba(56, 189, 248, 0.15), transparent 22%),
+                linear-gradient(rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
         }
 
         .container {

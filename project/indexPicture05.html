@@ -28,8 +28,15 @@
             --text-color: #166534;
         }
         body.night-mode {
-            --bg-color: #1e293b;
+            --bg-color: #020617;
             --text-color: #f1f5f9;
+            background:
+                radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.15), transparent 25%),
+                radial-gradient(circle at 86% 14%, rgba(56, 189, 248, 0.15), transparent 22%),
+                linear-gradient(rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
         }
         /* 针对不同模式调整容器和面板背景 */
         body.eye-mode #canvas, body.eye-mode .panel {
@@ -176,18 +183,32 @@
             // 更新页面标题
             document.title = currentTexts.pageTitle;
             // 更新面板标题
-            document.getElementById('theorem-title').textContent = currentTexts.theoremTitle;
-            document.getElementById('backBtn').querySelector('span').textContent = currentTexts.backBtn;
+            const titleEl = document.getElementById('theorem-title');
+            if (titleEl) titleEl.textContent = currentTexts.theoremTitle;
+
             // 更新角度框前缀（保留动态数值标签）
-            document.getElementById('angleA-box').innerHTML = currentTexts.angleA + '<span id="angA">0</span>°';
-            document.getElementById('angleB-box').innerHTML = currentTexts.angleB + '<span id="angB">0</span>°';
-            document.getElementById('angleC-box').innerHTML = currentTexts.angleC + '<span id="angC">0</span>°';
-            document.getElementById('angleD-box').innerHTML = currentTexts.angleD + '<span id="angD">0</span>°';
+            const aAbox = document.getElementById('angleA-box');
+            if (aAbox) aAbox.innerHTML = currentTexts.angleA + '<span id="angA">0</span>°';
+            
+            const aBbox = document.getElementById('angleB-box');
+            if (aBbox) aBbox.innerHTML = currentTexts.angleB + '<span id="angB">0</span>°';
+            
+            const aCbox = document.getElementById('angleC-box');
+            if (aCbox) aCbox.innerHTML = currentTexts.angleC + '<span id="angC">0</span>°';
+            
+            const aDbox = document.getElementById('angleD-box');
+            if (aDbox) aDbox.innerHTML = currentTexts.angleD + '<span id="angD">0</span>°';
+            
             // 更新和值框前缀
-            document.getElementById('sum1-box').innerHTML = currentTexts.sum1 + '<span id="sum1">180</span>°';
-            document.getElementById('sum2-box').innerHTML = currentTexts.sum2 + '<span id="sum2">180</span>°';
+            const s1box = document.getElementById('sum1-box');
+            if (s1box) s1box.innerHTML = currentTexts.sum1 + '<span id="sum1">180</span>°';
+            
+            const s2box = document.getElementById('sum2-box');
+            if (s2box) s2box.innerHTML = currentTexts.sum2 + '<span id="sum2">180</span>°';
+            
             // 更新提示语
-            document.getElementById('tips').innerHTML = currentTexts.tips;
+            const tipsEl = document.getElementById('tips');
+            if (tipsEl) tipsEl.innerHTML = currentTexts.tips;
         }
         // 页面加载时立即初始化文本
         initLangText();

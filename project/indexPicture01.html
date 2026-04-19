@@ -41,8 +41,15 @@
             --text-color: #166534;
         }
         body.night-mode {
-            --bg-color: #1e293b;
+            --bg-color: #020617;
             --text-color: #f1f5f9;
+            background:
+                radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.15), transparent 25%),
+                radial-gradient(circle at 86% 14%, rgba(56, 189, 248, 0.15), transparent 22%),
+                linear-gradient(rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
         }
         /* 针对不同模式调整容器和面板背景 */
         body.eye-mode .svg-wrap, body.eye-mode .control-panel {

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>圆学习方法 - 圆几何交互式学习平台</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Trebuchet MS", "Microsoft YaHei", sans-serif; }
+
+        :root {
+            --primary: #2563eb;
+            --primary-strong: #1d4ed8;
+            --text: #1f2937;
+            --muted: #64748b;
+            --bg-color: #f8fafc;
+            --surface: rgba(255, 255, 255, 0.85);
+            --surface-strong: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-lg: 0 24px 60px rgba(31, 41, 55, 0.12);
+            --radius-xl: 28px;
+            --font-size: 16px;
+        }
+
+        body {
+            color: var(--text); font-size: var(--font-size);
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            min-height: 100vh; line-height: 1.6; transition: all 0.3s ease;
+        }
+
+        body.eye-mode { --bg-color: #f0f9eb; --surface: rgba(247, 251, 242, 0.88); --text: #166534; --border-color: #c7e3b4; --primary: #438a4c; }
+        body.night-mode {
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --primary: #60a5fa;
+            --surface: rgba(15, 23, 42, 0.9);
+            --surface-strong: #0f172a;
+            --border-color: #334155;
+            --bg-color: #020617;
+            background:
+                radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.15), transparent 25%),
+                radial-gradient(circle at 86% 14%, rgba(56, 189, 248, 0.15), transparent 22%),
+                linear-gradient(rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+        }
+
+        .header-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 80px; padding: 0 4vw;
+            background: var(--surface); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem; font-weight: 800; font-family: "Orbitron", sans-serif;
+            background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+
+        .back-btn {
+            padding: 8px 20px; border-radius: 100px; background: var(--primary); color: white;
+            font-weight: 600; text-decoration: none; transition: all 0.3s;
+        }
+        .back-btn:hover { transform: translateX(-5px); background: var(--primary-strong); }
+
+        .content-container {
+            max-width: 1000px; margin: 0 auto; padding: 120px 4vw 60px;
+        }
+
+        .glass-panel {
+            background: var(--surface); backdrop-filter: blur(20px); border-radius: 40px;
+            padding: 50px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg);
+        }
+
+        h1 { font-size: 2.5rem; color: var(--primary); margin-bottom: 40px; text-align: center; font-weight: 800; }
+        
+        .method-chain {
+            position: relative; padding-left: 50px; margin: 40px 0;
+        }
+        .method-chain::before {
+            content: ""; position: absolute; left: 15px; top: 0; bottom: 0; width: 4px;
+            background: linear-gradient(180deg, var(--primary), var(--primary-strong)); border-radius: 2px;
+        }
+
+        .chain-step {
+            position: relative; margin-bottom: 40px;
+        }
+        .chain-step::before {
+            content: ""; position: absolute; left: -44px; top: 0; width: 24px; height: 24px;
+            background: var(--primary); border: 4px solid var(--surface-strong); border-radius: 50%;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+        }
+        .chain-step h3 { font-size: 1.5rem; color: var(--primary); margin-bottom: 10px; }
+        .chain-step p { font-size: 1.1rem; color: var(--text); }
+
+        .fun-case {
+            background: rgba(37, 99, 235, 0.05); border-radius: 25px; padding: 30px; margin-top: 50px;
+            border: 1px solid rgba(37, 99, 235, 0.1);
+        }
+        .fun-case h4 { color: var(--primary-strong); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .fun-case i { color: #f59e0b; }
+
+        @media (max-width: 768px) {
+            .glass-panel { padding: 30px 20px; }
+            h1 { font-size: 1.8rem; }
+            .chain-step h3 { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header-container">
+        <a href="index.html" class="logo">CIRCLE GEOMETRY</a>
+        <a href="index.html" class="back-btn" id="backBtn">返回首页</a>
+    </header>
+
+    <main class="content-container">
+        <div class="glass-panel">
+            <h1 id="pageTitle">圆学习方法</h1>
+            
+            <div class="method-chain" id="methodContent">
+                <!-- 内容由JS动态填充 -->
+            </div>
+
+            <div class="fun-case" id="funCase">
+                <!-- 趣味案例由JS动态填充 -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const langTexts = {
+            'zh-CN': {
+                backBtn: '返回首页',
+                pageTitle: '圆学习思维链路',
+                steps: [
+                    { t: '1. 零基础入门：直观感知', d: '从身边的圆入手，理解圆的完美对称性。观察车轮为什么是圆的，感受“一中同长”的直观魅力。' },
+                    { t: '2. 基础性质：属性拆解', d: '通过动手折叠、测量，掌握半径、直径、周长和面积的初步关系，建立空间感。' },
+                    { t: '3. 定理证明：逻辑构建', d: '不只是死记硬背，尝试推导垂径定理、圆周角定理，理解几何背后的逻辑推演力量。' },
+                    { t: '4. 综合题型：模型联想', d: '学会将复杂图形拆解为基本模型（如“辅助线作法”），掌握圆与三角形、四边形的综合应用。' },
+                    { t: '5. 拓展应用：思维升华', d: '将圆的知识应用于物理、工程、艺术等领域，体会数学作为宇宙语言的奥秘。' }
+                ],
+                funCase: {
+                    t: '趣味案例：为什么井盖是圆的？',
+                    d: '这是一个经典的思维题目。圆形的井盖无论怎么翻转、倾斜，由于其直径在任何方向都相等，它都不会掉进井里。而方形或长方形的井盖，如果沿着对角线翻转，很容易就会掉下去。这就是圆的“等宽性”在生活中的智慧应用。'
+                }
+            },
+            'en': {
+                backBtn: 'Back Home',
+                pageTitle: 'Circle Learning Methods',
+                steps: [
+                    { t: '1. Beginner: Perception', d: 'Understand circle symmetry through objects like wheels and lids.' },
+                    { t: '2. Basics: Properties', d: 'Master the relationships between radius, diameter, and circumference.' },
+                    { t: '3. Proofs: Logic', d: 'Derive theorems like the inscribed angle theorem to understand geometric logic.' },
+                    { t: '4. Synthesis: Models', d: 'Break down complex figures into basic geometric models.' },
+                    { t: '5. Application: Mastery', d: 'Apply circle knowledge to physics, engineering, and art.' }
+                ],
+                funCase: {
+                    t: 'Fun Case: Why are manhole covers round?',
+                    d: 'A circular cover cannot fall through its opening because its diameter is constant in all directions. A square cover, however, could fall if tilted diagonally.'
+                }
+            }
+        };
+
+        function initPage() {
+            const lang = localStorage.getItem('appLang') || 'zh-CN';
+            const theme = localStorage.getItem('appTheme') || 'default';
+            const texts = langTexts[lang] || langTexts['zh-CN'];
+
+            document.body.className = theme === 'default' ? '' : theme + '-mode';
+            document.getElementById('backBtn').textContent = texts.backBtn;
+            document.getElementById('pageTitle').textContent = texts.pageTitle;
+
+            let stepsHtml = '';
+            texts.steps.forEach(step => {
+                stepsHtml += `<div class="chain-step"><h3>${step.t}</h3><p>${step.d}</p></div>`;
+            });
+            document.getElementById('methodContent').innerHTML = stepsHtml;
+
+            document.getElementById('funCase').innerHTML = `<h4><i class="fas fa-lightbulb"></i> ${texts.funCase.t}</h4><p>${texts.funCase.d}</p>`;
+        }
+
+        window.onload = initPage;
+    </script>
+</body>
+</html>
