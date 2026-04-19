@@ -7,8 +7,68 @@
     <title>圆几何交互式学习平台</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for rendering math formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&display=swap');
+
+        /* 加载动画样式 */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease-out;
+        }
+
+        #loading-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .logo-icon-final {
+            width: 28px;
+            height: 28px;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(37, 99, 235, 0.4) 60%, rgba(37, 99, 235, 0.2));
+            border-radius: 50%;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 12px;
+            box-shadow: 
+                0 4px 10px rgba(37, 99, 235, 0.2),
+                inset 0 2px 4px rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .logo-icon-final.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
 
     /* 全局样式重置 */
         * {
@@ -66,9 +126,17 @@
             --muted: #94a3b8;
             --primary: #60a5fa;
             --primary-strong: #3b82f6;
-            --surface: rgba(30, 41, 59, 0.88);
-            --surface-strong: #1e293b;
-            --border-color: #475569;
+            --surface: rgba(15, 23, 42, 0.9);
+            --surface-strong: #0f172a;
+            --border-color: #334155;
+            --bg-color: #020617;
+            background:
+                radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.15), transparent 25%),
+                radial-gradient(circle at 86% 14%, rgba(56, 189, 248, 0.15), transparent 22%),
+                linear-gradient(rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
         }
 
         a {
@@ -467,6 +535,299 @@
             opacity: 0.6;
             z-index: 1;
         }
+
+        /* 知识模块网格 */
+        .knowledge-modules-grid {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .knowledge-card {
+            aspect-ratio: 1 / 1;
+            background:
+                radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.08) 45%, rgba(255, 255, 255, 0.02) 70%),
+                linear-gradient(150deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08));
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow:
+                0 15px 35px rgba(15, 23, 42, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.72),
+                inset 0 -12px 20px rgba(15, 23, 42, 0.05);
+            backdrop-filter: blur(20px) saturate(150%);
+            -webkit-backdrop-filter: blur(20px) saturate(150%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            isolation: isolate;
+            text-decoration: none; /* 确保作为链接时无下划线 */
+        }
+
+        .knowledge-card::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            padding: 2px;
+            border-radius: 42px;
+            pointer-events: none;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05));
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            z-index: 1;
+        }
+
+        .knowledge-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(37, 99, 235, 0.25);
+            border-color: var(--primary);
+        }
+
+        .knowledge-card i {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            transition: transform 0.4s;
+        }
+
+        .knowledge-card:hover i {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .knowledge-card h4 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .knowledge-card p {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        /* VIP模块样式 */
+        .vip-banner-container {
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 40px;
+        }
+
+        .vip-banner {
+            width: 100%;
+            background: 
+                radial-gradient(circle at 5% 50%, rgba(245, 158, 11, 0.15), transparent 40%),
+                radial-gradient(circle at 95% 50%, rgba(245, 158, 11, 0.15), transparent 40%),
+                var(--surface);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border-radius: 30px;
+            padding: 30px 50px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            box-shadow: 
+                0 10px 40px rgba(245, 158, 11, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vip-banner:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 20px 60px rgba(245, 158, 11, 0.2);
+            border-color: #f59e0b;
+        }
+
+        .vip-info { display: flex; align-items: center; gap: 25px; }
+        .vip-icon { 
+            font-size: 2.8rem; 
+            color: #f59e0b;
+            filter: drop-shadow(0 4px 10px rgba(245, 158, 11, 0.3));
+        }
+        .vip-text h4 { font-size: 1.6rem; font-weight: 800; color: #b45309; margin-bottom: 5px; }
+        .vip-text p { font-size: 1rem; color: var(--muted); }
+
+        .vip-price-tag {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 100px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            box-shadow: 0 8px 20px rgba(217, 119, 6, 0.3);
+        }
+
+        body.night-mode .vip-banner {
+            background: 
+                radial-gradient(circle at 5% 50%, rgba(245, 158, 11, 0.1), transparent 40%),
+                var(--surface);
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+        body.night-mode .vip-text h4 { color: #f59e0b; }
+
+        /* 右侧圆规入口 */
+        .drawing-tool-entrance {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 70px;
+            height: 70px;
+            background: var(--surface);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-decoration: none;
+        }
+
+        .drawing-tool-entrance:hover {
+            transform: translateY(-50%) scale(1.1);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+        }
+
+        .drawing-tool-entrance i {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .drawing-tool-entrance::after {
+            content: var(--tooltip, "绘图工具");
+            position: absolute;
+            right: 85px;
+            background: var(--primary);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateX(10px);
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+
+        .drawing-tool-entrance:hover::after {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* 绘图工具气泡动画样式 */
+        .bubble-container {
+            position: fixed;
+            right: 30px; /* 与圆规图标对齐 */
+            top: 50%;
+            width: 70px; /* 与圆规图标宽度一致 */
+            height: 70px;
+            z-index: 9998;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .drawing-bubble {
+            position: absolute;
+            background: var(--surface);
+            backdrop-filter: blur(12px) saturate(150%);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0;
+            white-space: nowrap;
+            opacity: 0;
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: translateY(45px); /* 初始位置在圆规下方 */
+            overflow: hidden;
+            left: 50%;
+            margin-left: -6px; /* 初始宽度一半 */
+        }
+
+        .drawing-bubble.emerge {
+            opacity: 1;
+            transform: translateY(-5px);
+            width: 20px;
+            height: 20px;
+            margin-left: -10px;
+        }
+
+        .drawing-bubble.stretch {
+            width: 130px;
+            height: 42px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            padding: 0 15px;
+            transform: translateY(-85px); /* 移动到正上方 */
+            margin-left: -65px; /* 拉伸后宽度一半 */
+        }
+
+        .drawing-bubble::after { /* 聊天云尖角 */
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid var(--primary);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .drawing-bubble.stretch::after { opacity: 1; }
+
+        #bubble-particle-canvas {
+            position: absolute;
+            top: -120px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        body.night-mode .drawing-tool-entrance {
+            background: rgba(15, 23, 42, 0.9);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+        body.night-mode .drawing-tool-entrance:hover {
+            border-color: #60a5fa;
+        }
+
         .search-title { font-size: 2rem; margin-bottom: 30px; font-weight: 800; color: var(--primary); }
         .search-box { display: flex; gap: 12px; background: rgba(255, 255, 255, 0.42); padding: 8px; border-radius: 100px; border: 1px solid rgba(255, 255, 255, 0.62); transition: all 0.3s; }
         .search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
@@ -557,6 +918,8 @@
             .nav-main { display: none; } /* 移动端简化导航 */
             .main-container { padding-top: 100px; gap: 40px; }
             .ai-search-container { padding: 30px 20px; }
+            .knowledge-modules-grid { grid-template-columns: 1fr; gap: 20px; }
+            .knowledge-card { aspect-ratio: auto; min-height: 200px; padding: 20px; }
             .search-title { font-size: 1.5rem; }
             .search-box { flex-direction: column; border-radius: 20px; }
             .search-btn { border-radius: 16px; }
@@ -564,9 +927,26 @@
     </style>
 </head>
 <body>
+    <!-- 加载动画 -->
+    <div id="loading-overlay">
+        <canvas id="loading-canvas"></canvas>
+    </div>
+
+    <!-- 悬浮圆规入口 -->
+    <a href="drawing.html" class="drawing-tool-entrance" id="drawingEntrance">
+        <i class="fas fa-drafting-compass"></i>
+    </a>
+    <div class="bubble-container">
+        <div class="drawing-bubble" id="drawingBubble">点我尝试绘图</div>
+        <canvas id="bubble-particle-canvas" width="200" height="150"></canvas>
+    </div>
+
     <!-- 头部：通栏，适配所有屏幕，包含logo/导航/语言/设置/广告 -->
     <header class="header-container">
-        <div class="logo" id="logoText">圆几何交互式学习平台</div>
+        <div class="logo">
+            <span class="logo-icon-final" id="finalLogoIcon"></span>
+            <span id="logoText">圆几何交互式学习平台</span>
+        </div>
         <nav class="nav-main">
             <span class="nav-droplet" aria-hidden="true"></span>
             <a href="index.html" class="nav-link" id="navHome">首页</a>
@@ -623,6 +1003,41 @@
                 <input type="text" class="search-input" placeholder="请输入圆几何相关知识点，如：圆的垂径定理..." autocomplete="off" id="searchPlaceholder">
                 <button class="search-btn" id="searchBtn">发送查询</button>
             </div>
+        </div>
+
+        <!-- 新增：三个知识模块 -->
+        <div class="knowledge-modules-grid">
+            <a href="culture.html" class="knowledge-card" data-module="culture">
+                <i class="fas fa-landmark"></i>
+                <h4 id="moduleCultureTitle">圆文化小知识</h4>
+                <p id="moduleCultureDesc">探索圆的历史演变与数学史地位</p>
+            </a>
+            <a href="theorems.html" class="knowledge-card" data-module="theorems">
+                <i class="fas fa-drafting-compass"></i>
+                <h4 id="moduleTheoremsTitle">圆经典定理</h4>
+                <p id="moduleTheoremsDesc">由易到难，系统掌握圆的核心定理</p>
+            </a>
+            <a href="methods.html" class="knowledge-card" data-module="methods">
+                <i class="fas fa-lightbulb"></i>
+                <h4 id="moduleMethodsTitle">圆学习方法</h4>
+                <p id="moduleMethodsDesc">构建系统思维链路，趣味化学习圆</p>
+            </a>
+        </div>
+
+        <!-- 新增：VIP充值模块 -->
+        <div class="vip-banner-container">
+            <a href="vip.html" class="vip-banner">
+                <div class="vip-info">
+                    <i class="fas fa-crown vip-icon"></i>
+                    <div class="vip-text">
+                        <h4 id="vipTitle">开通 VIP 会员</h4>
+                        <p id="vipDesc">解锁最新题目，抢先玩最新游戏，畅享极致学习体验</p>
+                    </div>
+                </div>
+                <div class="vip-price-tag" id="vipPriceTag">
+                    低至 0.2 元 / 天
+                </div>
+            </a>
         </div>
     </main>
 
@@ -681,7 +1096,113 @@
                 errorConsole: '可打开F12控制台查看完整日志',
                 errorCORS: '网络错误：跨域限制！请搭建后端代理或临时禁用浏览器跨域测试。',
                 error401: 'API_KEY无效/过期！请检查你的API_KEY。',
-                errorOther: '网络错误：{msg}，请检查网络或API配置！'
+                errorOther: '网络错误：{msg}，请检查网络或API配置！',
+                // 新增模块翻译
+                moduleCultureTitle: '圆文化小知识',
+                moduleCultureDesc: '探索圆的历史演变与数学史地位',
+                moduleTheoremsTitle: '圆经典定理',
+                moduleTheoremsDesc: '由易到难，系统掌握圆的核心定理',
+                moduleMethodsTitle: '圆学习方法',
+                moduleMethodsDesc: '构建系统思维链路，趣味化学习圆',
+                // VIP 翻译
+                vipTitle: '开通 VIP 会员',
+                vipDesc: '解锁最新题目，抢先玩最新游戏，畅享极致学习体验',
+                vipPriceTag: '低至 0.2 元 / 天',
+                drawingEntrance: '绘图工具',
+                drawingBubble: '点我尝试绘图',
+                cultureContent: `
+                    <div class="content-section">
+                        <h5>派（圆周率）的历史与趣味计算</h5>
+                        <p>圆周率（π）是圆的周长与直径之比。它的探索史几乎贯穿了整个人类文明史：</p>
+                        <ul class="content-list">
+                            <li><strong>古代估算</strong>：巴比伦人（3.125）、埃及人（3.16）。</li>
+                            <li><strong>阿基米德</strong>：公元前3世纪，利用正96边形将π确定在3.1408与3.1428之间。</li>
+                            <li><strong>祖冲之</strong>：南朝时期，将π精确到小数点后7位（3.1415926-3.1415927），领先世界近千年。</li>
+                        </ul>
+                    </div>
+                    <div class="content-section">
+                        <h5>古代割圆术介绍</h5>
+                        <p>由魏晋时期数学家刘徽提出，“割之弥细，所失弥少，割之又割，以至于不可割，则与圆周合体而无所失矣。”</p>
+                        <div class="diagram-placeholder">
+                            <svg viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1"/>
+                                <polygon points="50,10 90,50 50,90 10,50" fill="none" stroke="var(--muted)" stroke-width="0.5"/>
+                                <polygon points="50,10 70,18 90,50 78,70 50,90 30,82 10,50 22,30" fill="none" stroke="var(--primary-strong)" stroke-width="0.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="content-section">
+                        <h5>圆在数学史中的地位</h5>
+                        <p>圆被古希腊哲学家视为“最完美的平面图形”。它是解析几何、三角学以及现代物理学（如简谐运动）的基石。</p>
+                    </div>
+                `,
+                theoremsContent: `
+                    <div class="theorem-level">
+                        <h6><i class="fas fa-star"></i> 第一层：基础入门</h6>
+                        <ul class="content-list">
+                            <li><strong>圆的定义</strong>：平面内到定点距离等于定长的点的集合。</li>
+                            <li><strong>轴对称性</strong>：圆是轴对称图形，任何一条直径所在的直线都是对称轴。</li>
+                            <li><strong>半径与直径</strong>：$d = 2r$。</li>
+                            <li><strong>等圆与等弧</strong>：能够重合的圆叫等圆，能够重合的弧叫等弧。</li>
+                        </ul>
+                    </div>
+                    <div class="theorem-level">
+                        <h6><i class="fas fa-star"></i><i class="fas fa-star"></i> 第二层：核心进阶</h6>
+                        <ul class="content-list">
+                            <li><strong>垂径定理</strong>：垂直于弦的直径平分这条弦，并且平分弦所对的两条弧。
+                                <div class="diagram-placeholder">
+                                    <svg viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1"/>
+                                        <line x1="20" y1="30" x2="80" y2="30" stroke="var(--text)" stroke-width="1"/>
+                                        <line x1="50" y1="10" x2="50" y2="90" stroke="var(--primary-strong)" stroke-width="1"/>
+                                        <rect x="47" y="27" width="3" height="3" fill="none" stroke="var(--primary-strong)" stroke-width="0.5"/>
+                                    </svg>
+                                </div>
+                            </li>
+                            <li><strong>圆周角定理</strong>：同弧或等弧所对的圆周角等于它所对的圆心角的一半。</li>
+                            <li><strong>切线的判定</strong>：经过半径的外端并且垂直于这条半径的直线是圆的切线。</li>
+                            <li><strong>切线长定理</strong>：从圆外一点引圆的两条切线，它们的切线长相等。</li>
+                        </ul>
+                    </div>
+                    <div class="theorem-level">
+                        <h6><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> 第三层：综合拓展</h6>
+                        <ul class="content-list">
+                            <li><strong>圆幂定理</strong>：包括相交弦定理、切割线定理及其推论。</li>
+                            <li><strong>托勒密定理</strong>：圆内接四边形的两对边乘积之和等于对角线的乘积。
+                                <div class="diagram-placeholder">
+                                    <svg viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1"/>
+                                        <polygon points="50,10 85,35 70,85 20,60" fill="none" stroke="var(--muted)" stroke-width="0.8"/>
+                                        <line x1="50" y1="10" x2="70" y2="85" stroke="var(--primary-strong)" stroke-width="0.5" stroke-dasharray="2,2"/>
+                                        <line x1="85" y1="35" x2="20" y2="60" stroke="var(--primary-strong)" stroke-width="0.5" stroke-dasharray="2,2"/>
+                                    </svg>
+                                </div>
+                            </li>
+                            <li><strong>西姆松定理</strong>：过圆周上任一点作三角形三边的垂线，三个垂足共线。</li>
+                        </ul>
+                    </div>
+                `,
+                methodsContent: `
+                    <div class="content-section">
+                        <h5>学习思维链路</h5>
+                        <div class="method-step">
+                            <div class="step-num">1</div>
+                            <div class="step-info"><h6>直观感知</h6><p>从对称性入手，理解圆的完美性。观察生活中的轮子、井盖。</p></div>
+                        </div>
+                        <div class="method-step">
+                            <div class="step-num">2</div>
+                            <div class="step-info"><h6>属性拆解</h6><p>掌握半径、弦、弧、角之间的数量关系与位置关系。</p></div>
+                        </div>
+                        <div class="method-step">
+                            <div class="step-num">3</div>
+                            <div class="step-info"><h6>逻辑证明</h6><p>通过全等三角形和相似三角形，推导圆的核心定理。</p></div>
+                        </div>
+                    </div>
+                    <div class="content-section">
+                        <h5>趣味案例：为什么井盖是圆的？</h5>
+                        <p>因为圆的直径在各个方向都相等。如果是方形，其对角线长于边长，井盖竖起来时容易掉入井内。圆形的井盖无论怎么翻转，都不会掉下去。</p>
+                    </div>
+                `
             },
             'en': {
                 logoText: 'Interactive Learning Platform for Circle Geometry',
@@ -713,7 +1234,100 @@
                 errorConsole: 'Open F12 console to view complete logs',
                 errorCORS: 'Network error: CORS restriction! Please set up a backend proxy or disable browser CORS temporarily for testing.',
                 error401: 'API_KEY is invalid/expired! Please check your API_KEY.',
-                errorOther: 'Network error: {msg}, please check network or API configuration!'
+                errorOther: 'Network error: {msg}, please check network or API configuration!',
+                // Module translations
+                moduleCultureTitle: 'Circle Culture Trivia',
+                moduleCultureDesc: 'Explore the history and status of circles in math history',
+                moduleTheoremsTitle: 'Classic Circle Theorems',
+                moduleTheoremsDesc: 'Master core theorems from easy to difficult',
+                moduleMethodsTitle: 'Circle Learning Methods',
+                moduleMethodsDesc: 'Build a systematic thinking chain for fun learning',
+                // VIP Translation
+                vipTitle: 'Upgrade to VIP Member',
+                vipDesc: 'Unlock latest questions, early access to new games, and enjoy premium learning experience.',
+                vipPriceTag: 'As low as 0.2 CNY / Day',
+                drawingEntrance: 'Drawing Tool',
+                drawingBubble: 'Click to draw',
+                cultureContent: `
+                    <div class="content-section">
+                        <h5>History of Pi (π)</h5>
+                        <p>Pi is the ratio of a circle\'s circumference to its diameter:</p>
+                        <ul class="content-list">
+                            <li><strong>Ancient Estimates</strong>: Babylon (3.125), Egypt (3.16).</li>
+                            <li><strong>Archimedes</strong>: 3rd century BC, used 96-sided polygons to bound π between 3.1408 and 3.1428.</li>
+                            <li><strong>Zu Chongzhi</strong>: 5th century AD, calculated π to 7 decimal places, a record for 1000 years.</li>
+                        </ul>
+                    </div>
+                    <div class="content-section">
+                        <h5>Ancient Cyclotomy</h5>
+                        <p>Proposed by mathematician Liu Hui: "The finer the cut, the smaller the loss."</p>
+                        <div class="diagram-placeholder">
+                            <svg viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1"/>
+                                <polygon points="50,10 90,50 50,90 10,50" fill="none" stroke="var(--muted)" stroke-width="0.5"/>
+                                <polygon points="50,10 70,18 90,50 78,70 50,90 30,82 10,50 22,30" fill="none" stroke="var(--primary-strong)" stroke-width="0.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="content-section">
+                        <h5>Status of Circles</h5>
+                        <p>Considered the "most perfect shape" by Greek philosophers. It is the foundation of geometry, trigonometry, and physics.</p>
+                    </div>
+                `,
+                theoremsContent: `
+                    <div class="theorem-level">
+                        <h6><i class="fas fa-star"></i> Level 1: Basics</h6>
+                        <ul class="content-list">
+                            <li><strong>Definition</strong>: Points equidistant from a center.</li>
+                            <li><strong>Symmetry</strong>: Any diameter is an axis of symmetry.</li>
+                            <li><strong>Radius & Diameter</strong>: $d = 2r$.</li>
+                        </ul>
+                    </div>
+                    <div class="theorem-level">
+                        <h6><i class="fas fa-star"></i><i class="fas fa-star"></i> Level 2: Core</h6>
+                        <ul class="content-list">
+                            <li><strong>Vertical Chord Theorem</strong>: Perpendicular diameter bisects the chord.
+                                <div class="diagram-placeholder">
+                                    <svg viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1"/>
+                                        <line x1="20" y1="30" x2="80" y2="30" stroke="var(--text)" stroke-width="1"/>
+                                        <line x1="50" y1="10" x2="50" y2="90" stroke="var(--primary-strong)" stroke-width="1"/>
+                                    </svg>
+                                </div>
+                            </li>
+                            <li><strong>Inscribed Angle Theorem</strong>: Central angle is twice the inscribed angle.</li>
+                            <li><strong>Tangent Property</strong>: Radius is perpendicular to the tangent at the contact point.</li>
+                        </ul>
+                    </div>
+                    <div class="theorem-level">
+                        <h6><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> Level 3: Advanced</h6>
+                        <ul class="content-list">
+                            <li><strong>Power of a Point</strong>: Includes intersecting chords and secant-tangent theorems.</li>
+                            <li><strong>Ptolemy\'s Theorem</strong>: In a cyclic quadrilateral, the sum of products of opposite sides equals the product of diagonals.</li>
+                        </ul>
+                    </div>
+                `,
+                methodsContent: `
+                    <div class="content-section">
+                        <h5>Learning Chain</h5>
+                        <div class="method-step">
+                            <div class="step-num">1</div>
+                            <div class="step-info"><h6>Perception</h6><p>Start with symmetry and the perfection of circles. Observe wheels and lids.</p></div>
+                        </div>
+                        <div class="method-step">
+                            <div class="step-num">2</div>
+                            <div class="step-info"><h6>Properties</h6><p>Master the relations between radius, chord, arc, and angle.</p></div>
+                        </div>
+                        <div class="method-step">
+                            <div class="step-num">3</div>
+                            <div class="step-info"><h6>Proofs</h6><p>Derive core theorems using congruent and similar triangles.</p></div>
+                        </div>
+                    </div>
+                    <div class="content-section">
+                        <h5>Why are manhole covers round?</h5>
+                        <p>Because the diameter is constant in all directions. A round lid cannot fall through its opening, unlike a square one.</p>
+                    </div>
+                `
             }
         };
 
@@ -950,6 +1564,19 @@
             document.getElementById('contactTitle').textContent = texts.contactTitle;
             document.getElementById('contactInfo').innerHTML = texts.contactInfo;
             
+            // 更新新增模块文本
+            document.getElementById('moduleCultureTitle').textContent = texts.moduleCultureTitle;
+            document.getElementById('moduleCultureDesc').textContent = texts.moduleCultureDesc;
+            document.getElementById('moduleTheoremsTitle').textContent = texts.moduleTheoremsTitle;
+            document.getElementById('moduleTheoremsDesc').textContent = texts.moduleTheoremsDesc;
+            document.getElementById('moduleMethodsTitle').textContent = texts.moduleMethodsTitle;
+            document.getElementById('moduleMethodsDesc').textContent = texts.moduleMethodsDesc;
+            document.getElementById('vipTitle').textContent = texts.vipTitle;
+            document.getElementById('vipDesc').textContent = texts.vipDesc;
+            document.getElementById('vipPriceTag').textContent = texts.vipPriceTag;
+            document.getElementById('drawingEntrance').style.setProperty('--tooltip', `"${texts.drawingEntrance}"`);
+            document.getElementById('drawingBubble').textContent = texts.drawingBubble;
+
             // 更新html lang属性
             document.documentElement.lang = lang;
             
@@ -960,6 +1587,11 @@
                     link.classList.add('active');
                 }
             });
+
+            // 重新渲染页面中的数学公式
+            if (window.MathJax && window.MathJax.typeset) {
+                window.MathJax.typeset();
+            }
         }
 
         // ********** 2. 轮播图：自动循环2秒，循环播放5张 **********
@@ -1077,7 +1709,105 @@
             }
         });
 
-       // ********** 9. AI接口调用：真实问答，返回有效结果 **********
+        // ********** 11. 知识模块弹窗逻辑 **********
+        const knowledgeCards = document.querySelectorAll('.knowledge-card');
+
+        // 页面跳转逻辑：点击卡片时，确保语言和主题已保存到 localStorage
+        knowledgeCards.forEach(card => {
+            card.addEventListener('click', (e) => {
+                // 默认行为是跳转，这里只需要确保 localStorage 已更新（实际上已经在各自的设置函数里更新了）
+            });
+        });
+
+       // ********** 11. 绘图工具气泡循环动画 **********
+        (function() {
+            const bubble = document.getElementById('drawingBubble');
+            const particleCanvas = document.getElementById('bubble-particle-canvas');
+            const pctx = particleCanvas.getContext('2d');
+            let particles = [];
+            let particleAnimation;
+
+            class Particle {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.vx = (Math.random() - 0.5) * 4;
+                    this.vy = (Math.random() - 0.5) * 4;
+                    this.radius = Math.random() * 3 + 1;
+                    this.alpha = 1;
+                    this.color = getComputedStyle(document.documentElement).getPropertyValue('--primary');
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.alpha -= 0.02;
+                }
+                draw() {
+                    pctx.save();
+                    pctx.globalAlpha = this.alpha;
+                    pctx.beginPath();
+                    pctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    pctx.fillStyle = this.color;
+                    pctx.fill();
+                    pctx.restore();
+                }
+            }
+
+            function startParticles() {
+                const rect = bubble.getBoundingClientRect();
+                const containerRect = document.querySelector('.bubble-container').getBoundingClientRect();
+                const centerX = rect.left - containerRect.left + rect.width / 2;
+                const centerY = rect.top - containerRect.top + rect.height / 2;
+                
+                particles = [];
+                for (let i = 0; i < 30; i++) {
+                    particles.push(new Particle(centerX, centerY));
+                }
+
+                function animateParticles() {
+                    pctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+                    particles.forEach((p, i) => {
+                        p.update();
+                        p.draw();
+                        if (p.alpha <= 0) particles.splice(i, 1);
+                    });
+                    if (particles.length > 0) {
+                        particleAnimation = requestAnimationFrame(animateParticles);
+                    }
+                }
+                animateParticles();
+            }
+
+            function runCycle() {
+                // 1. 缓缓冒出 (emerge)
+                bubble.classList.add('emerge');
+                
+                setTimeout(() => {
+                    // 2. 快速拉伸 (stretch)
+                    bubble.classList.add('stretch');
+                }, 500);
+
+                setTimeout(() => {
+                    // 3. 停留2秒后粒子态消失
+                    bubble.style.opacity = '0';
+                    bubble.style.transform += ' scale(1.1)';
+                    startParticles();
+                    
+                    setTimeout(() => {
+                        // 重置状态
+                        bubble.classList.remove('emerge', 'stretch');
+                        bubble.style.opacity = '';
+                        bubble.style.transform = '';
+                    }, 500);
+                }, 3000); // 0.5s emerge + 0.5s stretch + 2s stay
+            }
+
+            // 每隔 4 秒运行一次完整周期
+            setInterval(runCycle, 4500);
+            setTimeout(runCycle, 1000); // 初始延迟 1 秒启动
+        })();
+
+        // ********** 9. AI接口调用：真实问答，返回有效结果 **********
 // 火山方舟API Key（你的密钥）
 const API_KEY = "67805b72-0e18-42da-921d-b6a86a0746da";
 // 火山方舟API地址（替换原豆包地址）
@@ -1204,6 +1934,181 @@ async function getAiAnswer() {
         modalResult.innerHTML = `${errorMsg}<p style="font-size: 12px; color: #666; margin-top: 8px;">${texts.errorConsole}</p>`;
     }
 }
+
+// ********** 10. 启动加载动画逻辑 **********
+(function() {
+    const canvas = document.getElementById('loading-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('loading-overlay');
+    const finalLogoIcon = document.getElementById('finalLogoIcon');
+
+    let width, height;
+    let particles = [];
+    let animationFrame;
+    let phase = 'pi'; // pi, explode, circle, move
+    let startTime = Date.now();
+
+    // 强行兜底：如果10秒后还没加载完，强制关闭加载层
+    const failSafeTimeout = setTimeout(() => {
+        if (overlay && overlay.style.display !== 'none') {
+            console.warn('Loading animation timed out, forcing hide.');
+            hideOverlay();
+        }
+    }, 10000);
+
+    function hideOverlay() {
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        if (overlay) {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                if (finalLogoIcon) finalLogoIcon.classList.add('visible');
+            }, 800);
+        }
+        clearTimeout(failSafeTimeout);
+    }
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Particle {
+        constructor(x, y, targetX, targetY) {
+            this.x = x;
+            this.y = y;
+            this.targetX = targetX;
+            this.targetY = targetY;
+            this.vx = (Math.random() - 0.5) * 2;
+            this.vy = (Math.random() - 0.5) * 2;
+            this.radius = Math.random() * 2 + 1;
+            this.color = 'rgba(37, 99, 235, 0.6)';
+            this.friction = 0.95;
+            this.ease = 0.1;
+        }
+
+        update() {
+            if (phase === 'pi') {
+                this.x += (this.targetX - this.x) * this.ease;
+                this.y += (this.targetY - this.y) * this.ease;
+            } else if (phase === 'explode') {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                this.vy += 0.05;
+            } else if (phase === 'circle' || phase === 'move') {
+                this.x += (this.targetX - this.x) * this.ease;
+                this.y += (this.targetY - this.y) * this.ease;
+                if (phase === 'move') {
+                    this.radius *= 0.95;
+                }
+            }
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, Math.max(0, this.radius), 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+        }
+    }
+
+    function initPiParticles() {
+        try {
+            ctx.fillStyle = 'blue';
+            ctx.font = 'bold 200px serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('π', width / 2, height / 2);
+
+            const imageData = ctx.getImageData(0, 0, width, height).data;
+            ctx.clearRect(0, 0, width, height);
+
+            for (let y = 0; y < height; y += 8) { // 稍微增加步长减少粒子数量，提升性能
+                for (let x = 0; x < width; x += 8) {
+                    const index = (y * width + x) * 4;
+                    if (imageData[index + 3] > 128) {
+                        particles.push(new Particle(
+                            width / 2 + (Math.random() - 0.5) * 100,
+                            height / 2 + (Math.random() - 0.5) * 100,
+                            x, y
+                        ));
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Failed to init particles:', e);
+            hideOverlay();
+        }
+    }
+
+    function updateTargetsToCircle() {
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = Math.min(width, height) * 0.15;
+        particles.forEach((p, i) => {
+            const angle = (i / particles.length) * Math.PI * 2;
+            p.targetX = centerX + Math.cos(angle) * radius * (0.8 + Math.random() * 0.4);
+            p.targetY = centerY + Math.sin(angle) * radius * (0.8 + Math.random() * 0.4);
+            p.ease = 0.05 + Math.random() * 0.05;
+        });
+    }
+
+    function updateTargetsToLogo() {
+        if (!finalLogoIcon) {
+            hideOverlay();
+            return;
+        }
+        const rect = finalLogoIcon.getBoundingClientRect();
+        const targetX = rect.left + rect.width / 2;
+        const targetY = rect.top + rect.height / 2;
+        particles.forEach(p => {
+            p.targetX = targetX;
+            p.targetY = targetY;
+            p.ease = 0.15;
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        const elapsed = Date.now() - startTime;
+
+        if (phase === 'pi' && elapsed > 1500) {
+            phase = 'explode';
+            particles.forEach(p => {
+                p.vx = (Math.random() - 0.5) * 15;
+                p.vy = (Math.random() - 0.5) * 15;
+            });
+            startTime = Date.now();
+        } else if (phase === 'explode' && elapsed > 1000) {
+            phase = 'circle';
+            updateTargetsToCircle();
+            startTime = Date.now();
+        } else if (phase === 'circle' && elapsed > 1200) {
+            phase = 'move';
+            updateTargetsToLogo();
+            startTime = Date.now();
+        } else if (phase === 'move' && elapsed > 800) {
+            hideOverlay();
+            return;
+        }
+
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
+
+        animationFrame = requestAnimationFrame(animate);
+    }
+
+    if (particles.length === 0) initPiParticles();
+    animate();
+})();
     </script>
 </body>
 </html>

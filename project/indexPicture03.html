@@ -27,8 +27,15 @@
             --text-color: #166534;
         }
         body.night-mode {
-            --bg-color: #1e293b;
+            --bg-color: #020617;
             --text-color: #f1f5f9;
+            background:
+                radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.15), transparent 25%),
+                radial-gradient(circle at 86% 14%, rgba(56, 189, 248, 0.15), transparent 22%),
+                linear-gradient(rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
         }
         /* 针对不同模式调整容器和面板背景 */
         body.eye-mode #canvas, body.eye-mode .info {
@@ -155,18 +162,23 @@
         // ********** 3. 初始化页面文本（核心修改3）**********
         function initLangText() {
             // 更新页面标题
-        document.title = currentTexts.pageTitle;
-        // 更新静态文本
-        document.getElementById('theorem-title').textContent = currentTexts['theorem-title'];
-        document.getElementById('backBtn').querySelector('span').textContent = currentTexts.backBtn;
+            document.title = currentTexts.pageTitle;
+            // 更新静态文本
+            const titleEl = document.getElementById('theorem-title');
+            if (titleEl) titleEl.textContent = currentTexts['theorem-title'];
+            
             // 注意：angle1-item/angle2-item/relation-item 是“文本前缀+动态值”，需要拆分更新
-            document.getElementById('angle1-item').innerHTML = 
-                currentTexts['angle1-item'] + '<span class="value" id="angle1">0</span>°';
-            document.getElementById('angle2-item').innerHTML = 
-                currentTexts['angle2-item'] + '<span class="value" id="angle2">0</span>°';
-            document.getElementById('relation-item').innerHTML = 
-                currentTexts['relation-item'] + '<span class="value" id="relation">' + currentTexts.equal + '</span>';
-            document.getElementById('tips').innerHTML = currentTexts.tips;
+            const a1Item = document.getElementById('angle1-item');
+            if (a1Item) a1Item.innerHTML = currentTexts['angle1-item'] + '<span class="value" id="angle1">0</span>°';
+            
+            const a2Item = document.getElementById('angle2-item');
+            if (a2Item) a2Item.innerHTML = currentTexts['angle2-item'] + '<span class="value" id="angle2">0</span>°';
+            
+            const rItem = document.getElementById('relation-item');
+            if (rItem) rItem.innerHTML = currentTexts['relation-item'] + '<span class="value" id="relation">' + currentTexts.equal + '</span>';
+            
+            const tipsEl = document.getElementById('tips');
+            if (tipsEl) tipsEl.innerHTML = currentTexts.tips;
         }
         // 页面加载时立即初始化文本
         initLangText();
