@@ -1,7 +1,0 @@
-{
-  // 把 css、js 公用文件夹全部设为VSCode只读
-  "files.readonlyInclude": {
-    "css/**": true,
-    "js/**": true
-  }
-}
