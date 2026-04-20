@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用教程 | 圆几何测试学习中心</title>
+    <style>
+:root {
+    --text: #1f2937;
+    --muted: #64748b;
+    --primary: #2563eb;
+    --primary-strong: #1d4ed8;
+    --accent: #f4b860;
+    --accent-soft: #fff3dc;
+    --cyan-soft: #dbeafe;
+    --surface: rgba(255, 255, 255, 0.85);
+    --surface-strong: #ffffff;
+    --line: rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 24px 60px rgba(31, 41, 55, 0.12);
+    --shadow-md: 0 16px 32px rgba(31, 41, 55, 0.08);
+    --radius-xl: 28px;
+    --radius-lg: 22px;
+    --radius-md: 16px;
+    --font-size: 16px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Trebuchet MS", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: var(--text);
+    font-size: var(--font-size);
+    background:
+        radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.1), transparent 22%),
+        radial-gradient(circle at 86% 14%, rgba(37, 99, 235, 0.1), transparent 20%),
+        linear-gradient(rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+        linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    background-size: auto, auto, 46px 46px, 46px 46px, auto;
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: all 0.3s ease-in-out;
+}
+
+/* 模式切换：护眼/夜晚，修改CSS变量 */
+body.eye-mode {
+    --bg-color: #f0f9eb;
+    --surface: rgba(247, 251, 242, 0.88);
+    --text: #166534;
+    --line: #c7e3b4;
+    --primary: #438a4c;
+    --primary-strong: #3f6234;
+}
+body.night-mode {
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --primary: #60a5fa;
+    --primary-strong: #3b82f6;
+    --surface: rgba(15, 23, 42, 0.9);
+    --surface-strong: #0f172a;
+    --border-color: #334155;
+    --bg-color: #020617;
+    background:
+        radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.15), transparent 25%),
+        radial-gradient(circle at 86% 14%, rgba(56, 189, 248, 0.15), transparent 22%),
+        linear-gradient(rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+        linear-gradient(180deg, #020617 0%, #0f172a 100%);
+    background-size: auto, auto, 46px 46px, 46px 46px, auto;
+}
+
+.guide-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.5rem 1rem 0;
+}
+
+.guide-nav a {
+    padding: 0.85rem 1.5rem;
+    border-radius: 999px;
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.76);
+    border: 1px solid var(--line);
+    transition: all 0.2s;
+}
+
+.guide-nav a:hover {
+    background: white;
+    color: var(--primary);
+}
+
+.guide-nav a.active {
+    color: #fff;
+    background: var(--primary);
+}
+
+.quiz-return {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    z-index: 9999;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-weight: 900;
+    text-decoration: none;
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(12px);
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+body.night-mode .quiz-return {
+    background: rgba(2, 6, 23, 0.55);
+    border-color: rgba(148, 163, 184, 0.18);
+    color: #f1f5f9;
+}
+body.eye-mode .quiz-return {
+    background: rgba(247, 251, 242, 0.88);
+}
+.quiz-return:hover {
+    transform: translateY(-2px);
+}
+
+.guide-shell {
+    max-width: 1100px;
+    margin: 2rem auto 4rem;
+    padding: 0 1.5rem;
+}
+
+.guide-hero {
+    margin-bottom: 2.5rem;
+    padding: 2.5rem;
+    border-radius: 36px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(12px);
+}
+
+.guide-eyebrow {
+    color: var(--primary);
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.8rem;
+}
+
+.guide-hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+}
+
+.guide-summary {
+    font-size: 1.1rem;
+    line-height: 1.75;
+    color: var(--muted);
+    max-width: 800px;
+}
+
+.guide-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+}
+
+.overview-card {
+    padding: 2rem;
+    border-radius: 28px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-md);
+}
+
+.overview-card h2 {
+    margin-bottom: 1rem;
+    color: var(--primary);
+}
+
+.overview-card p {
+    line-height: 1.8;
+    color: var(--text);
+}
+
+.page-footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+}
+
+@media (max-width: 768px) {
+    .guide-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../js/common.js" defer></script>
+</head>
+<body>
+    <a class="quiz-return" href="test.html">返回测试首页</a>
+    <nav class="guide-nav">
+        <a href="../index/index.html" id="navHome">首页</a>
+        <a href="../game/game.html" id="navGame">游戏</a>
+        <a href="test.html" class="active" id="navQuiz">测试</a>
+    </nav>
+
+    <main class="guide-shell">
+        <section class="guide-hero">
+            <p class="guide-eyebrow" id="guideEyebrow">USAGE GUIDE</p>
+            <h1 id="guideTitle">使用教程</h1>
+            <p class="guide-summary" id="guideSummary">本页面为您提供三个已完成模块的快速概览：专题练习、综合练习和每日一题。先查看流程，然后进入您想要的目标页面。</p>
+        </section>
+
+        <div class="guide-grid">
+            <article class="overview-card">
+                <h2 id="overview1">专题练习</h2>
+                <p id="overview1Text">针对单一知识点进行强化训练，系统会自动记录错题并提供 AI 解释。</p>
+            </article>
+            <article class="overview-card">
+                <h2 id="overview2">综合练习</h2>
+                <p id="overview2Text">混合多个专题进行综合测评，适合阶段性复习和整体水平检测。</p>
+            </article>
+            <article class="overview-card">
+                <h2 id="overview3">每日一题</h2>
+                <p id="overview3Text">每天一道精选题目，保持学习节奏，积累连续打卡天数。</p>
+            </article>
+            <article class="overview-card">
+                <h2 id="overview4">使用建议</h2>
+                <p id="overview4Text">建议按照：使用教程 → 专题练习 → 综合练习 → 每日一题的顺序进行学习。</p>
+            </article>
+        </div>
+    </main>
+
+    <footer class="page-footer">
+        <p id="footerText">圆几何互动学习网站 © 2026 EBU5315 Coursework</p>
+    </footer>
+
+    <script>
+        function applyState() {
+            const lang = localStorage.getItem('appLang') || 'zh-CN';
+            const theme = localStorage.getItem('appTheme') || 'default';
+            const fontSize = localStorage.getItem('appFontSize') || '16';
+            
+            document.body.classList.remove('eye-mode', 'night-mode');
+            if (theme === 'eye') document.body.classList.add('eye-mode');
+            if (theme === 'night') document.body.classList.add('night-mode');
+            document.documentElement.style.setProperty('--font-size', fontSize + 'px');
+            document.documentElement.style.fontSize = fontSize + 'px';
+
+            const texts = {
+                'zh-CN': {
+                    navHome: '首页', navGame: '游戏', navQuiz: '测试',
+                    guideEyebrow: '使用指南', guideTitle: '使用教程',
+                    guideSummary: '本页面为您提供三个已完成模块的快速概览：专题练习、综合练习和每日一题。',
+                    overview1: '专题练习', overview1Text: '针对单一知识点进行强化训练，系统会自动记录错题并提供 AI 解释。',
+                    overview2: '综合练习', overview2Text: '混合多个专题进行综合测评，适合阶段性复习和整体水平检测。',
+                    overview3: '每日一题', overview3Text: '每天一道精选题目，保持学习节奏，积累连续打卡天数。',
+                    overview4: '使用建议', overview4Text: '建议按照：使用教程 → 专题练习 → 综合练习 → 每日一题的顺序进行学习。',
+                    footerText: '圆几何互动学习网站 © 2026 EBU5315 Coursework'
+                },
+                'en': {
+                    navHome: 'Home', navGame: 'Game', navQuiz: 'Test',
+                    guideEyebrow: 'USAGE GUIDE', guideTitle: 'User Guide',
+                    guideSummary: 'This page gives you a quick overview of the three completed modules: topic practice, comprehensive practice, and the daily quiz.',
+                    overview1: 'Topic Practice', overview1Text: 'Focus on a single knowledge point for targeted reinforcement.',
+                    overview2: 'Comprehensive Practice', overview2Text: 'Mix questions by difficulty for stage review and overall checking.',
+                    overview3: 'Daily Quiz', overview3Text: 'One question per day to keep a stable learning rhythm.',
+                    overview4: 'Suggestions', overview4Text: 'Follow: Guide → Topic Practice → Comprehensive Practice → Daily Quiz.',
+                    footerText: 'Circle Geometry Learning © 2026 EBU5315 Coursework'
+                }
+            }[lang] || { /* default to zh-CN logic */ };
+
+            Object.keys(texts).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = texts[id];
+            });
+            document.documentElement.lang = lang;
+        }
+
+        window.onload = applyState;
+        window.addEventListener('storage', (e) => {
+            if (['appLang', 'appTheme', 'appFontSize'].includes(e.key)) applyState();
+        });
+    </script>
+</body>
+</html>

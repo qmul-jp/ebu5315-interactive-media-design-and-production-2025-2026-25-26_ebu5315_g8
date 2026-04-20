@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>弧、弦、圆心角知识点</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: var(--bg-color, #f5f5f5);
+            color: var(--text-color, #333);
+            padding: 20px;
+            transition: all 0.3s ease-in-out;
+            font-size: var(--font-size, 16px);
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            background-color: #2563eb;
+            color: white;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+        .back-btn:hover {
+            background-color: #1d4ed8;
+            transform: translateX(-4px);
+        }
+        /* 模式切换：护眼/夜晚，修改CSS变量 */
+        body.eye-mode {
+            --bg-color: #f0f9eb;
+            --text-color: #166534;
+        }
+        body.night-mode {
+            --bg-color: #020617;
+            --text-color: #f1f5f9;
+            background:
+                radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.15), transparent 25%),
+                radial-gradient(circle at 86% 14%, rgba(56, 189, 248, 0.15), transparent 22%),
+                linear-gradient(rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+        }
+        /* 针对不同模式调整容器和面板背景 */
+        body.eye-mode .svg-container {
+            background-color: #f7fbf2;
+            border: 1px solid #c7e3b4;
+        }
+        body.night-mode .svg-container {
+            background-color: #2d3748;
+            border: 1px solid #475569;
+        }
+        body.night-mode circle[stroke="#2c3e50"] {
+            stroke: #94a3b8;
+        }
+        body.night-mode line[stroke="#2c3e50"] {
+            stroke: #94a3b8;
+        }
+        body.night-mode text[fill="#2c3e50"] {
+            fill: #cbd5e1;
+        }
+        h1 {
+            text-align: center;
+            color: var(--main-color, #2c3e50);
+            margin-bottom: 30px;
+        }
+        body.night-mode h1 {
+            --main-color: #60a5fa;
+        }
+        .svg-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        /* 可点击元素样式（hover高亮） */
+        .clickable {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .clickable:hover {
+            stroke-width: 3;
+            stroke: #e74c3c;
+        }
+        /* 知识点弹窗样式 */
+        .tooltip {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            max-width: 450px;
+            display: none;
+            z-index: 1000;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i> <span>返回首页</span></a>
+    <h1>弧、弦、圆心角核心知识点</h1>
+    <div class="svg-container">
+        <svg width="600" height="500" viewBox="0 0 600 500">
+            <!-- 1. 绘制圆 -->
+            <circle cx="300" cy="250" r="200" fill="none" stroke="#2c3e50" stroke-width="2"/>
+            <!-- 圆心O -->
+            <circle cx="300" cy="250" r="5" fill="#2c3e50"/>
+            <text x="300" y="260" text-anchor="middle" font-size="14" fill="#2c3e50">O</text>
+
+            <!-- 2. 绘制圆上四点A/B/C/D -->
+            <circle cx="300" cy="50" r="4" fill="#e74c3c"/>
+            <text x="300" y="40" text-anchor="middle" font-size="16" fill="#e74c3c">A</text>
+            <circle cx="473" cy="150" r="4" fill="#e74c3c"/>
+            <text x="483" y="145" text-anchor="middle" font-size="16" fill="#e74c3c">B</text>
+            <circle cx="300" cy="450" r="4" fill="#e74c3c"/>
+            <text x="300" y="465" text-anchor="middle" font-size="16" fill="#e74c3c">C</text>
+            <circle cx="127" cy="350" r="4" fill="#e74c3c"/>
+            <text x="117" y="355" text-anchor="middle" font-size="16" fill="#e74c3c">D</text>
+
+            <!-- 3. 绘制半径 -->
+            <line x1="300" y1="250" x2="300" y2="50" stroke="#2c3e50" stroke-width="2"/>
+            <line x1="300" y1="250" x2="473" y2="150" stroke="#2c3e50" stroke-width="2"/>
+            <line x1="300" y1="250" x2="300" y2="450" stroke="#2c3e50" stroke-width="2"/>
+            <line x1="300" y1="250" x2="127" y2="350" stroke="#2c3e50" stroke-width="2"/>
+
+            <!-- 4. 可点击弦AB/CD（蓝色） -->
+            <line x1="300" y1="50" x2="473" y2="150" 
+                  class="clickable" stroke="#3498db" stroke-width="2"
+                  data-info="弦：连接圆上两点的线段（如AB）。在同圆/等圆中：相等圆心角 ⇔ 所对弦相等；相等弦 ⇔ 所对圆心角相等。"/>
+            <line x1="300" y1="450" x2="127" y2="350" 
+                  class="clickable" stroke="#3498db" stroke-width="2"
+                  data-info="弦：连接圆上两点的线段（如CD）。在同圆/等圆中：相等圆心角 ⇔ 所对弦相等；相等弦 ⇔ 所对圆心角相等。"/>
+
+            <!-- 5. 可点击弧AB/弧CD（橙色） -->
+            <path d="M300,50 A200,200 0 0,1 473,150" 
+                  class="clickable" stroke="#e67e22" stroke-width="2" fill="none"
+                  data-info="弧：圆上两点间的部分（如弧AB）。在同圆/等圆中：相等圆心角 ⇔ 所对弧相等；相等弧 ⇔ 所对圆心角相等。"/>
+            <path d="M300,450 A200,200 0 0,1 127,350" 
+                  class="clickable" stroke="#e67e22" stroke-width="2" fill="none"
+                  data-info="弧：圆上两点间的部分（如弧CD）。在同圆/等圆中：相等圆心角 ⇔ 所对弧相等；相等弧 ⇔ 所对圆心角相等。"/>
+
+            <!-- 6. 可点击圆心角∠1/∠2（紫色） -->
+            <path d="M300,100 A100,100 0 0,1 423,180" 
+                  class="clickable" stroke="#9b59b6" stroke-width="2" fill="none"
+                  data-info="圆心角：顶点在圆心的角（如∠AOB=∠1）。核心定理：在同圆/等圆中，圆心角、弦、弧三者‘知一推二’（相等则其余都相等）。"/>
+            <path d="M300,400 A100,100 0 0,1 177,320" 
+                  class="clickable" stroke="#9b59b6" stroke-width="2" fill="none"
+                  data-info="圆心角：顶点在圆心的角（如∠COD=∠2）。核心定理：在同圆/等圆中，圆心角、弦、弧三者‘知一推二’（相等则其余都相等）。"/>
+            <text x="320" y="220" font-size="14" fill="#9b59b6">∠1</text>
+            <text x="280" y="280" font-size="14" fill="#9b59b6">∠2</text>
+        </svg>
+    </div>
+    <!-- 知识点弹窗 -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // ********** 语言文本映射表 **********
+        const langTexts = {
+            'zh-CN': {
+                pageTitle: '弧、弦、圆心角核心知识点',
+                h1Title: '弧、弦、圆心角核心知识点',
+                chordInfo: '弦：连接圆上两点的线段（如AB）。在同圆/等圆中：相等圆心角 ⇔ 所对弦相等；相等弦 ⇔ 所对圆心角相等。',
+                arcInfo: '弧：圆上两点间的部分（如弧AB）。在同圆/等圆中：相等圆心角 ⇔ 所对弧相等；相等弧 ⇔ 所对圆心角相等。',
+                angleInfo: '圆心角：顶点在圆心的角（如∠AOB=∠1）。核心定理：在同圆/等圆中，圆心角、弦、弧三者‘知一推二’（相等则其余都相等）。',
+                backBtn: '返回首页'
+            },
+            'en': {
+                pageTitle: 'Core Knowledge: Arc, Chord, Central Angle',
+                h1Title: 'Core Knowledge: Arc, Chord, Central Angle',
+                chordInfo: 'Chord: A line segment connecting two points on a circle (e.g., AB). In the same or equal circles: Equal central angles ⇔ Equal corresponding chords; Equal chords ⇔ Equal corresponding central angles.',
+                arcInfo: 'Arc: A part of the circumference between two points (e.g., Arc AB). In the same or equal circles: Equal central angles ⇔ Equal corresponding arcs; Equal arcs ⇔ Equal corresponding central angles.',
+                angleInfo: 'Central Angle: An angle whose vertex is the center of the circle (e.g., ∠AOB=∠1). Core Theorem: In the same or equal circles, any one of central angle, chord, and arc determines the other two (if one is equal, the others are equal).',
+                backBtn: 'Back to Home'
+            }
+        };
+
+        // ********** 初始化语言和主题 **********
+        const currentLang = localStorage.getItem('appLang') || 'zh-CN';
+        const currentTheme = localStorage.getItem('appTheme') || 'default';
+        const currentFontSize = localStorage.getItem('appFontSize') || '16';
+        document.documentElement.lang = currentLang;
+        const texts = langTexts[currentLang];
+
+        function applyTheme(theme) {
+            const body = document.body;
+            body.classList.remove('eye-mode', 'night-mode');
+            if (theme === 'eye') body.classList.add('eye-mode');
+            if (theme === 'night') body.classList.add('night-mode');
+        }
+        function applyFontSize(size) {
+            document.documentElement.style.setProperty('--font-size', `${size}px`);
+            document.documentElement.style.fontSize = `${size}px`;
+        }
+        applyTheme(currentTheme);
+        applyFontSize(currentFontSize);
+
+        // 更新页面文本
+        document.title = texts.pageTitle;
+        document.querySelector('h1').textContent = texts.h1Title;
+        document.getElementById('backBtn').querySelector('span').textContent = texts.backBtn;
+        
+        // 更新 data-info
+        document.querySelectorAll('line[data-info*="弦"]').forEach(el => el.setAttribute('data-info', texts.chordInfo));
+        document.querySelectorAll('path[data-info*="弧"]').forEach(el => el.setAttribute('data-info', texts.arcInfo));
+        document.querySelectorAll('path[data-info*="圆心角"]').forEach(el => el.setAttribute('data-info', texts.angleInfo));
+
+        // 监听来自其他页面的主题/语言/字体变化
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'appTheme') applyTheme(e.newValue);
+            if (e.key === 'appFontSize') applyFontSize(e.newValue);
+            if (e.key === 'appLang') location.reload();
+        });
+
+        const tooltip = document.getElementById('tooltip');
+        const clickableEls = document.querySelectorAll('.clickable');
+
+        // 点击元素时显示知识点，3秒后自动隐藏
+        clickableEls.forEach(el => {
+            el.addEventListener('click', () => {
+                const info = el.getAttribute('data-info');
+                tooltip.textContent = info;
+                tooltip.style.display = 'block';
+                setTimeout(() => tooltip.style.display = 'none', 3500);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -124,14 +124,17 @@
             #arcCanvas { width: 240px; height: 240px; }
         }
     </style>
+    <link rel="stylesheet" href="../css/common.css">
+    <script src="../js/common.js" defer></script>
 </head>
 <body>
     <header class="header-container">
         <div class="logo" id="logoText">圆几何交互式学习平台</div>
         <nav class="nav-main">
-            <a href="index.html" class="nav-link" id="navHome">首页</a>
+            <span class="nav-droplet" aria-hidden="true"></span>
+            <a href="../index/index.html" class="nav-link" id="navHome">首页</a>
             <a href="game.html" class="nav-link active" id="navGame">游戏</a>
-            <a href="home.html" class="nav-link" id="navQuiz">测试</a>
+            <a href="../quiz/test.html" class="nav-link" id="navQuiz">测试</a>
         </nav>
         <div class="header-right">
             <div class="lang-switch">
@@ -144,7 +147,7 @@
 
     <main class="main-container">
         <div class="breadcrumb">
-            <a href="index.html" id="breadHome">首页</a> › <a href="game.html" id="breadGame">游戏中心</a> › <span id="breadCurrent">圆心角与弧长匹配</span>
+            <a href="../index/index.html" id="breadHome">首页</a> › <a href="game.html" id="breadGame">游戏中心</a> › <span id="breadCurrent">圆心角弧长拼图</span>
         </div>
 
         <div class="game-card-main">

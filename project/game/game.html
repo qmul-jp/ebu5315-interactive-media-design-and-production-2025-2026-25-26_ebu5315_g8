@@ -64,9 +64,17 @@
             --muted: #94a3b8;
             --primary: #60a5fa;
             --primary-strong: #3b82f6;
-            --surface: rgba(30, 41, 59, 0.88);
-            --surface-strong: #1e293b;
-            --border-color: #475569;
+            --surface: rgba(15, 23, 42, 0.9);
+            --surface-strong: #0f172a;
+            --border-color: #334155;
+            --bg-color: #020617;
+            background:
+                radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.15), transparent 25%),
+                radial-gradient(circle at 86% 14%, rgba(56, 189, 248, 0.15), transparent 22%),
+                linear-gradient(rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
         }
 
         a {
@@ -217,9 +225,11 @@
 
         .game-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-auto-rows: 1fr;
             gap: 30px;
             width: 100%;
+            max-width: 980px;
         }
 
         .game-card {
@@ -235,7 +245,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 20px;
+            min-height: 260px;
+            height: 100%;
         }
         .game-card:hover {
             transform: translateY(-10px);
@@ -272,14 +285,19 @@
             .game-grid { grid-template-columns: 1fr; }
         }
     </style>
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/game.css">
+    <script src="../js/common.js" defer></script>
+    <script src="../js/game.js" defer></script>
 </head>
 <body>
     <header class="header-container">
         <div class="logo" id="logoText">圆几何交互式学习平台</div>
         <nav class="nav-main">
-            <a href="index.html" class="nav-link" id="navHome">首页</a>
+            <span class="nav-droplet" aria-hidden="true"></span>
+            <a href="../index/index.html" class="nav-link" id="navHome">首页</a>
             <a href="game.html" class="nav-link active" id="navGame">游戏</a>
-            <a href="home.html" class="nav-link" id="navQuiz">测试</a>
+            <a href="../quiz/test.html" class="nav-link" id="navQuiz">测试</a>
         </nav>
         <div class="header-right">
             <div class="lang-switch">
@@ -301,7 +319,7 @@
 
     <main class="main-container">
         <div class="breadcrumb" id="breadcrumb">
-            <a href="index.html" id="breadHome">首页</a> › <span id="breadGame">游戏中心</span>
+            <a href="../index/index.html" id="breadHome">首页</a> › <span id="breadGame">游戏中心</span>
         </div>
         <h1 class="game-title" id="gameCenterTitle">圆几何游戏中心</h1>
         
@@ -346,6 +364,19 @@
                 <div class="game-name" id="game3Name">圆心角弧长拼图</div>
                 <div class="game-desc" id="game3Desc">匹配圆心角与对应弧长，在拼图中理解比例关系。</div>
             </div>
+
+            <div class="game-card" onclick="window.location.href='game fourth version final.html'">
+                <div class="game-icon-svg">
+                    <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="256" cy="256" r="210" stroke="currentColor" stroke-width="28"/>
+                        <path d="M132 342L420 170" stroke="currentColor" stroke-width="28" stroke-linecap="round"/>
+                        <path d="M110 198L402 312" stroke="currentColor" stroke-width="18" stroke-dasharray="10 10" stroke-linecap="round"/>
+                        <path d="M96 256H416" stroke="currentColor" stroke-width="10" stroke-dasharray="6 12" stroke-linecap="round" opacity="0.75"/>
+                    </svg>
+                </div>
+                <div class="game-name" id="game4Name">割圆术·弓箭切割</div>
+                <div class="game-desc" id="game4Desc">30秒内用直线不断切割旋转的“液态圆”，切得越多分越高。</div>
+            </div>
         </div>
     </main>
 
@@ -370,7 +401,9 @@
                 game2Name: '切线判定闯关',
                 game2Desc: '判断直线与圆的位置关系，精准掌握切线性质。',
                 game3Name: '圆心角弧长拼图',
-                game3Desc: '匹配圆心角与对应弧长，在拼图中理解比例关系。'
+                game3Desc: '匹配圆心角与对应弧长，在拼图中理解比例关系。',
+                game4Name: '割圆术·弓箭切割',
+                game4Desc: '30秒内用直线不断切割旋转的“液态圆”，切得越多分越高。'
             },
             'en': {
                 logoText: 'Interactive Learning Platform for Circle Geometry',
@@ -392,6 +425,8 @@
                 game2Desc: 'Judge the relationship between line and circle precisely.',
                 game3Name: 'Central Angle & Arc Puzzle',
                 game3Desc: 'Match angles with arc lengths and understand proportions.',
+                game4Name: 'Cutting Circle: Archery',
+                game4Desc: 'Slice a rotating liquid circle with lines in 30 seconds for a higher score.',
             }
         };
 
@@ -424,6 +459,8 @@
             document.getElementById('game2Desc').textContent = texts.game2Desc;
             document.getElementById('game3Name').textContent = texts.game3Name;
             document.getElementById('game3Desc').textContent = texts.game3Desc;
+            document.getElementById('game4Name').textContent = texts.game4Name;
+            document.getElementById('game4Desc').textContent = texts.game4Desc;
             document.documentElement.lang = lang;
 
             document.body.classList.remove('eye-mode', 'night-mode');
