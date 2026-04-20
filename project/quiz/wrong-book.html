@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -39,23 +39,222 @@ body.eye-mode .quiz-return{background:rgba(247,251,242,.88)}
 </section>
 </main>
 <footer class="page-footer"><p>圆几何互动学习网站 © 2026 EBU5315 Coursework</p></footer>
+<script src="../question-bank.js"></script>
 <script>
-(()=>{const KEY="quizWrongBookV1";const get=()=>JSON.parse(localStorage.getItem(KEY)||"[]");const set=v=>localStorage.setItem(KEY,JSON.stringify(v));function render(){const items=get();document.getElementById("totalCount").textContent=items.length;document.getElementById("topicCount").textContent=items.filter(i=>i.source==="topic").length;document.getElementById("compCount").textContent=items.filter(i=>i.source==="comprehensive").length;document.getElementById("dailyCount").textContent=items.filter(i=>i.source==="daily").length;const list=document.getElementById("wrongList");list.innerHTML="";if(!items.length){list.innerHTML='<div class="empty"><h3>当前还没有错题记录</h3><p>去做题后，答错的题目会自动同步到这里。</p></div>';return}items.slice().reverse().forEach((item,idx)=>{const el=document.createElement("article");el.className="item";el.innerHTML=`<h3>${item.question}</h3><div class="meta"><span>来源：${item.sourceLabel}</span><span>专题：${item.topic}</span><span>正确答案：${item.answer}</span><span>记录时间：${item.savedAt}</span></div><p class="explain">${item.explanation}</p><div class="actions"><button class="btn" data-id="${item.id}">移除这道题</button></div>`;el.querySelector("button").onclick=()=>{const data=get().filter(x=>x.id!==item.id);set(data);render()};list.appendChild(el)})}document.getElementById("clearBtn").onclick=()=>{set([]);render()};function applyState() {
-    const t=localStorage.getItem("appTheme")||"default",fs=localStorage.getItem("appFontSize")||"16";
-    document.body.classList.remove("eye-mode","night-mode");
-    if(t==="eye")document.body.classList.add("eye-mode");
-    if(t==="night")document.body.classList.add("night-mode");
-    document.documentElement.style.setProperty("--font-size",fs+"px");
-    document.documentElement.style.fontSize = fs + "px";
-}
-window.addEventListener("load",()=>{
-    applyState();
-    render()
-});
-window.addEventListener("storage", (e) => {
-    if (["appTheme", "appFontSize"].includes(e.key)) applyState();
-});
+(() => {
+    const KEY = 'quizWrongBookV1';
+
+    function normalizeLang(lang) {
+        const value = String(lang || '').toLowerCase();
+        if (value === 'en' || value === 'en-us' || value === 'en_us' || value === 'en-gb' || value === 'en_gb') return 'en';
+        return 'zh-CN';
+    }
+
+    function getLang() {
+        return normalizeLang(localStorage.getItem('appLang') || 'zh-CN');
+    }
+
+    const i18n = {
+        'zh-CN': {
+            docTitle: '错题本 | 圆几何测试学习中心',
+            returnHome: '返回测试首页',
+            navHome: '首页', navGame: '游戏', navQuiz: '测试',
+            eyebrow: 'Wrong Book',
+            title: '错题本',
+            heroDesc: '统一收录专题练习、综合练习和每日一题中的错题，方便集中回顾、反复练习和查看解析。',
+            statTotal: '累计错题', statTotalDesc: '当前已收录的错题数量。',
+            statTopic: '专题练习', statTopicDesc: '来自专题练习的错题。',
+            statComp: '综合练习', statCompDesc: '来自综合练习的错题。',
+            statDaily: '每日一题', statDailyDesc: '来自每日打卡的错题。',
+            toolbarDesc: '可以在这里查看题目来源、正确答案和解析。',
+            clearBtn: '清空错题本',
+            backBtn: '返回测试首页',
+            footerText: '圆几何互动学习网站 © 2026 EBU5315 Coursework',
+            emptyTitle: '当前还没有错题记录',
+            emptyDesc: '去做题后，答错的题目会自动同步到这里。',
+            source: '来源', topic: '专题', answer: '正确答案', savedAt: '记录时间',
+            remove: '移除这道题',
+            sourceTopic: '专题练习', sourceComp: '综合练习', sourceDaily: '每日一题'
+        },
+        'en': {
+            docTitle: 'Wrong Book | Circle Geometry Learning Center',
+            returnHome: 'Back to Test Home',
+            navHome: 'Home', navGame: 'Game', navQuiz: 'Test',
+            eyebrow: 'Wrong Book',
+            title: 'Wrong Question Book',
+            heroDesc: 'Collects wrong answers from topic practice, mixed practice, and daily quiz for focused review.',
+            statTotal: 'Total Wrong Questions', statTotalDesc: 'Number of wrong questions currently recorded.',
+            statTopic: 'Topic Practice', statTopicDesc: 'Wrong questions from topic practice.',
+            statComp: 'Mixed Practice', statCompDesc: 'Wrong questions from mixed practice.',
+            statDaily: 'Daily Quiz', statDailyDesc: 'Wrong questions from daily check-ins.',
+            toolbarDesc: 'You can review source, correct answer, and explanation here.',
+            clearBtn: 'Clear Wrong Book',
+            backBtn: 'Back to Test Home',
+            footerText: 'Circle Geometry Learning © 2026 EBU5315 Coursework',
+            emptyTitle: 'No wrong-question records yet',
+            emptyDesc: 'After you answer incorrectly in practice, items will appear here automatically.',
+            source: 'Source', topic: 'Topic', answer: 'Correct Answer', savedAt: 'Saved At',
+            remove: 'Remove This Item',
+            sourceTopic: 'Topic Practice', sourceComp: 'Mixed Practice', sourceDaily: 'Daily Quiz'
+        }
+    };
+
+    function t(key) {
+        const lang = getLang();
+        return (i18n[lang] && i18n[lang][key]) || i18n['zh-CN'][key] || '';
+    }
+
+    function sourceLabel(source) {
+        if (source === 'topic') return t('sourceTopic');
+        if (source === 'comprehensive') return t('sourceComp');
+        if (source === 'daily') return t('sourceDaily');
+        return source || '--';
+    }
+
+    const get = () => JSON.parse(localStorage.getItem(KEY) || '[]');
+    const set = v => localStorage.setItem(KEY, JSON.stringify(v));
+
+    const questionMap = (() => {
+        const map = {};
+        const all = (window.QuizQuestionBank && window.QuizQuestionBank.all) || [];
+        all.forEach(q => {
+            map[q.id] = q;
+        });
+        return map;
+    })();
+
+    function lookupQuestion(item) {
+        if (!item || !item.id) return null;
+        if (questionMap[item.id]) return questionMap[item.id];
+        if (String(item.id).startsWith('daily-')) {
+            const stripped = String(item.id).slice(6);
+            if (questionMap[stripped]) return questionMap[stripped];
+        }
+        return null;
+    }
+
+    function applyStaticLang() {
+        document.title = t('docTitle');
+        const quizReturn = document.querySelector('.quiz-return');
+        if (quizReturn) quizReturn.textContent = t('returnHome');
+
+        const navHome = document.getElementById('navHome');
+        const navGame = document.getElementById('navGame');
+        const navQuiz = document.getElementById('navQuiz');
+        if (navHome) navHome.textContent = t('navHome');
+        if (navGame) navGame.textContent = t('navGame');
+        if (navQuiz) navQuiz.textContent = t('navQuiz');
+
+        const eyebrow = document.querySelector('.hero .eyebrow');
+        const title = document.querySelector('.hero .title');
+        const heroDesc = document.querySelector('.hero .desc');
+        if (eyebrow) eyebrow.textContent = t('eyebrow');
+        if (title) title.textContent = t('title');
+        if (heroDesc) heroDesc.textContent = t('heroDesc');
+
+        const stats = document.querySelectorAll('.hero .stat');
+        const statKeys = [
+            ['statTotal', 'statTotalDesc'],
+            ['statTopic', 'statTopicDesc'],
+            ['statComp', 'statCompDesc'],
+            ['statDaily', 'statDailyDesc']
+        ];
+        stats.forEach((stat, i) => {
+            const span = stat.querySelector('span');
+            const p = stat.querySelector('p');
+            if (span) span.textContent = t(statKeys[i][0]);
+            if (p) p.textContent = t(statKeys[i][1]);
+        });
+
+        const toolbarDesc = document.querySelector('.toolbar > .desc');
+        if (toolbarDesc) toolbarDesc.textContent = t('toolbarDesc');
+
+        const clearBtn = document.getElementById('clearBtn');
+        if (clearBtn) clearBtn.textContent = t('clearBtn');
+
+        const backBtn = document.querySelector('.toolbar .actions a.btn.primary');
+        if (backBtn) backBtn.textContent = t('backBtn');
+
+        const footer = document.querySelector('.page-footer p');
+        if (footer) footer.textContent = t('footerText');
+    }
+
+    function render() {
+        const lang = getLang();
+        const items = get();
+        document.getElementById('totalCount').textContent = items.length;
+        document.getElementById('topicCount').textContent = items.filter(i => i.source === 'topic').length;
+        document.getElementById('compCount').textContent = items.filter(i => i.source === 'comprehensive').length;
+        document.getElementById('dailyCount').textContent = items.filter(i => i.source === 'daily').length;
+
+        const list = document.getElementById('wrongList');
+        list.innerHTML = '';
+        if (!items.length) {
+            list.innerHTML = `<div class="empty"><h3>${t('emptyTitle')}</h3><p>${t('emptyDesc')}</p></div>`;
+            return;
+        }
+
+        items.slice().reverse().forEach(item => {
+            const q = lookupQuestion(item);
+            const qText = q ? (lang === 'en' ? (q.questionEn || q.question) : q.question) : item.question;
+            const qTopic = q ? (lang === 'en' ? (q.topicEn || q.topic) : q.topic) : item.topic;
+            const qExplanation = q ? (lang === 'en' ? (q.explanationEn || q.explanation) : q.explanation) : item.explanation;
+            const qAnswer = q
+                ? (((lang === 'en' ? q.optionsEn : q.options) || [])[q.answer] || item.answer)
+                : item.answer;
+
+            const el = document.createElement('article');
+            el.className = 'item';
+            el.innerHTML = `
+                <h3>${qText}</h3>
+                <div class="meta">
+                    <span>${t('source')}: ${sourceLabel(item.source)}</span>
+                    <span>${t('topic')}: ${qTopic || '--'}</span>
+                    <span>${t('answer')}: ${qAnswer || '--'}</span>
+                    <span>${t('savedAt')}: ${item.savedAt || '--'}</span>
+                </div>
+                <p class="explain">${qExplanation || ''}</p>
+                <div class="actions"><button class="btn" data-id="${item.id}">${t('remove')}</button></div>
+            `;
+            el.querySelector('button').onclick = () => {
+                const data = get().filter(x => x.id !== item.id);
+                set(data);
+                render();
+            };
+            list.appendChild(el);
+        });
+    }
+
+    document.getElementById('clearBtn').onclick = () => {
+        set([]);
+        render();
+    };
+
+    function applyState() {
+        const theme = localStorage.getItem('appTheme') || 'default';
+        const fs = localStorage.getItem('appFontSize') || '16';
+
+        document.body.classList.remove('eye-mode', 'night-mode');
+        if (theme === 'eye') document.body.classList.add('eye-mode');
+        if (theme === 'night') document.body.classList.add('night-mode');
+        document.documentElement.style.setProperty('--font-size', fs + 'px');
+        document.documentElement.style.fontSize = fs + 'px';
+
+        applyStaticLang();
+        render();
+        document.documentElement.lang = getLang();
+    }
+
+    window.addEventListener('load', () => {
+        applyState();
+    });
+
+    window.addEventListener('storage', (e) => {
+        if (['appLang', 'appTheme', 'appFontSize'].includes(e.key)) applyState();
+    });
 })();
 </script>
 </body>
 </html>
+
+

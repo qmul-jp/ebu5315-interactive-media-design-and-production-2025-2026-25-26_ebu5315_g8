@@ -638,8 +638,17 @@ body.eye-mode .quiz-return {
     <script>
         // 核心逻辑保留并适配
         (function() {
+            function normalizeLang(lang) {
+                const value = String(lang || '').toLowerCase();
+                if (value === 'en' || value === 'en-us' || value === 'en_us' || value === 'en-gb' || value === 'en_gb') return 'en';
+                return 'zh-CN';
+            }
+
             const langTexts = {
                 'zh-CN': {
+                    docTitle: '每日一题作答 | 圆几何测试学习中心',
+                    returnHomeEntry: '返回测试首页',
+                    closeLabel: '关闭',
                     navHome: '首页', navGame: '游戏', navQuiz: '测试',
                     eyebrow: '每日一题', title: '每日一题', tag: '今日题目',
                     labelDiff: '本题难度', labelTopic: '所属专题',
@@ -653,6 +662,9 @@ body.eye-mode .quiz-return {
                     footerText: '圆几何互动学习网站 © 2026 EBU5315 Coursework'
                 },
                 'en': {
+                    docTitle: 'Daily Quiz | Circle Geometry Learning Center',
+                    returnHomeEntry: 'Back to Test Home',
+                    closeLabel: 'Close',
                     navHome: 'Home', navGame: 'Game', navQuiz: 'Test',
                     eyebrow: 'DAILY QUIZ', title: 'Daily Quiz', tag: 'Today\'s Question',
                     labelDiff: 'Difficulty', labelTopic: 'Topic',
@@ -668,7 +680,7 @@ body.eye-mode .quiz-return {
             };
 
             function applyState() {
-                const lang = localStorage.getItem('appLang') || 'zh-CN';
+                const lang = normalizeLang(localStorage.getItem('appLang') || 'zh-CN');
                 const theme = localStorage.getItem('appTheme') || 'default';
                 const fontSize = localStorage.getItem('appFontSize') || '16';
                 
@@ -686,6 +698,22 @@ body.eye-mode .quiz-return {
                         else el.textContent = texts[id];
                     }
                 });
+
+                if (texts.docTitle) document.title = texts.docTitle;
+                const quizReturn = document.querySelector('.quiz-return');
+                if (quizReturn) quizReturn.textContent = texts.returnHomeEntry;
+                const closeAi = document.getElementById('closeQuizAiModalBtn');
+                const closeWrong = document.getElementById('closeWrongBookModalBtn');
+                if (closeAi) closeAi.setAttribute('aria-label', texts.closeLabel);
+                if (closeWrong) closeWrong.setAttribute('aria-label', texts.closeLabel);
+
+                const streakEl = document.getElementById('resultStreakDays');
+                if (streakEl) {
+                    const fallbackNum = parseInt((streakEl.textContent || '0').replace(/[^\d]/g, ''), 10) || 0;
+                    const num = parseInt(streakEl.dataset.days || String(fallbackNum), 10) || 0;
+                    streakEl.dataset.days = String(num);
+                    streakEl.textContent = lang === 'en' ? `${num} Days` : `${num} 天`;
+                }
                 document.documentElement.lang = lang;
             }
 
@@ -705,17 +733,18 @@ body.eye-mode .quiz-return {
                 localStorage.setItem(WRONG_BOOK_KEY, JSON.stringify(items));
             }
             function syncWrongBook(question) {
+                const lang = normalizeLang(localStorage.getItem('appLang') || 'zh-CN');
                 const id = 'daily-' + question.id;
                 const items = loadWrongBook().filter(item => item.id !== id);
                 items.push({
                     id,
                     source: 'daily',
-                    sourceLabel: '每日一题',
-                    topic: question.topic,
-                    question: question.question,
-                    answer: question.options[question.answer],
-                    explanation: question.explanation,
-                    savedAt: new Date().toLocaleString('zh-CN')
+                    sourceLabel: lang === 'en' ? 'Daily Quiz' : '每日一题',
+                    topic: lang === 'en' ? (question.topicEn || question.topic) : question.topic,
+                    question: lang === 'en' ? (question.questionEn || question.question) : question.question,
+                    answer: ((lang === 'en' ? question.optionsEn : question.options) || question.options)[question.answer],
+                    explanation: lang === 'en' ? (question.explanationEn || question.explanation) : question.explanation,
+                    savedAt: new Date().toLocaleString(lang === 'en' ? 'en-US' : 'zh-CN')
                 });
                 saveWrongBook(items);
             }
@@ -728,7 +757,7 @@ body.eye-mode .quiz-return {
 
             function initQuiz() {
                 if (!currentQuestion) return;
-                const lang = localStorage.getItem('appLang') || 'zh-CN';
+                const lang = normalizeLang(localStorage.getItem('appLang') || 'zh-CN');
                 const q = currentQuestion;
                 document.getElementById('quizTopic').textContent = lang === 'zh-CN' ? q.topic : q.topicEn;
                 document.getElementById('quizMetaTopic').textContent = lang === 'zh-CN' ? q.topic : q.topicEn;
@@ -757,7 +786,7 @@ body.eye-mode .quiz-return {
             document.getElementById('submitQuizBtn').onclick = () => {
                 if (userSelected === null) return;
                 const isCorrect = userSelected === currentQuestion.answer;
-                const lang = localStorage.getItem('appLang') || 'zh-CN';
+                const lang = normalizeLang(localStorage.getItem('appLang') || 'zh-CN');
                 
                 document.getElementById('submitQuizBtn').disabled = true;
                 const items = document.querySelectorAll('.option-item');
@@ -789,7 +818,7 @@ body.eye-mode .quiz-return {
             };
 
             document.getElementById('showQuizAiBtn').onclick = () => {
-                const lang = localStorage.getItem('appLang') || 'zh-CN';
+                const lang = normalizeLang(localStorage.getItem('appLang') || 'zh-CN');
                 document.getElementById('quizAiExplanation').textContent = lang === 'zh-CN' ? currentQuestion.explanation : currentQuestion.explanationEn;
                 document.getElementById('quizAiModal').classList.remove('hidden');
             };
