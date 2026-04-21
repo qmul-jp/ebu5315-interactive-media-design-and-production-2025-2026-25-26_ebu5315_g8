@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>圆几何66题交互式学习平台</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+        body {
+            padding: 0;
+        }
+
+        .circle66-home-btn {
+            position: fixed;
+            top: 18px;
+            left: 18px;
+            z-index: 10000;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 44px;
+            padding: 0 18px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 900;
+            color: var(--text);
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(14px) saturate(155%);
+            -webkit-backdrop-filter: blur(14px) saturate(155%);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, filter 0.25s ease;
+        }
+
+        .circle66-home-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(37, 99, 235, 0.35);
+            box-shadow: 0 14px 30px rgba(37, 99, 235, 0.18);
+            filter: brightness(1.03);
+        }
+
+        @media (max-width: 560px) {
+            .circle66-home-btn {
+                top: 12px;
+                left: 12px;
+                height: 42px;
+                padding: 0 14px;
+            }
+        }
+
+        .circle66-shell {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 4vw 70px;
+            display: flex;
+            flex-direction: column;
+            gap: 26px;
+            align-items: stretch;
+        }
+
+        .circle66-hero {
+            text-align: center;
+            padding: 34px 24px;
+            border-radius: 34px;
+            background:
+                radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0.08) 52%, rgba(255, 255, 255, 0.02) 78%),
+                linear-gradient(150deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08));
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            box-shadow:
+                0 18px 46px rgba(15, 23, 42, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
+        }
+
+        .circle66-title {
+            font-size: clamp(1.5rem, 3vw, 2.1rem);
+            font-weight: 900;
+            color: var(--primary-strong);
+            margin-bottom: 10px;
+            letter-spacing: 0.4px;
+        }
+
+        .circle66-subtitle {
+            font-size: 1rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .topic-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .topic-card {
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            background:
+                radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.08) 55%, rgba(255, 255, 255, 0.02) 78%),
+                linear-gradient(150deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
+            border-radius: 28px;
+            padding: 18px 18px;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.35s ease, border-color 0.35s ease, filter 0.35s ease;
+            backdrop-filter: blur(18px) saturate(150%);
+            -webkit-backdrop-filter: blur(18px) saturate(150%);
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 44px rgba(37, 99, 235, 0.18);
+            border-color: rgba(37, 99, 235, 0.35);
+            filter: brightness(1.03);
+        }
+
+        .topic-card.active {
+            border-color: rgba(37, 99, 235, 0.55);
+            box-shadow: 0 22px 54px rgba(37, 99, 235, 0.22);
+        }
+
+        .topic-card-title {
+            font-size: 1.05rem;
+            font-weight: 900;
+            color: var(--text);
+            line-height: 1.25;
+        }
+
+        .topic-card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 10px;
+            color: var(--muted);
+            font-weight: 700;
+            font-size: 0.92rem;
+        }
+
+        .circle66-panel {
+            background:
+                radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.08) 55%, rgba(255, 255, 255, 0.02) 78%),
+                linear-gradient(150deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08));
+            border-radius: 38px;
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            box-shadow:
+                0 22px 50px rgba(15, 23, 42, 0.14),
+                inset 0 1px 0 rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(26px) saturate(155%);
+            -webkit-backdrop-filter: blur(26px) saturate(155%);
+            padding: 34px 34px;
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .circle66-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 18px;
+        }
+
+        .circle66-topic {
+            font-weight: 900;
+            color: var(--primary-strong);
+            font-size: 1.05rem;
+        }
+
+        .circle66-qnum {
+            color: var(--muted);
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .circle66-qtext {
+            font-size: 1.05rem;
+            line-height: 1.9;
+            color: var(--text);
+            margin-bottom: 20px;
+        }
+
+        .circle66-svgbox {
+            display: flex;
+            justify-content: center;
+            margin: 12px 0 18px;
+        }
+
+        svg {
+            width: min(440px, 92vw);
+            height: auto;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .circle66-answer {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            color: var(--text);
+            padding: 16px 18px;
+            border-radius: 18px;
+            font-size: 1rem;
+            font-weight: 700;
+            display: none;
+            margin: 14px 0 0;
+        }
+
+        .circle66-btns {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 22px;
+        }
+
+        .circle66-btn {
+            padding: 12px 26px;
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            border-radius: 999px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, filter 0.25s ease;
+            background: var(--surface);
+            color: var(--text);
+            font-weight: 900;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .circle66-btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
+            color: white;
+            border-color: rgba(37, 99, 235, 0.35);
+            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.18);
+        }
+
+        .circle66-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .circle66-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            border-color: rgba(37, 99, 235, 0.38);
+            box-shadow: 0 12px 26px rgba(15, 23, 42, 0.14);
+            filter: brightness(1.03);
+        }
+
+        @media (max-width: 900px) {
+            .topic-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .circle66-panel {
+                padding: 26px 22px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .topic-grid {
+                grid-template-columns: 1fr;
+            }
+            .circle66-shell {
+                padding: 100px 16px 60px;
+            }
+        }
+</style>
+</head>
+<body>
+<a class="circle66-home-btn" id="homeBtn" href="index.html"></a>
+<main class="circle66-shell">
+    <section class="circle66-hero">
+        <h1 class="circle66-title" id="pageTitle">圆中考题速递</h1>
+        <div class="circle66-subtitle" id="pageSubtitle">按专题刷 66 道中考经典题</div>
+    </section>
+
+    <section class="topic-grid" id="topicGrid"></section>
+
+    <section class="circle66-panel">
+        <div class="circle66-meta">
+            <div class="circle66-topic" id="topic"></div>
+            <div class="circle66-qnum" id="qNum"></div>
+        </div>
+        <div class="circle66-qtext" id="qText"></div>
+        <div class="circle66-svgbox">
+            <svg id="svg" viewBox="0 0 340 320"></svg>
+        </div>
+        <div class="circle66-answer" id="ans">
+            <span id="answerPrefix">答案解析：</span><span id="ansTxt"></span>
+        </div>
+        <div class="circle66-btns">
+            <button class="circle66-btn" id="prev"></button>
+            <button class="circle66-btn circle66-btn-primary" id="showAns"></button>
+            <button class="circle66-btn" id="next"></button>
+        </div>
+    </section>
+</main>
+
+<script>
+const questions = [
+//专题1 圆周角与圆心角
+{topic:"专题1 圆周角与圆心角",q:"1. 如图，AB是⊙O直径，∠C=30°，则∠ABD的度数为（）A.30° B.45° C.60° D.50°",
+svg:`<circle cx="170" cy="140" r="100" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="70" y1="140" x2="270" y2="140" stroke="#333" stroke-width="2"/>
+<line x1="70" y1="140" x2="170" y2="60" stroke="#333" stroke-width="1.8"/>
+<line x1="270" y1="140" x2="170" y2="60" stroke="#333" stroke-width="1.8"/>
+<line x1="70" y1="140" x2="220" y2="190" stroke="#333" stroke-width="1.8"/>
+<line x1="270" y1="140" x2="220" y2="190" stroke="#333" stroke-width="1.8"/>
+<text x="60" y="145">A</text><text x="275" y="145">B</text><text x="170" y="55">C</text><text x="228" y="200">D</text><text x="165" y="150">O</text>`,ans:"C.60°"},
+{topic:"专题1 圆周角与圆心角",q:"2. ⊙O中，弧AB=2弧CD，下列正确的是（）A.AB=2CD B.AB>2CD C.AB<2CD D.无法确定",
+svg:`<circle cx="170" cy="150" r="90" stroke="#333" stroke-width="2" fill="none"/>
+<path d="M100,150 A70,70 0 0,1 240,150" stroke="#4299e1" stroke-width="2.5" fill="none"/>
+<path d="M130,150 A40,40 0 0,1 210,150" stroke="#48bb78" stroke-width="2.5" fill="none"/>
+<text x="90" y="155">A</text><text x="245" y="155">B</text><text x="120" y="140">C</text><text x="215" y="140">D</text><text x="165" y="160">O</text>`,ans:"C.AB<2CD"},
+{topic:"专题1 圆周角与圆心角",q:"3. 如图，∠AOC=120°，则∠ABC的度数为（）A.60° B.120° C.240° D.30°",
+svg:`<circle cx="170" cy="150" r="90" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="170" y1="150" x2="100" y2="150" stroke="#333" stroke-width="2"/>
+<line x1="170" y1="150" x2="220" y2="80" stroke="#333" stroke-width="2"/>
+<line x1="100" y1="150" x2="220" y2="220" stroke="#333" stroke-width="1.8"/>
+<line x1="220" y1="80" x2="220" y2="220" stroke="#333" stroke-width="1.8"/>
+<text x="90" y="155">A</text><text x="228" y="75">C</text><text x="228" y="230">B</text><text x="165" y="160">O</text>`,ans:"B.120°"},
+{topic:"专题1 圆周角与圆心角",q:"4. 圆内接四边形ABCD，∠A:∠B:∠C=2:3:4，则∠D=（）A.60° B.80° C.90° D.120°",
+svg:`<circle cx="170" cy="150" r="90" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="100" x2="240" y2="100" stroke="#333" stroke-width="1.8"/>
+<line x1="240" y1="100" x2="240" y2="200" stroke="#333" stroke-width="1.8"/>
+<line x1="240" y1="200" x2="100" y2="200" stroke="#333" stroke-width="1.8"/>
+<line x1="100" y1="200" x2="100" y1="100" stroke="#333" stroke-width="1.8"/>
+<text x="90" y="95">A</text><text x="245" y="95">B</text><text x="245" y="205">C</text><text x="90" y="205">D</text>`,ans:"C.90°"},
+{topic:"专题1 圆周角与圆心角",q:"5. 如图，BD是⊙O直径，∠A=35°，则∠CBD=（）A.35° B.45° C.55° D.65°",
+svg:`<circle cx="170" cy="150" r="90" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="80" y1="150" x2="260" y2="150" stroke="#333" stroke-width="2"/>
+<line x1="80" y1="150" x2="170" y2="80" stroke="#333" stroke-width="1.8"/>
+<line x1="260" y1="150" x2="170" y2="80" stroke="#333" stroke-width="1.8"/>
+<text x="70" y="155">B</text><text x="265" y="155">D</text><text x="170" y="75">A</text><text x="165" y="160">O</text>`,ans:"C.55°"},
+//专题2 垂径定理
+{topic:"专题2 垂径定理",q:"6. ⊙O半径13，弦AB=24，O到AB距离为（）A.5 B.6 C.7 D.8",
+svg:`<circle cx="170" cy="120" r="90" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="90" y1="200" x2="250" y2="200" stroke="#333" stroke-width="2"/>
+<line x1="170" y1="120" x2="170" y2="200" stroke="#333" stroke-width="1.8" stroke-dasharray="4 4"/>
+<text x="80" y="205">A</text><text x="255" y="205">B</text><text x="165" y="115">O</text>`,ans:"A.5"},
+{topic:"专题2 垂径定理",q:"7. 圆半径5，弦AB∥CD，AB=6，CD=8，AB与CD距离为（）A.1或7 B.2或6 C.3或5 D.4",
+svg:`<circle cx="170" cy="150" r="50" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="130" y1="120" x2="210" y2="120" stroke="#333" stroke-width="1.8"/>
+<line x1="120" y1="180" x2="220" y2="180" stroke="#333" stroke-width="1.8"/>
+<text x="120" y="115">A</text><text x="215" y="115">B</text><text x="110" y="185">C</text><text x="225" y="185">D</text>`,ans:"A.1或7"},
+{topic:"专题2 垂径定理",q:"8. 如图，OC⊥AB，AC=3，则AB=（）A.3 B.6 C.9 D.12",
+svg:`<circle cx="170" cy="120" r="90" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="80" y1="200" x2="260" y2="200" stroke="#333" stroke-width="2"/>
+<line x1="170" y1="120" x2="170" y2="200" stroke="#333" stroke-width="1.8"/>
+<text x="70" y="205">A</text><text x="265" y="205">B</text><text x="165" y="115">O</text>`,ans:"B.6"},
+{topic:"专题2 垂径定理",q:"9. 弓形弦长12，高2，圆半径为（）A.10 B.12 C.14 D.16",
+svg:`<circle cx="170" cy="100" r="100" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="70" y1="200" x2="270" y2="200" stroke="#333" stroke-width="2"/>
+<line x1="170" y1="100" x2="170" y2="200" stroke="#333" stroke-width="1.8" stroke-dasharray="4 4"/>
+<text x="60" y="205">A</text><text x="275" y="205">B</text>`,ans:"A.10"},
+{topic:"专题2 垂径定理",q:"10. AB为直径，弦CD⊥AB于E，CE=4，AE=2，半径为（）A.4 B.5 C.6 D.8",
+svg:`<circle cx="170" cy="120" r="90" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="80" y1="120" x2="260" y2="120" stroke="#333" stroke-width="2"/>
+<line x1="140" y1="80" x2="140" y2="160" stroke="#333" stroke-width="1.8"/>
+<text x="70" y="125">A</text><text x="265" y="125">B</text><text x="130" y="75">C</text><text x="130" y="165">D</text><text x="165" y="130">O</text><text x="145" y="125">E</text>`,ans:"B.5"},
+//专题3 切线性质与判定
+{topic:"专题3 切线性质与判定",q:"11. PA切⊙O于A，OP=10，OA=6，则PA=（）A.6 B.8 C.10 D.12",
+svg:`<circle cx="200" cy="150" r="40" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="200" y1="150" x2="100" y2="150" stroke="#333" stroke-width="2"/>
+<line x1="100" y1="150" x2="200" y2="110" stroke="#333" stroke-width="2"/>
+<line x1="200" y1="110" x2="200" y2="150" stroke="#333" stroke-width="1.8"/>
+<text x="90" y="155">P</text><text x="205" y="105">A</text><text x="195" y="165">O</text>`,ans:"B.8"},
+{topic:"专题3 切线性质与判定",q:"12. 如图，AB切⊙O于B，∠A=30°，OB=3，则OA=（）A.3 B.6 C.3√3 D.4",
+svg:`<circle cx="180" cy="150" r="40" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="180" y1="150" x2="100" y2="150" stroke="#333" stroke-width="2"/>
+<line x1="100" y1="150" x2="180" y2="110" stroke="#333" stroke-width="2"/>
+<text x="90" y="155">A</text><text x="185" y="105">B</text><text x="175" y="165">O</text>`,ans:"B.6"},
+{topic:"专题3 切线性质与判定",q:"13. 三角形三边长5,12,13，内切圆半径为（）A.1 B.2 C.3 D.4",
+svg:`<polygon points="100,200 240,200 100,80" stroke="#333" stroke-width="2" fill="none"/>
+<circle cx="130" cy="160" r="20" stroke="#48bb78" stroke-width="2" fill="none"/>
+<text x="90" y="75">A</text><text x="245" y="205">B</text><text x="90" y="205">C</text>`,ans:"B.2"},
+{topic:"专题3 切线性质与判定",q:"14. PA、PB切⊙O于A、B，∠APB=60°，OP=10，则PA=（）A.5 B.5√3 C.6 D.8",
+svg:`<circle cx="170" cy="100" r="40" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="170" y1="100" x2="170" y2="180" stroke="#333" stroke-width="1.8" stroke-dasharray="4 4"/>
+<line x1="170" y1="180" x2="120" y2="90" stroke="#333" stroke-width="2"/>
+<line x1="170" y1="180" x2="220" y2="90" stroke="#333" stroke-width="2"/>
+<text x="110" y="85">A</text><text x="225" y="85">B</text><text x="165" y="190">P</text><text x="165" y="95">O</text>`,ans:"B.5√3"},
+{topic:"专题3 切线性质与判定",q:"15. 如图，∠C=90°，圆与AC、BC切于D、E，圆心在AB上，AC=4，BC=3，半径为（）A.12/7 B.5/2 C.3/2 D.2",
+svg:`<polygon points="100,200 220,200 100,100" stroke="#333" stroke-width="2" fill="none"/>
+<circle cx="130" cy="170" r="20" stroke="#4299e1" stroke-width="2" fill="none"/>
+<text x="90" y="95">A</text><text x="225" y="205">B</text><text x="90" y="205">C</text>`,ans:"A.12/7"},
+//专题4 点、直线、圆与圆位置
+{topic:"专题4 点/直线/圆与圆位置",q:"16. 点P到圆心距8，半径5，则点P在（）A.圆内 B.圆上 C.圆外 D.无法确定",
+svg:`<circle cx="170" cy="150" r="50" stroke="#333" stroke-width="2" fill="none"/>
+<circle cx="250" cy="150" r="3" fill="#333"/><text x="255" y="155">P</text><text x="165" y="160">O</text>`,ans:"C.圆外"},
+{topic:"专题4 点/直线/圆与圆位置",q:"17. 圆心到直线距离7，半径5，则直线与圆（）A.相离 B.相切 C.相交 D.重合",
+svg:`<circle cx="170" cy="100" r="50" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="200" x2="240" y2="200" stroke="#333" stroke-width="2"/>`,ans:"A.相离"},
+{topic:"专题4 点/直线/圆与圆位置",q:"18. 两圆半径3、5，圆心距8，则两圆（）A.外离 B.外切 C.相交 D.内切",
+svg:`<circle cx="120" cy="150" r="30" stroke="#333" stroke-width="2" fill="none"/>
+<circle cx="170" cy="150" r="50" stroke="#333" stroke-width="2" fill="none"/>`,ans:"B.外切"},
+{topic:"专题4 点/直线/圆与圆位置",q:"19. 两圆半径2、6，圆心距3，则两圆（）A.内含 B.内切 C.相交 D.外离",
+svg:`<circle cx="160" cy="150" r="60" stroke="#333" stroke-width="2" fill="none"/>
+<circle cx="140" cy="150" r="20" stroke="#333" stroke-width="2" fill="none"/>`,ans:"A.内含"},
+{topic:"专题4 点/直线/圆与圆位置",q:"20. 两圆半径4、5，圆心距7，则公共点个数为（）A.0 B.1 C.2 D.3",
+svg:`<circle cx="130" cy="150" r="40" stroke="#333" stroke-width="2" fill="none"/>
+<circle cx="170" cy="150" r="50" stroke="#333" stroke-width="2" fill="none"/>`,ans:"C.2"},
+//专题5 弧长、扇形、圆锥
+{topic:"专题5 弧长、扇形、圆锥",q:"21. 半径6，圆心角120°，弧长为（）A.2π B.4π C.6π D.8π",
+svg:`<circle cx="170" cy="150" r="60" stroke="#333" stroke-width="2" fill="none"/>
+<path d="M110,150 A60,60 0 0,1 230,150" stroke="#4299e1" stroke-width="3" fill="none"/>`,ans:"B.4π"},
+{topic:"专题5 弧长、扇形、圆锥",q:"22. 半径3，圆心角90°，扇形面积为（）A.9π/4 B.3π/2 C.π D.2π",
+svg:`<circle cx="170" cy="150" r="60" stroke="#333" stroke-width="2" fill="none"/>
+<path d="M170,90 L170,150 L230,150 Z" stroke="#48bb78" stroke-width="2" fill="#f0fff4" fill-opacity="0.3"/>`,ans:"A.9π/4"},
+{topic:"专题5 弧长、扇形、圆锥",q:"23. 圆锥母线长6，底面半径2，侧面积为（）A.12π B.24π C.8π D.6π",
+svg:`<path d="M170,80 L120,200 L220,200 Z" stroke="#333" stroke-width="2" fill="none"/>
+<ellipse cx="170" cy="200" rx="50" ry="15" stroke="#333" stroke-width="2" fill="none"/>`,ans:"A.12π"},
+{topic:"专题5 弧长、扇形、圆锥",q:"24. 扇形半径9，弧长6π，圆心角为（）A.60° B.90° C.120° D.150°",
+svg:`<circle cx="170" cy="150" r="60" stroke="#333" stroke-width="2" fill="none"/>`,ans:"C.120°"},
+{topic:"专题5 弧长、扇形、圆锥",q:"25. 圆锥底面半径3，高4，母线长为（）A.3 B.4 C.5 D.6",
+svg:`<path d="M170,80 L120,200 L220,200 Z" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="170" y1="80" x2="170" y2="200" stroke="#333" stroke-width="1.8" stroke-dasharray="4 4"/>`,ans:"C.5"},
+//专题6 圆内接正多边形
+{topic:"专题6 圆内接正多边形",q:"26. 正六边形半径为a，边长为（）A.a B.a√2 C.a√3 D.2a",
+svg:`<circle cx="170" cy="150" r="60" stroke="#333" stroke-width="2" fill="none"/>
+<polygon points="170,90 220,120 220,180 170,210 120,180 120,120" stroke="#4299e1" stroke-width="2" fill="none"/>`,ans:"A.a"},
+{topic:"专题6 圆内接正多边形",q:"27. 正三角形半径2，边长为（）A.2 B.2√3 C.3 D.4",
+svg:`<circle cx="170" cy="150" r="60" stroke="#333" stroke-width="2" fill="none"/>
+<polygon points="170,90 240,210 100,210" stroke="#48bb78" stroke-width="2" fill="none"/>`,ans:"B.2√3"},
+{topic:"专题6 圆内接正多边形",q:"28. 正方形外接圆半径3，边长为（）A.3 B.3√2 C.6 D.9",
+svg:`<circle cx="170" cy="150" r="60" stroke="#333" stroke-width="2" fill="none"/>
+<rect x="120" y="120" width="100" height="100" stroke="#4299e1" stroke-width="2" fill="none"/>`,ans:"B.3√2"},
+{topic:"专题6 圆内接正多边形",q:"29. 正八边形中心角度数为（）A.36° B.45° C.60° D.90°",
+svg:`<circle cx="170" cy="150" r="60" stroke="#333" stroke-width="2" fill="none"/>`,ans:"B.45°"},
+{topic:"专题6 圆内接正多边形",q:"30. 正五边形中心角为（）A.36° B.54° C.72° D.108°",
+svg:`<circle cx="170" cy="150" r="60" stroke="#333" stroke-width="2" fill="none"/>`,ans:"C.72°"},
+//专题7 相交弦、切割线定理
+{topic:"专题7 相交弦、切割线定理",q:"31. 弦AB、CD交于P，PA=4，PB=6，PC=3，则PD=（）A.6 B.8 C.10 D.12",
+svg:`<circle cx="170" cy="150" r="80" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="100" x2="240" y2="200" stroke="#333" stroke-width="1.8"/>
+<line x1="100" y1="200" x2="240" y2="100" stroke="#333" stroke-width="1.8"/>
+<text x="165" y="155">P</text>`,ans:"B.8"},
+{topic:"专题7 相交弦、切割线定理",q:"32. PAB过圆心，PA=4，AB=5，PC切圆于C，则PC=（）A.4 B.5 C.6 D.7",
+svg:`<circle cx="180" cy="150" r="40" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="150" x2="260" y2="150" stroke="#333" stroke-width="2"/>
+<line x1="100" y1="150" x2="180" y2="110" stroke="#333" stroke-width="2"/>
+<text x="90" y="155">P</text><text x="185" y="105">C</text>`,ans:"C.6"},
+{topic:"专题7 相交弦、切割线定理",q:"33. 割线PAB、PCD，PA=3，AB=5，PC=4，则PD=（）A.6 B.7 C.8 D.9",
+svg:`<circle cx="170" cy="150" r="70" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="120" x2="240" y2="180" stroke="#333" stroke-width="1.8"/>
+<line x1="100" y1="180" x2="240" y2="120" stroke="#333" stroke-width="1.8"/>`,ans:"A.6"},
+{topic:"专题7 相交弦、切割线定理",q:"34. 切线PC=6，割线PAB，PA=4，则AB=（）A.5 B.6 C.9 D.12",
+svg:`<circle cx="180" cy="150" r="40" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="150" x2="260" y2="150" stroke="#333" stroke-width="2"/>
+<line x1="100" y1="150" x2="180" y2="110" stroke="#333" stroke-width="2"/>`,ans:"A.5"},
+{topic:"专题7 相交弦、切割线定理",q:"35. 弦AB=10，P在AB上，PA=4，OP=3，则半径为（）A.5 B.√34 C.6 D.√37",
+svg:`<circle cx="170" cy="120" r="70" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="200" x2="240" y2="200" stroke="#333" stroke-width="2"/>
+<line x1="170" y1="120" x2="170" y2="200" stroke="#333" stroke-width="1.8"/>`,ans:"D.√37"},
+//专题8 圆综合计算（36-50）
+{topic:"专题8 圆综合计算",q:"36. AB直径，弦AC=6，BC=8，CD平分∠ACB，则BD=（）A.5 B.5√2 C.6 D.8",
+svg:`<circle cx="170" cy="140" r="70" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="140" x2="240" y2="140" stroke="#333" stroke-width="2"/>
+<line x1="100" y1="140" x2="170" y2="70" stroke="#333" stroke-width="1.8"/>
+<line x1="240" y1="140" x2="170" y2="70" stroke="#333" stroke-width="1.8"/>`,ans:"B.5√2"},
+{topic:"专题8 圆综合计算",q:"37. ⊙O半径1，弦AB=AC=√2，则BC=（）A.√2 B.√3 C.2 D.2√2",
+svg:`<circle cx="170" cy="150" r="50" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="120" y1="100" x2="220" y2="100" stroke="#333" stroke-width="1.8"/>
+<line x1="120" y1="100" x2="170" y2="200" stroke="#333" stroke-width="1.8"/>
+<line x1="220" y1="100" x2="170" y2="200" stroke="#333" stroke-width="1.8"/>`,ans:"B.√3"},
+{topic:"专题8 圆综合计算",q:"38. 直角三角形外接圆半径5，内切圆半径1，周长为（）A.20 B.22 C.24 D.26",
+svg:`<circle cx="170" cy="120" r="50" stroke="#333" stroke-width="2" fill="none"/>
+<polygon points="120" y1="120" x2="220" y2="120" x2="120" y2="20" stroke="#333" stroke-width="1.8" fill="none"/>`,ans:"B.22"},
+{topic:"专题8 圆综合计算",q:"39. AB直径，弦CD∥AB，∠CAD=30°，AC=2，则弧CD长为（）A.π/3 B.2π/3 C.π D.4π/3",
+svg:`<circle cx="170" cy="150" r="60" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="110" y1="150" x2="230" y2="150" stroke="#333" stroke-width="2"/>
+<line x1="110" y1="150" x2="150" y2="100" stroke="#333" stroke-width="1.8"/>`,ans:"B.2π/3"},
+{topic:"专题8 圆综合计算",q:"40. PA切圆于A，PBC过圆心，∠P=30°，则∠BAC=（）A.30° B.45° C.60° D.75°",
+svg:`<circle cx="180" cy="150" r="40" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="150" x2="260" y2="150" stroke="#333" stroke-width="2"/>
+<line x1="100" y1="150" x2="180" y2="110" stroke="#333" stroke-width="2"/>`,ans:"C.60°"},
+{topic:"专题8 圆综合计算",q:"41. 圆内接梯形必为（）A.直角梯形 B.等腰梯形 C.任意梯形 D.不等腰梯形",
+svg:`<circle cx="170" cy="150" r="70" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="110" y1="100" x2="230" y2="100" stroke="#333" stroke-width="1.8"/>
+<line x1="130" y1="200" x2="210" y2="200" stroke="#333" stroke-width="1.8"/>
+<line x1="110" y1="100" x2="130" y2="200" stroke="#333" stroke-width="1.8"/>
+<line x1="230" y1="100" x2="210" y2="200" stroke="#333" stroke-width="1.8"/>`,ans:"B.等腰梯形"},
+{topic:"专题8 圆综合计算",q:"42. AB=AC，∠A=40°，AB为直径，则∠D=（）A.100° B.110° C.120° D.130°",
+svg:`<circle cx="170" cy="140" r="70" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="140" x2="240" y2="140" stroke="#333" stroke-width="2"/>
+<line x1="100" y1="140" x2="170" y2="70" stroke="#333" stroke-width="1.8"/>
+<line x1="240" y1="140" x2="170" y2="70" stroke="#333" stroke-width="1.8"/>`,ans:"B.110°"},
+{topic:"专题8 圆综合计算",q:"43. 半径5，弦长6，弦所对圆周角为（）A.30°或150° B.45°或135° C.60°或120° D.90°",
+svg:`<circle cx="170" cy="150" r="50" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="130" y1="120" x2="210" y2="120" stroke="#333" stroke-width="1.8"/>`,ans:"A.30°或150°"},
+{topic:"专题8 圆综合计算",q:"44. 两圆外切，半径3、5，外公切线长为（）A.2√15 B.2√5 C.5 D.6",
+svg:`<circle cx="120" cy="120" r="30" stroke="#333" stroke-width="2" fill="none"/>
+<circle cx="190" cy="180" r="50" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="90" y1="120" x2="140" y2="180" stroke="#333" stroke-width="1.8"/>`,ans:"A.2√15"},
+{topic:"专题8 圆综合计算",q:"45. 扇形面积12π，半径6，圆心角为（）A.60° B.90° C.120° D.150°",
+svg:`<circle cx="170" cy="150" r="60" stroke="#333" stroke-width="2" fill="none"/>`,ans:"C.120°"},
+//压轴综合题（51-66）
+{topic:"专题9 压轴综合题",q:"51. AB直径，BC切圆于B，AC交圆于D，AD=3，DC=2，则BC=（）A.√6 B.√10 C.√15 D.4",
+svg:`<circle cx="170" cy="140" r="60" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="110" y1="140" x2="230" y2="140" stroke="#333" stroke-width="2"/>
+<line x1="230" y1="140" x2="230" y2="80" stroke="#333" stroke-width="2"/>
+<line x1="110" y1="140" x2="230" y2="80" stroke="#333" stroke-width="1.8"/>`,ans:"B.√10"},
+{topic:"专题9 压轴综合题",q:"52. PA、PB切圆于A、B，OP交AB于M，OP=13，PA=12，则AM=（）A.60/13 B.5 C.6 D.120/13",
+svg:`<circle cx="170" cy="100" r="50" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="170" y1="100" x2="170" y2="180" stroke="#333" stroke-width="1.8"/>
+<line x1="170" y1="180" x2="110" y2="90" stroke="#333" stroke-width="2"/>
+<line x1="170" y1="180" x2="230" y2="90" stroke="#333" stroke-width="2"/>`,ans:"A.60/13"},
+{topic:"专题9 压轴综合题",q:"53. 等腰△ABC，AB=AC=13，BC=10，内切圆半径为（）A.10/3 B.3 C.4 D.5",
+svg:`<polygon points="120,200 220,200 170,80" stroke="#333" stroke-width="2" fill="none"/>
+<circle cx="170" cy="150" r="30" stroke="#48bb78" stroke-width="2" fill="none"/>`,ans:"A.10/3"},
+{topic:"专题9 压轴综合题",q:"54. AB直径，CD⊥AB，CE=DE=4，AE=2，半径R=（）A.4 B.5 C.6 D.8",
+svg:`<circle cx="170" cy="120" r="70" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="120" x2="240" y2="120" stroke="#333" stroke-width="2"/>
+<line x1="140" y1="70" x2="140" y2="170" stroke="#333" stroke-width="1.8"/>`,ans:"B.5"},
+{topic:"专题9 压轴综合题",q:"55. 圆内接四边形ABCD，AB为直径，∠ADC=130°，则∠BAC=（）A.40° B.50° C.60° D.70°",
+svg:`<circle cx="170" cy="140" r="70" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="140" x2="240" y2="140" stroke="#333" stroke-width="2"/>`,ans:"A.40°"},
+{topic:"专题9 压轴综合题",q:"56. 两圆半径5、3，圆心距4，则公共弦长为（）A.3 B.6 C.24/5 D.5",
+svg:`<circle cx="140" cy="150" r="50" stroke="#333" stroke-width="2" fill="none"/>
+<circle cx="180" cy="150" r="30" stroke="#333" stroke-width="2" fill="none"/>`,ans:"C.24/5"},
+{topic:"专题9 压轴综合题",q:"57. 圆锥侧面展开图半径10，圆心角144°，底面半径为（）A.2 B.4 C.6 D.8",
+svg:`<path d="M170,80 L120,200 L220,200 Z" stroke="#333" stroke-width="2" fill="none"/>`,ans:"B.4"},
+{topic:"专题9 压轴综合题",q:"58. PA切圆于A，PBC为割线，PB=3，BC=6，则PA=（）A.3 B.3√2 C.3√3 D.6",
+svg:`<circle cx="180" cy="150" r="40" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="150" x2="260" y2="150" stroke="#333" stroke-width="2"/>
+<line x1="100" y1="150" x2="180" y2="110" stroke="#333" stroke-width="2"/>`,ans:"C.3√3"},
+{topic:"专题9 压轴综合题",q:"59. AB直径，∠CAB=30°，BC=2，则AC=（）A.2 B.2√3 C.4 D.4√3",
+svg:`<circle cx="170" cy="140" r="60" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="110" y1="140" x2="230" y2="140" stroke="#333" stroke-width="2"/>
+<line x1="110" y1="140" x2="230" y2="140" stroke="#333" stroke-width="1.8"/>`,ans:"B.2√3"},
+{topic:"专题9 压轴综合题",q:"60. 半径4，弦长4√3，弦心距为（）A.1 B.2 C.3 D.4",
+svg:`<circle cx="170" cy="120" r="70" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="200" x2="240" y2="200" stroke="#333" stroke-width="2"/>
+<line x1="170" y1="120" x2="170" y2="200" stroke="#333" stroke-width="1.8" stroke-dasharray="4 4"/>`,ans:"B.2"},
+{topic:"专题9 压轴综合题",q:"61. 正六边形边长为2，面积为（）A.6√3 B.8√3 C.12 D.18",
+svg:`<circle cx="170" cy="150" r="60" stroke="#333" stroke-width="2" fill="none"/>
+<polygon points="170,90 220,120 220,180 170,210 120,180 120,120" stroke="#4299e1" stroke-width="2" fill="none"/>`,ans:"A.6√3"},
+{topic:"专题9 压轴综合题",q:"62. AB切圆于B，AO=5，半径3，则AB=（）A.3 B.4 C.5 D.6",
+svg:`<circle cx="180" cy="150" r="30" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="180" y1="150" x2="100" y2="150" stroke="#333" stroke-width="2"/>
+<line x1="100" y1="150" x2="180" y2="120" stroke="#333" stroke-width="2"/>`,ans:"B.4"},
+{topic:"专题9 压轴综合题",q:"63. 弧长4π，半径6，圆心角为（）A.60° B.90° C.120° D.150°",
+svg:`<circle cx="170" cy="150" r="60" stroke="#333" stroke-width="2" fill="none"/>`,ans:"C.120°"},
+{topic:"专题9 压轴综合题",q:"64. 两圆内切，半径5、2，圆心距为（）A.2 B.3 C.5 D.7",
+svg:`<circle cx="170" cy="150" r="50" stroke="#333" stroke-width="2" fill="none"/>
+<circle cx="170" cy="150" r="20" stroke="#333" stroke-width="2" fill="none"/>`,ans:"B.3"},
+{topic:"专题9 压轴综合题",q:"65. 圆内接正方形边长4，半径为（）A.2 B.2√2 C.4 D.4√2",
+svg:`<circle cx="170" cy="150" r="60" stroke="#333" stroke-width="2" fill="none"/>
+<rect x="120" y="120" width="100" height="100" stroke="#48bb78" stroke-width="2" fill="none"/>`,ans:"B.2√2"},
+{topic:"专题9 压轴综合题",q:"66. AB直径，CD⊥AB，∠CAB=25°，则∠ABD=（）A.25° B.50° C.65° D.75°",
+svg:`<circle cx="170" cy="140" r="70" stroke="#333" stroke-width="2" fill="none"/>
+<line x1="100" y1="140" x2="240" y2="140" stroke="#333" stroke-width="2"/>
+<line x1="140" y1="90" x2="140" y2="190" stroke="#333" stroke-width="1.8"/>`,ans:"C.65°"}
+];
+
+const langTexts = {
+    'zh-CN': {
+        pageTitle: '圆中考题速递',
+        pageSubtitle: '按专题刷 66 道中考经典题',
+        home: '返回首页',
+        prev: '上一题',
+        next: '下一题',
+        showAns: '查看答案',
+        answerPrefix: '答案解析：',
+        topicCount: '{count} 题',
+        qNum: '第 {allIndex}/66 题 · 本专题 {topicIndex}/{topicTotal}'
+    },
+    'en': {
+        pageTitle: 'Circle Exam Express',
+        pageSubtitle: '66 classic exam questions by topic',
+        home: 'Back to Home',
+        prev: 'Prev',
+        next: 'Next',
+        showAns: 'Show Answer',
+        answerPrefix: 'Answer:',
+        topicCount: '{count} Questions',
+        qNum: 'Question {allIndex}/66 · Topic {topicIndex}/{topicTotal}'
+    }
+};
+
+const topicTitleEn = {
+    '专题1 圆周角与圆心角': 'Topic 1: Inscribed & Central Angles',
+    '专题2 垂径定理': 'Topic 2: Vertical Chord Theorem',
+    '专题3 切线性质与判定': 'Topic 3: Tangents',
+    '专题4 点/直线/圆与圆位置': 'Topic 4: Point/Line/Circle Positions',
+    '专题5 弧长、扇形、圆锥': 'Topic 5: Arc/Sector/Cone',
+    '专题6 圆内接正多边形': 'Topic 6: Regular Polygons in Circle',
+    '专题7 相交弦、切割线定理': 'Topic 7: Chords & Secants',
+    '专题8 圆综合计算': 'Topic 8: Comprehensive Problems',
+    '专题9 压轴综合题': 'Topic 9: Challenge Set'
+};
+
+const topicOrder = [
+    '专题1 圆周角与圆心角',
+    '专题2 垂径定理',
+    '专题3 切线性质与判定',
+    '专题4 点/直线/圆与圆位置',
+    '专题5 弧长、扇形、圆锥',
+    '专题6 圆内接正多边形',
+    '专题7 相交弦、切割线定理',
+    '专题8 圆综合计算',
+    '专题9 压轴综合题'
+];
+
+const topicIndexMap = new Map();
+for (let i = 0; i < questions.length; i++) {
+    const tp = questions[i].topic;
+    if (!topicIndexMap.has(tp)) topicIndexMap.set(tp, []);
+    topicIndexMap.get(tp).push(i);
+}
+
+let currentLang = localStorage.getItem('appLang') || 'zh-CN';
+let currentTheme = localStorage.getItem('appTheme') || 'default';
+const savedFontSize = localStorage.getItem('appFontSize') || '16';
+document.documentElement.style.setProperty('--font-size', `${Number(savedFontSize) || 16}px`);
+
+function applyTheme(theme) {
+    const body = document.body;
+    body.classList.remove('eye-mode', 'night-mode');
+    if (theme === 'eye') body.classList.add('eye-mode');
+    if (theme === 'night') body.classList.add('night-mode');
+}
+
+function getDisplayTopic(topic) {
+    if (currentLang === 'en') return topicTitleEn[topic] || topic;
+    return topic;
+}
+
+const pageTitle = document.getElementById('pageTitle');
+const pageSubtitle = document.getElementById('pageSubtitle');
+const homeBtn = document.getElementById('homeBtn');
+const topicGrid = document.getElementById('topicGrid');
+const t = document.getElementById("topic");
+const n = document.getElementById("qNum");
+const tx = document.getElementById("qText");
+const s = document.getElementById("svg");
+const a = document.getElementById("ans");
+const at = document.getElementById("ansTxt");
+const answerPrefix = document.getElementById('answerPrefix');
+const p = document.getElementById("prev");
+const sh = document.getElementById("showAns");
+const ne = document.getElementById("next");
+
+let currentTopic = topicOrder.find(tp => topicIndexMap.has(tp)) || Array.from(topicIndexMap.keys())[0];
+let topicPos = 0;
+
+function buildTopicGrid() {
+    topicGrid.innerHTML = '';
+    const texts = langTexts[currentLang] || langTexts['zh-CN'];
+    topicOrder.forEach(tp => {
+        const list = topicIndexMap.get(tp);
+        if (!list || !list.length) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'topic-card';
+        btn.dataset.topic = tp;
+        const title = getDisplayTopic(tp);
+        const countText = texts.topicCount.replace('{count}', String(list.length));
+        btn.innerHTML = `<div class="topic-card-title">${title}</div><div class="topic-card-meta"><span>${countText}</span><span>${list[0] + 1}-${list[list.length - 1] + 1}</span></div>`;
+        btn.addEventListener('click', () => setTopic(tp));
+        topicGrid.appendChild(btn);
+    });
+    updateTopicActive();
+}
+
+function updateTopicActive() {
+    document.querySelectorAll('.topic-card').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.topic === currentTopic);
+    });
+}
+
+function setTopic(tp) {
+    if (!topicIndexMap.has(tp)) return;
+    currentTopic = tp;
+    topicPos = 0;
+    updateTopicActive();
+    render();
+}
+
+function render() {
+    const list = topicIndexMap.get(currentTopic) || [];
+    if (!list.length) return;
+    const globalIndex = list[Math.max(0, Math.min(topicPos, list.length - 1))];
+    const q = questions[globalIndex];
+    const texts = langTexts[currentLang] || langTexts['zh-CN'];
+
+    t.textContent = getDisplayTopic(q.topic);
+    n.textContent = texts.qNum
+        .replace('{allIndex}', String(globalIndex + 1))
+        .replace('{topicIndex}', String(topicPos + 1))
+        .replace('{topicTotal}', String(list.length));
+    tx.innerHTML = q.q;
+    s.innerHTML = q.svg;
+    a.style.display = "none";
+    at.textContent = '';
+    p.disabled = topicPos === 0;
+    ne.disabled = topicPos === list.length - 1;
+}
+
+function updateLang(lang) {
+    currentLang = lang;
+    const texts = langTexts[currentLang] || langTexts['zh-CN'];
+    pageTitle.textContent = texts.pageTitle;
+    pageSubtitle.textContent = texts.pageSubtitle;
+    if (homeBtn) {
+        homeBtn.textContent = texts.home;
+        homeBtn.setAttribute('aria-label', texts.home);
+        homeBtn.title = texts.home;
+    }
+    p.textContent = texts.prev;
+    ne.textContent = texts.next;
+    sh.textContent = texts.showAns;
+    answerPrefix.textContent = texts.answerPrefix;
+    document.documentElement.lang = currentLang;
+    buildTopicGrid();
+    render();
+}
+
+sh.addEventListener('click', () => {
+    const list = topicIndexMap.get(currentTopic) || [];
+    if (!list.length) return;
+    const globalIndex = list[topicPos];
+    a.style.display = "block";
+    at.textContent = questions[globalIndex].ans;
+});
+
+p.addEventListener('click', () => {
+    topicPos = Math.max(0, topicPos - 1);
+    render();
+});
+
+ne.addEventListener('click', () => {
+    const list = topicIndexMap.get(currentTopic) || [];
+    topicPos = Math.min(list.length - 1, topicPos + 1);
+    render();
+});
+
+applyTheme(currentTheme);
+updateLang(currentLang);
+
+function syncFromStorage() {
+    const nextLang = localStorage.getItem('appLang') || 'zh-CN';
+    const nextTheme = localStorage.getItem('appTheme') || 'default';
+    const nextFontSize = localStorage.getItem('appFontSize') || '16';
+    document.documentElement.style.setProperty('--font-size', `${Number(nextFontSize) || 16}px`);
+    if (nextTheme !== currentTheme) {
+        currentTheme = nextTheme;
+        applyTheme(currentTheme);
+    }
+    if (nextLang !== currentLang) {
+        updateLang(nextLang);
+    }
+}
+
+window.addEventListener('storage', (e) => {
+    if (e.key === 'appLang' || e.key === 'appTheme' || e.key === 'appFontSize') {
+        syncFromStorage();
+    }
+});
+window.addEventListener('pageshow', syncFromStorage);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') syncFromStorage();
+});
+</script>
+</body>
+</html>

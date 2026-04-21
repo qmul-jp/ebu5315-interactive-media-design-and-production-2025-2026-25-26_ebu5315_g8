@@ -842,6 +842,71 @@
             line-height: 1.5;
         }
 
+        .circle66-entry-container {
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 40px;
+        }
+
+        .circle66-entry {
+            width: 100%;
+            background:
+                radial-gradient(circle at 12% 35%, rgba(37, 99, 235, 0.12), transparent 52%),
+                radial-gradient(circle at 90% 65%, rgba(96, 165, 250, 0.14), transparent 55%),
+                var(--surface);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border-radius: 30px;
+            padding: 26px 46px;
+            border: 1px solid rgba(37, 99, 235, 0.26);
+            box-shadow:
+                0 14px 46px rgba(37, 99, 235, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .circle66-entry:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 22px 62px rgba(37, 99, 235, 0.2);
+            border-color: rgba(37, 99, 235, 0.5);
+        }
+
+        .circle66-entry-info { display: flex; align-items: center; gap: 22px; }
+        .circle66-entry-icon {
+            font-size: 2.4rem;
+            background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(0 6px 16px rgba(37, 99, 235, 0.22));
+        }
+        .circle66-entry-text h4 { font-size: 1.55rem; font-weight: 900; color: var(--primary-strong); margin-bottom: 5px; }
+        .circle66-entry-text p { font-size: 1rem; color: var(--muted); }
+
+        .circle66-entry-tag {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 100px;
+            font-weight: 900;
+            font-size: 1.05rem;
+            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
+            flex-shrink: 0;
+        }
+
+        body.night-mode .circle66-entry {
+            background:
+                radial-gradient(circle at 12% 35%, rgba(96, 165, 250, 0.14), transparent 52%),
+                var(--surface);
+            border-color: rgba(96, 165, 250, 0.22);
+        }
+
         /* VIP模块样式 */
         .vip-banner-container {
             width: 100%;
@@ -1271,6 +1336,10 @@
                 <span>/</span>
                 <a href="javascript:;" class="lang-link" data-lang="en" id="langEn">English</a>
             </div>
+            <div class="exam-countdown" id="examCountdown">
+                <span class="exam-droplet" aria-hidden="true"></span>
+                <span class="exam-countdown-text" id="examCountdownText"></span>
+            </div>
             <div class="setting-wrap">
                 <a href="javascript:;" class="setting-icon"><i class="fas fa-cog"></i></a>
                 <div class="setting-menu">
@@ -1333,6 +1402,19 @@
                 <i class="fas fa-lightbulb"></i>
                 <h4 id="moduleMethodsTitle">圆学习方法</h4>
                 <p id="moduleMethodsDesc">构建系统思维链路，趣味化学习圆</p>
+            </a>
+        </div>
+
+        <div class="circle66-entry-container">
+            <a href="circle-66.html" class="circle66-entry">
+                <div class="circle66-entry-info">
+                    <i class="fas fa-drafting-compass circle66-entry-icon"></i>
+                    <div class="circle66-entry-text">
+                        <h4 id="circle66EntryTitle">圆中考题速递</h4>
+                        <p id="circle66EntryDesc">按专题刷 66 道中考经典题</p>
+                    </div>
+                </div>
+                <div class="circle66-entry-tag" id="circle66EntryTag">立即进入</div>
             </a>
         </div>
 
@@ -1416,6 +1498,11 @@
                 moduleTheoremsDesc: '由易到难，系统掌握圆的核心定理',
                 moduleMethodsTitle: '圆学习方法',
                 moduleMethodsDesc: '构建系统思维链路，趣味化学习圆',
+                circle66EntryTitle: '圆中考题速递',
+                circle66EntryDesc: '按专题刷 66 道中考经典题',
+                circle66EntryTag: '立即进入',
+                examCountdown: '距离中考还有 {days} 天',
+                examCountdownAction: '点我刷真题',
                 // VIP 翻译
                 vipTitle: '开通 VIP 会员',
                 vipDesc: '解锁最新题目，抢先玩最新游戏，畅享极致学习体验',
@@ -1520,11 +1607,11 @@
                 `
             },
             'en': {
-                logoText: 'Interactive Learning Platform for Circle Geometry',
+                logoText: 'Circle-learning Platform',
                 navHome: 'Home',
                 navGame: 'Game',
                 navQuiz: 'Quiz',
-                langZh: 'Simplified Chinese',
+                langZh: 'Chinese',
                 langEn: 'English',
                 menuEye: 'Eye Protection Mode',
                 menuNight: 'Night Mode',
@@ -1557,6 +1644,11 @@
                 moduleTheoremsDesc: 'Master core theorems from easy to difficult',
                 moduleMethodsTitle: 'Circle Learning Methods',
                 moduleMethodsDesc: 'Build a systematic thinking chain for fun learning',
+                circle66EntryTitle: 'Circle Exam Express',
+                circle66EntryDesc: '66 classic exam questions by topic',
+                circle66EntryTag: 'Enter',
+                examCountdown: 'Days left: {days}',
+                examCountdownAction: 'Practice Now',
                 // VIP Translation
                 vipTitle: 'Upgrade to VIP Member',
                 vipDesc: 'Unlock latest questions, early access to new games, and enjoy premium learning experience.',
@@ -1672,18 +1764,41 @@
         const contactModal = document.getElementById('contactModal');
         const contactModalClose = document.getElementById('contactModalClose');
         const backToTopBtn = document.getElementById('backToTopBtn');
+        const examCountdown = document.getElementById('examCountdown');
+        const examCountdownText = document.getElementById('examCountdownText');
         let currentIndex = 0;
         const totalCarousel = carouselItems.length;
         let menuHideTimer = null; // 设置菜单隐藏延迟定时器
         let currentLang = localStorage.getItem('appLang') || 'zh-CN'; // 默认中文
         let currentTheme = localStorage.getItem('appTheme') || 'default'; // 默认主题
         let themeTransitionReady = false;
+        const examTargetDate = new Date(2026, 5, 24);
+        examTargetDate.setHours(0, 0, 0, 0);
+        function computeExamDays() {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            const diff = examTargetDate.getTime() - now.getTime();
+            if (diff <= 0) return 0;
+            return Math.ceil(diff / (1000 * 60 * 60 * 24));
+        }
+        const examDaysLeft = computeExamDays();
+        let examAnimating = false;
+        let examMode = 'countdown';
+
+        function getExamCountdownText(texts) {
+            return texts.examCountdown.replace('{days}', examDaysLeft);
+        }
+
+        function getExamActionText(texts) {
+            return texts.examCountdownAction;
+        }
 
         // ********** 1. 初始化语言和主题 **********
         updateLang(currentLang);
         applyTheme(currentTheme);
         initSettingMenuDroplet();
         initFontSliderDroplet();
+        initExamCountdown();
 
         // ********** 导航栏：水滴凹透镜滑行效果 **********
         function initNavDroplet() {
@@ -1843,6 +1958,87 @@
             document.addEventListener('mouseup', hideDroplet);
             document.addEventListener('touchend', hideDroplet);
             document.addEventListener('touchcancel', hideDroplet);
+        }
+
+        function initExamCountdown() {
+            if (!examCountdown || !examCountdownText) return;
+            const explodeText = (raw) => {
+                const chars = (raw || '').split('');
+                examCountdownText.textContent = '';
+                const spans = [];
+                chars.forEach(ch => {
+                    const span = document.createElement('span');
+                    span.className = 'exam-char';
+                    span.textContent = ch;
+                    spans.push(span);
+                    examCountdownText.appendChild(span);
+                });
+                void examCountdownText.offsetWidth;
+                spans.forEach(span => {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 10 + Math.random() * 24;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    span.style.transform = `translate(${x}px, ${y}px) scale(0.65)`;
+                    span.style.opacity = '0';
+                });
+            };
+
+            const composeText = (text) => {
+                const chars = (text || '').split('');
+                examCountdownText.textContent = '';
+                const spans = [];
+                chars.forEach(ch => {
+                    const span = document.createElement('span');
+                    span.className = 'exam-char';
+                    span.textContent = ch;
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 10 + Math.random() * 22;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    span.style.transform = `translate(${x}px, ${y}px) scale(0.65)`;
+                    span.style.opacity = '0';
+                    spans.push(span);
+                    examCountdownText.appendChild(span);
+                });
+                void examCountdownText.offsetWidth;
+                spans.forEach(span => {
+                    span.style.transform = 'translate(0px, 0px) scale(1)';
+                    span.style.opacity = '1';
+                });
+            };
+
+            const animateTo = (targetText) => {
+                if (examAnimating) return;
+                const current = examCountdownText.textContent || '';
+                if (current === targetText) return;
+                examAnimating = true;
+                explodeText(current);
+                setTimeout(() => {
+                    composeText(targetText);
+                    examCountdown.setAttribute('aria-label', targetText);
+                    examCountdown.title = targetText;
+                }, 260);
+                setTimeout(() => {
+                    examAnimating = false;
+                }, 980);
+            };
+
+            examCountdown.addEventListener('mouseenter', () => {
+                const texts = langTexts[currentLang] || langTexts['zh-CN'];
+                examMode = 'action';
+                animateTo(getExamActionText(texts));
+            });
+
+            examCountdown.addEventListener('mouseleave', () => {
+                const texts = langTexts[currentLang] || langTexts['zh-CN'];
+                examMode = 'countdown';
+                animateTo(getExamCountdownText(texts));
+            });
+
+            examCountdown.addEventListener('click', () => {
+                window.location.href = 'circle-66.html';
+            });
         }
 
         const themeTransition = (function() {
@@ -2105,6 +2301,19 @@
             document.getElementById('moduleTheoremsDesc').textContent = texts.moduleTheoremsDesc;
             document.getElementById('moduleMethodsTitle').textContent = texts.moduleMethodsTitle;
             document.getElementById('moduleMethodsDesc').textContent = texts.moduleMethodsDesc;
+            const circle66EntryTitle = document.getElementById('circle66EntryTitle');
+            const circle66EntryDesc = document.getElementById('circle66EntryDesc');
+            const circle66EntryTag = document.getElementById('circle66EntryTag');
+            if (circle66EntryTitle) circle66EntryTitle.textContent = texts.circle66EntryTitle;
+            if (circle66EntryDesc) circle66EntryDesc.textContent = texts.circle66EntryDesc;
+            if (circle66EntryTag) circle66EntryTag.textContent = texts.circle66EntryTag;
+            if (examCountdownText && typeof examDaysLeft === 'number') {
+                examCountdownText.textContent = examMode === 'action'
+                    ? getExamActionText(texts)
+                    : getExamCountdownText(texts);
+                examCountdown.setAttribute('aria-label', examCountdownText.textContent);
+                examCountdown.title = examCountdownText.textContent;
+            }
             document.getElementById('vipTitle').textContent = texts.vipTitle;
             document.getElementById('vipDesc').textContent = texts.vipDesc;
             document.getElementById('vipPriceTag').textContent = texts.vipPriceTag;
