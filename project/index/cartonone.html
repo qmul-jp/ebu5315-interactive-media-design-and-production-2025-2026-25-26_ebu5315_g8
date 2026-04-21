@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>毛毛怪 · 互动欢迎</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Microsoft+YaHei:wght@400;700&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: linear-gradient(180deg, #a8d8ff 0%, #d0e8ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        #container {
+            position: relative;
+            width: 620px;
+            height: 720px;
+            filter: drop-shadow(0 25px 40px rgba(30, 120, 210, 0.3));
+        }
+        
+        canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 30px;
+            background: transparent;
+            cursor: pointer;
+        }
+        
+        #chat {
+            position: absolute;
+            top: 85px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            background: rgba(255, 255, 255, 0.22);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1.5px solid rgba(255, 255, 255, 0.45);
+            border-radius: 28px;
+            padding: 16px 32px;
+            box-shadow: 
+                0 15px 35px rgba(30, 120, 210, 0.25),
+                inset 0 2px 8px rgba(255,255,255,0.6);
+            color: #1a1a2e;
+            font-size: 22px;
+            font-weight: 700;
+            white-space: nowrap;
+            line-height: 1.3;
+            z-index: 100;
+            animation: chatPop 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+            pointer-events: none;
+        }
+        
+        #chat::after {
+            content: '';
+            position: absolute;
+            bottom: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: rgba(255, 255, 255, 0.22);
+            filter: blur(1px);
+        }
+        
+        @keyframes chatPop {
+            0% { opacity: 0; transform: translateX(-50%) scale(0.6) translateY(20px); }
+            100% { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
+        }
+        
+        .title {
+            position: absolute;
+            top: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, #1e7ed4, #40b5ff);
+            color: white;
+            padding: 6px 24px;
+            border-radius: 30px;
+            font-size: 18px;
+            box-shadow: 0 8px 20px rgba(30, 126, 212, 0.4);
+            white-space: nowrap;
+            z-index: 10;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="title">点击我招手呀～</div>
+        <canvas id="canvas" width="620" height="720"></canvas>
+        <div id="chat">
+            欢迎回来，今天学习了吗？🌟
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { alpha: true });
+        const chat = document.getElementById('chat');
+        
+        // 画面核心参数
+        let cx = 310;
+        let cy = 285;
+        let bodyRadius = 175;
+        
+        // 毛发系统（大幅增加密度）
+        let hairs = [];           // 外层长毛
+        let innerHairs = [];      // 内层超密集短绒毛
+        const numHairs = 3200;
+        const numInnerHairs = 19200;
+        
+        // 动画状态
+        let wavePhase = 0;
+        let isWaving = false;
+        let waveStartTime = 0;
+        let time = 0;
+        let headTilt = 0;
+        let blinkStartTime = 0;
+        
+        // 天蓝色毛发参数
+        const HAIR_HUE = 195;
+        const HAIR_SAT = 92;
+        
+        // 初始化外层长毛
+        function initHairs() {
+            hairs = [];
+            for (let i = 0; i < numHairs; i++) {
+                let angleBias = Math.random() * Math.PI * 2;
+                let isBottom = Math.sin(angleBias) > 0.15;
+                let baseAngle = angleBias;
+                let baseX = cx + Math.cos(baseAngle) * bodyRadius;
+                let baseY = cy + Math.sin(baseAngle) * bodyRadius;
+                
+                let length = isBottom ? 28 + Math.random() * 34 : 13 + Math.random() * 20;
+                let thickness = 0.65 + Math.random() * 1.05;
+                let hueShift = (Math.random() - 0.5) * 8;
+                
+                hairs.push({
+                    baseX: baseX,
+                    baseY: baseY,
+                    restAngle: baseAngle,
+                    length: length,
+                    thickness: thickness,
+                    offset: 0,
+                    velocity: 0,
+                    phase: Math.random() * Math.PI * 4,
+                    hueShift: hueShift,
+                    stiffness: 0.026 + Math.random() * 0.009,
+                    damping: 0.89 + Math.random() * 0.05   // 略微提高阻尼，让飘动更柔顺
+                });
+            }
+        }
+        
+        // 初始化内层超密集短绒毛
+        function initInnerHairs() {
+            innerHairs = [];
+            for (let i = 0; i < numInnerHairs; i++) {
+                let angle = Math.random() * Math.PI * 2;
+                let r = bodyRadius * 0.96 * Math.sqrt(Math.random());
+                let baseX = cx + Math.cos(angle) * r;
+                let baseY = cy + Math.sin(angle) * r;
+                
+                let restAngle = angle;
+                
+                let length = 5.8 + Math.random() * 10.2;
+                let thickness = 0.38 + Math.random() * 0.62;
+                let hueShift = (Math.random() - 0.5) * 8;
+                
+                innerHairs.push({
+                    baseX: baseX,
+                    baseY: baseY,
+                    restAngle: restAngle,
+                    length: length,
+                    thickness: thickness,
+                    offset: 0,
+                    velocity: 0,
+                    phase: Math.random() * Math.PI * 4,
+                    hueShift: hueShift,
+                    stiffness: 0.026 + Math.random() * 0.009,
+                    damping: 0.89 + Math.random() * 0.05   // 一致的柔顺阻尼
+                });
+            }
+        }
+        
+        // 单个毛发物理更新（更流畅版）
+        function updateSingleHair(h) {
+            const springForce = -h.stiffness * h.offset;
+            const dampForce = -h.damping * h.velocity;
+            
+            let extraForce = 0;
+            
+            if (isWaving) {
+                // 更低频率、更柔和的波浪力（让飘动更丝滑自然）
+                const waveForce = Math.sin(wavePhase * 1.15 + h.phase) * 0.32;
+                const rightBias = Math.max(0, Math.cos(h.restAngle)) * 0.55;
+                const gravityForce = 0.09 * Math.sin(h.restAngle);
+                
+                extraForce = waveForce * (0.45 + rightBias) + gravityForce * 0.6;
+                
+                // 大幅降低随机湍流，让飘动更连续流畅
+                extraForce += (Math.random() - 0.5) * 0.055;
+            } else {
+                // 不点击时更强的阻尼，让毛发快速但平滑地归零
+                h.velocity *= 0.905;
+                h.offset *= 0.94;
+            }
+            
+            // 速度与位移更新
+            h.velocity += springForce + dampForce + extraForce;
+            h.offset += h.velocity;
+            
+            // 物理限幅（更柔和）
+            if (Math.abs(h.offset) > 0.88) {
+                h.offset *= 0.895;
+                h.velocity *= 0.78;
+            }
+        }
+        
+        // 毛发物理更新
+        function updateHairs() {
+            hairs.forEach(updateSingleHair);
+            innerHairs.forEach(updateSingleHair);
+        }
+        
+        // 绘制一根毛发
+        function drawHair(h) {
+            const drawAngle = h.restAngle + h.offset * 0.88;
+            
+            let x1 = h.baseX;
+            let y1 = h.baseY;
+            let x2 = x1 + Math.cos(drawAngle) * h.length;
+            let y2 = y1 + Math.sin(drawAngle) * h.length;
+            
+            const bend = h.offset * 5.5;
+            const cx1 = x1 + Math.cos(drawAngle - 0.55) * (h.length * 0.32);
+            const cy1 = y1 + Math.sin(drawAngle - 0.55) * (h.length * 0.32) + bend;
+            
+            ctx.save();
+            ctx.lineCap = 'round';
+            ctx.shadowBlur = 2.8;
+            ctx.shadowColor = 'rgba(30, 130, 210, 0.25)';
+            
+            const lightness = 54 + Math.sin(h.offset * 2.2) * 9;
+            ctx.strokeStyle = `hsl(${HAIR_HUE + h.hueShift}, ${HAIR_SAT}%, ${lightness}%)`;
+            ctx.lineWidth = h.thickness;
+            
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.quadraticCurveTo(cx1, cy1, x2, y2);
+            ctx.stroke();
+            ctx.restore();
+        }
+        
+        // 绘制星形
+        function drawStar(x, y, size, spikes, rot) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rot);
+            ctx.fillStyle = '#FFEA4F';
+            ctx.shadowBlur = 18;
+            ctx.shadowColor = '#FFEA4F';
+            
+            ctx.beginPath();
+            const step = Math.PI / spikes;
+            for (let i = 0; i < 2 * spikes; i++) {
+                const radius = i % 2 === 0 ? size : size * 0.38;
+                const ang = i * step - Math.PI / 2;
+                ctx.lineTo(Math.cos(ang) * radius, Math.sin(ang) * radius);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        // 绘制手臂（更流畅的招手动画）
+        function drawArm(isRight, waveOffset) {
+            const armX = isRight ? cx + 138 : cx - 138;
+            const armY = cy + 42;
+            const armLen = 92;
+            const thickness = 39;
+            
+            ctx.save();
+            ctx.translate(armX, armY);
+            
+            let baseRot = isRight ? 0.68 : -0.68;
+            let rot = baseRot + (isRight ? waveOffset : 0);
+            
+            ctx.rotate(rot);
+            
+            ctx.fillStyle = '#FFB8B5';
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = 'rgba(255, 160, 150, 0.4)';
+            ctx.beginPath();
+            ctx.roundRect(0, -thickness / 2, armLen, thickness, 22);
+            ctx.fill();
+            
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.beginPath();
+            ctx.roundRect(8, -thickness / 2 + 6, armLen - 12, 12, 18);
+            ctx.fill();
+            
+            ctx.translate(armLen + 4, 0);
+            ctx.rotate(isRight ? -rot * 0.6 - 0.3 : -rot * 0.6 + 0.3);
+            
+            ctx.fillStyle = '#FFB8B5';
+            ctx.shadowBlur = 6;
+            ctx.beginPath();
+            ctx.arc(0, 0, 23, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#FF9E9A';
+            ctx.beginPath();
+            ctx.arc(12, -10, 9, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(12, 8, 9, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        // 绘制腿和靴子
+        function drawLegs() {
+            const legStartY = cy + bodyRadius - 52;
+            const legBend = isWaving ? 0.19 : 0;
+            
+            // 左腿
+            ctx.save();
+            ctx.translate(cx - 43, legStartY);
+            ctx.rotate(-0.08 + legBend * 0.6);
+            ctx.fillStyle = '#FFB8B5';
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = 'rgba(255, 180, 170, 0.3)';
+            ctx.fillRect(-11, 0, 22, 78);
+            
+            ctx.fillStyle = '#FFCD2E';
+            ctx.shadowBlur = 4;
+            ctx.beginPath();
+            ctx.roundRect(-19, 72, 38, 36, 8);
+            ctx.fill();
+            ctx.fillStyle = '#6B49FF';
+            ctx.fillRect(-19, 102, 38, 9);
+            
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '700 13px Microsoft YaHei';
+            ctx.textAlign = 'center';
+            ctx.shadowBlur = 0;
+            ctx.fillText('PURA', 0, 92);
+            ctx.restore();
+            
+            // 右腿
+            ctx.save();
+            ctx.translate(cx + 43, legStartY);
+            ctx.rotate(0.08 + legBend * 0.6);
+            ctx.fillStyle = '#FFB8B5';
+            ctx.shadowBlur = 6;
+            ctx.fillRect(-11, 0, 22, 78);
+            
+            ctx.fillStyle = '#FFCD2E';
+            ctx.shadowBlur = 4;
+            ctx.beginPath();
+            ctx.roundRect(-19, 72, 38, 36, 8);
+            ctx.fill();
+            ctx.fillStyle = '#6B49FF';
+            ctx.fillRect(-19, 102, 38, 9);
+            
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '700 13px Microsoft YaHei';
+            ctx.textAlign = 'center';
+            ctx.shadowBlur = 0;
+            ctx.fillText('PURA', 0, 92);
+            ctx.restore();
+        }
+        
+        // 绘制主体
+        function drawBody() {
+            // 1. 毛球本体
+            ctx.save();
+            ctx.shadowBlur = 28;
+            ctx.shadowColor = 'rgba(30, 130, 210, 0.45)';
+            ctx.fillStyle = '#1E7ED4';
+            ctx.beginPath();
+            ctx.ellipse(cx, cy + 8, bodyRadius + 6, bodyRadius + 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // 2. 毛发层（超密集内层 + 外层）
+            innerHairs.forEach(drawHair);
+            hairs.forEach(drawHair);
+            
+            // 3. 脸部
+            const faceCenterX = cx;
+            const faceCenterY = cy - 22;
+            
+            ctx.save();
+            ctx.translate(faceCenterX, faceCenterY);
+            ctx.rotate(headTilt);
+            
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = 'rgba(255, 200, 180, 0.6)';
+            ctx.fillStyle = '#FFCCB8';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 78, 62, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'rgba(255,255,255,0.25)';
+            ctx.beginPath();
+            ctx.ellipse(-12, -18, 22, 14, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            const eyeLocalY = -8;
+            
+            ctx.fillStyle = '#1C1C2E';
+            ctx.beginPath();
+            ctx.ellipse(-23, eyeLocalY, 9.5, 9.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            const rightEyeRY = (isWaving && (time - blinkStartTime > 80 && time - blinkStartTime < 280)) ||
+                               (isWaving && (time - blinkStartTime > 1150 && time - blinkStartTime < 1350)) ? 3.2 : 9.5;
+            ctx.beginPath();
+            ctx.ellipse(23, eyeLocalY, 9.5, rightEyeRY, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            if (rightEyeRY > 6) {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                ctx.arc(19, eyeLocalY - 4, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(-27, eyeLocalY - 4, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = '#2C2C3A';
+            ctx.lineWidth = 4.5;
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.arc(-23, eyeLocalY, 17, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(23, eyeLocalY, 17, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-8, eyeLocalY - 2);
+            ctx.lineTo(8, eyeLocalY - 2);
+            ctx.stroke();
+            
+            ctx.fillStyle = 'rgba(255, 140, 130, 0.45)';
+            ctx.beginPath();
+            ctx.ellipse(-26, 12, 11, 6, Math.PI / 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(26, 12, 11, 6, -Math.PI / 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        // 主绘制函数
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            updateHairs();
+            
+            drawLegs();
+            drawBody();
+            
+            const starBob = Math.sin(time * 0.004) * 3;
+            drawStar(cx - 72, cy - 172 + starBob, 34, 5, time * 0.0008);
+            drawStar(cx - 26, cy - 192 + starBob * 0.6, 19, 5, time * 0.0012 + 0.8);
+            
+            // 更流畅的招手幅度（降低频率 + 双正弦叠加，更自然丝滑）
+            const waveOffset = isWaving 
+                ? (Math.sin(wavePhase * 0.85) * 1.32 + Math.sin(wavePhase * 2.3) * 0.25) 
+                : 0;
+            
+            drawArm(false, 0);
+            drawArm(true, waveOffset);
+        }
+        
+        // 动画循环（招手动作更流畅）
+        function loop(timestamp) {
+            if (!timestamp) timestamp = 0;
+            time = timestamp;
+            
+            if (isWaving) {
+                // 更低频率的波浪相位 → 动作更慢、更柔和
+                wavePhase = (timestamp - waveStartTime) * 0.0115;
+                // 头部轻微右倾也更平滑
+                headTilt = Math.sin(wavePhase * 0.62) * 0.072;
+                
+                // 3秒后自动结束
+                if (timestamp - waveStartTime > 2800) {
+                    isWaving = false;
+                    headTilt = 0;
+                }
+            }
+            
+            draw();
+            requestAnimationFrame(loop);
+        }
+        
+        // 点击事件
+        function handleClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            
+            const dx = clickX - cx;
+            const dy = clickY - cy;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < bodyRadius + 55) {
+                isWaving = true;
+                waveStartTime = performance.now();
+                blinkStartTime = performance.now();
+                wavePhase = 0;
+                headTilt = 0.03;
+                
+                chat.style.display = 'block';
+                
+                setTimeout(() => {
+                    if (chat.style.display === 'block') {
+                        chat.style.animation = 'chatPop 0.3s cubic-bezier(0.4, 0, 1, 1) reverse';
+                        setTimeout(() => {
+                            chat.style.display = 'none';
+                            chat.style.animation = '';
+                        }, 300);
+                    }
+                }, 3500);
+                
+                // 点击扰动更轻柔
+                hairs.forEach(h => {
+                    h.velocity += (Math.random() - 0.5) * 0.52;
+                });
+                innerHairs.forEach(h => {
+                    h.velocity += (Math.random() - 0.5) * 0.32;
+                });
+            }
+        }
+        
+        // 初始化
+        function init() {
+            initHairs();
+            initInnerHairs();
+            
+            canvas.addEventListener('click', handleClick);
+            
+            canvas.addEventListener('mouseenter', () => {
+                canvas.style.filter = 'drop-shadow(0 30px 45px rgba(30, 130, 210, 0.45))';
+            });
+            canvas.addEventListener('mouseleave', () => {
+                canvas.style.filter = 'drop-shadow(0 25px 40px rgba(30, 120, 210, 0.3))';
+            });
+            
+            console.log('%c✅ 天蓝色毛毛怪已加载！招手动作 & 毛发飘动已全面优化为更丝滑流畅版本（更低频率 + 柔和阻尼 + 减少湍流）', 'color:#40b5ff;font-size:14px;font-weight:bold');
+            requestAnimationFrame(loop);
+        }
+        
+        window.onload = init;
+    </script>
+</body>
+</html>

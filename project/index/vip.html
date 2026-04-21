@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>VIP 会员中心 - 圆几何交互式学习平台</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&display=swap');
@@ -177,15 +177,15 @@
             <div class="pricing-grid">
                 <div class="price-card" onclick="selectPlan(this, '0.20')">
                     <div class="plan-name" id="planDaily">体验会员</div>
-                    <div class="plan-price">￥0.2<span> / 天</span></div>
+                    <div class="plan-price" id="planDailyPrice">￥0.2<span> / 天</span></div>
                 </div>
                 <div class="price-card recommended active" onclick="selectPlan(this, '2.99')">
                     <div class="plan-name" id="planMonthly">包月会员</div>
-                    <div class="plan-price">￥2.99<span> / 月</span></div>
+                    <div class="plan-price" id="planMonthlyPrice">￥2.99<span> / 月</span></div>
                 </div>
                 <div class="price-card" onclick="selectPlan(this, '29.99')">
                     <div class="plan-name" id="planYearly">包年会员</div>
-                    <div class="plan-price">￥29.99<span> / 年</span></div>
+                    <div class="plan-price" id="planYearlyPrice">￥29.99<span> / 年</span></div>
                 </div>
             </div>
 
@@ -218,7 +218,10 @@
                 planDaily: '体验会员',
                 planMonthly: '包月会员',
                 planYearly: '包年会员',
-                paymentTips: '请使用微信或支付宝扫码支付（虚构测试环境）'
+                paymentTips: '请使用微信或支付宝扫码支付（虚构测试环境）',
+                planDailyPrice: '￥0.2/天',
+                planMonthlyPrice: '￥2.99/月',
+                planYearlyPrice: '￥29.99/年'
             },
             'en': {
                 backBtn: 'Back Home',
@@ -233,7 +236,10 @@
                 planDaily: 'Daily Plan',
                 planMonthly: 'Monthly Plan',
                 planYearly: 'Annual Plan',
-                paymentTips: 'Scan with WeChat or Alipay (Mock Environment)'
+                paymentTips: 'Scan with WeChat or Alipay (Mock Environment)',
+                planDailyPrice: '￥0.2/day',
+                planMonthlyPrice: '￥2.99/month',
+                planYearlyPrice: '￥29.99/year'
             }
         };
 

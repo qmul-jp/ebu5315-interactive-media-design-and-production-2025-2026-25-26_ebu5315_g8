@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN"> <!-- 会根据语言自动更新 -->
+<head>
+    <meta charset="UTF-8">
+    <title>弦切角定理演示</title> <!-- 会根据语言自动更新 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Microsoft YaHei, sans-serif;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--bg-color, #f5f7fa);
+            color: var(--text-color, #333);
+            gap: 40px;
+            transition: all 0.3s ease-in-out;
+            font-size: var(--font-size, 16px);
+        }
+        /* 模式切换：护眼/夜晚，修改CSS变量 */
+        body.eye-mode {
+            --bg-color: #f0f9eb;
+            --text-color: #166534;
+        }
+        body.night-mode {
+            --bg-color: #020617;
+            --text-color: #f1f5f9;
+            background:
+                radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.15), transparent 25%),
+                radial-gradient(circle at 86% 14%, rgba(56, 189, 248, 0.15), transparent 22%),
+                linear-gradient(rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+        }
+        /* 针对不同模式调整容器和面板背景 */
+        body.eye-mode #canvas, body.eye-mode .info {
+            background-color: #f7fbf2;
+            border-color: #c7e3b4;
+        }
+        body.night-mode #canvas, body.night-mode .info {
+            background-color: #2d3748;
+            border-color: #475569;
+        }
+        body.night-mode .angle-item {
+            background-color: #374151;
+            color: #cbd5e1;
+        }
+        body.night-mode .tip {
+            color: #94a3b8;
+        }
+        #canvas {
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: white;
+        }
+        .info {
+            width: 260px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .info h3 {
+            color: #2563eb;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .angle-item {
+            font-size: 16px;
+            margin: 12px 0;
+            padding: 8px;
+            background: #eff6ff;
+            border-radius: 4px;
+        }
+        .value {
+            font-weight: bold;
+            color: #dc2626;
+        }
+        .tip {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="600" height="600"></canvas>
+    <div class="info">
+        <h3 id="theorem-title">弦切角定理</h3>
+        <!-- 修正：id="angle1-item" 之前多了个空格 -->
+        <div class="angle-item" id="angle1-item">
+            弦切角(切线与AB夹角)：<span class="value" id="angle1">0</span>°
+        </div>
+        <div class="angle-item" id="angle2-item">
+            圆周角∠APB：<span class="value" id="angle2">0</span>°
+        </div>
+        <div class="angle-item" style="background: #dcfce7;" id="relation-item">
+            两角关系：<span class="value" id="relation">相等</span>
+        </div>
+        <div class="tip" id="tips">拖动B点改变弦长<br>P点自动沿圆弧运动</div>
+    </div>
+
+    <script>
+        // ********** 1. 补全语言文本映射表（核心修改1）**********
+        const langTexts = {
+            'zh-CN': { // 中文配置
+                pageTitle: '弦切角定理演示',
+                "theorem-title": '弦切角定理',
+                "angle1-item": '弦切角(切线与AB夹角)：',
+                "angle2-item": '圆周角∠APB：',
+                "relation-item": '两角关系：',
+                "tips": '拖动B点改变弦长<br>P点自动沿圆弧运动',
+                equal: '相等',
+                approxEqual: '近似相等'
+            },
+            'en': { // 英文配置（补全所有键）
+                pageTitle: 'Tangent Chord Angle Theorem Demonstration',
+                "theorem-title": 'Tangent Chord Angle Theorem',
+                "angle1-item": 'Tangent Chord Angle (between tangent and AB)：',
+                "angle2-item": 'Inscribed Angle ∠APB：',
+                "relation-item": 'Relationship between two angles：',
+                "tips": 'Drag point B to change chord length<br>Point P moves along arc automatically',
+                equal: 'Equal',
+                approxEqual: 'Approximately Equal'
+            }
+        };
+
+        // ********** 2. 读取并初始化当前语言和主题（核心修改2）**********
+        const currentLang = localStorage.getItem('appLang') || 'zh-CN';
+        const currentTheme = localStorage.getItem('appTheme') || 'default';
+        const currentFontSize = localStorage.getItem('appFontSize') || '16';
+        
+        document.documentElement.lang = currentLang;
+        const currentTexts = langTexts[currentLang];
+
+        function applyTheme(theme) {
+            const body = document.body;
+            body.classList.remove('eye-mode', 'night-mode');
+            if (theme === 'eye') body.classList.add('eye-mode');
+            if (theme === 'night') body.classList.add('night-mode');
+        }
+        function applyFontSize(size) {
+            document.documentElement.style.setProperty('--font-size', `${size}px`);
+            document.documentElement.style.fontSize = `${size}px`;
+        }
+        applyTheme(currentTheme);
+        applyFontSize(currentFontSize);
+
+        // 监听来自其他页面的主题/语言/字体变化
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'appTheme') applyTheme(e.newValue);
+            if (e.key === 'appFontSize') applyFontSize(e.newValue);
+            if (e.key === 'appLang') location.reload();
+        });
+
+        // ********** 3. 初始化页面文本（核心修改3）**********
+        function initLangText() {
+            // 更新页面标题
+            document.title = currentTexts.pageTitle;
+            // 更新静态文本
+            const titleEl = document.getElementById('theorem-title');
+            if (titleEl) titleEl.textContent = currentTexts['theorem-title'];
+            
+            // 注意：angle1-item/angle2-item/relation-item 是“文本前缀+动态值”，需要拆分更新
+            const a1Item = document.getElementById('angle1-item');
+            if (a1Item) a1Item.innerHTML = currentTexts['angle1-item'] + '<span class="value" id="angle1">0</span>°';
+            
+            const a2Item = document.getElementById('angle2-item');
+            if (a2Item) a2Item.innerHTML = currentTexts['angle2-item'] + '<span class="value" id="angle2">0</span>°';
+            
+            const rItem = document.getElementById('relation-item');
+            if (rItem) rItem.innerHTML = currentTexts['relation-item'] + '<span class="value" id="relation">' + currentTexts.equal + '</span>';
+            
+            const tipsEl = document.getElementById('tips');
+            if (tipsEl) tipsEl.innerHTML = currentTexts.tips;
+        }
+        // 页面加载时立即初始化文本
+        initLangText();
+
+        // ********** 原有代码（仅修改动态文本部分）**********
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const angle1El = document.getElementById('angle1');
+        const angle2El = document.getElementById('angle2');
+        const relationEl = document.getElementById('relation');
+
+        // 圆参数
+        const cx = 300, cy = 300, r = 220;
+        // A点：固定切点（右侧切点）
+        const A = { x: cx + r, y: cy };
+        // B点：初始位置，可拖动
+        let B = { x: cx, y: cy - r };
+        // P点：动画运动
+        let pAngle = 0;
+        let isDragging = false;
+
+        // 角度工具：Canvas坐标转数学角度，计算夹角
+        function getAngle(px, py) {
+            return Math.atan2(py - cy, px - cx);
+        }
+        function angleToDeg(rad) {
+            return (rad * 180 / Math.PI).toFixed(1);
+        }
+        // 计算两点距离
+        function dist(p1, p2) {
+            return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+        }
+        // 限制点在圆上
+        function clampToCircle(p) {
+            const rad = getAngle(p.x, p.y);
+            return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+        }
+
+        // 绘制函数（修改动态文本部分）
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 1. 画圆
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.strokeStyle = '#2563eb';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 2. 画A点切线（竖直切线，A为右切点）
+            ctx.beginPath();
+            ctx.moveTo(A.x, A.y - 100);
+            ctx.lineTo(A.x, A.y + 100);
+            ctx.strokeStyle = '#9ca3af';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 3. 计算P点坐标（自动沿圆运动）
+            const pRad = pAngle * Math.PI / 180;
+            const P = { x: cx + r * Math.cos(pRad), y: cy + r * Math.sin(pRad) };
+            
+            // 4. 画线段：AB、AP、BP
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#111827';
+            ctx.beginPath();
+            ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y);
+            ctx.moveTo(A.x, A.y); ctx.lineTo(P.x, P.y);
+            ctx.moveTo(B.x, B.y); ctx.lineTo(P.x, P.y);
+            ctx.stroke();
+            
+            // 5. 标注三点：A(切点)、B、P
+            const drawPoint = (p, label, color) => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.fillStyle = '#000';
+                ctx.font = '16px Arial';
+                ctx.fillText(label, p.x + 8, p.y - 8);
+            };
+            drawPoint(A, 'A', '#dc2626');
+            drawPoint(B, 'B', '#2563eb');
+            drawPoint(P, 'P', '#16a34a');
+            
+            // 6. 计算角度：弦切角 = 弧AB的圆周角
+            const radAB = Math.abs(getAngle(B.x, B.y) - getAngle(A.x, A.y));
+            const chordAngleDeg = angleToDeg(radAB / 2); // 弦切角
+            // 圆周角∠APB（同弧所对，与弦切角相等）
+            const circAngleDeg = chordAngleDeg;
+            
+            // 7. 绘制角度标注
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#dc2626';
+            ctx.fillText(`${chordAngleDeg}°`, A.x - 25, A.y - 20);
+            ctx.fillStyle = '#16a34a';
+            ctx.fillText(`${circAngleDeg}°`, P.x + 10, P.y + 20);
+            
+            // 8. 更新页面数值（核心修改4：动态文本从语言表读取）
+            angle1El.textContent = chordAngleDeg;
+            angle2El.textContent = circAngleDeg;
+            // 替换硬编码的“相等/近似相等”为语言表中的文本
+            relationEl.textContent = Math.abs(chordAngleDeg - circAngleDeg) < 0.2 
+                ? currentTexts.equal 
+                : currentTexts.approxEqual;
+        }
+
+        // 动画：P点自动旋转
+        function animate() {
+            pAngle += 0.5;
+            if (pAngle > 360) pAngle = 0;
+            draw();
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // 鼠标拖动B点
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            if (dist({x,y}, B) < 15) isDragging = true;
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = canvas.getBoundingClientRect();
+            B = clampToCircle({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            });
+        });
+        canvas.addEventListener('mouseup', () => isDragging = false);
+        canvas.addEventListener('mouseleave', () => isDragging = false);
+    </script>
+</body>
+</html>
