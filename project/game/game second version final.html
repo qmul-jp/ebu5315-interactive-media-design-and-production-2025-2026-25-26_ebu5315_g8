@@ -52,10 +52,63 @@
             --surface: rgba(30, 41, 59, 0.88); --surface-strong: #1e293b; --border-color: #475569;
         }
 
+        /* 星空背景 */
+        .starry-background {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; overflow: hidden;
+        }
+        /* 模式适配 - 背景色 */
+        body:not(.eye-mode):not(.night-mode) .starry-background {
+            background: #1a2a40;
+        }
+        body.eye-mode .starry-background {
+            background: #0f3421;
+        }
+        body.night-mode .starry-background {
+            background: #000;
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle linear infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        /* 模式适配 - 星星颜色 */
+        body:not(.eye-mode):not(.night-mode) .star {
+            background: #ffffff;
+        }
+        body.eye-mode .star {
+            background: #e0e0e0;
+        }
+        body.night-mode .star {
+            background: #a0a0ff;
+        }
+
+        /* 默认模式下的标题颜色 */
+        body:not(.eye-mode):not(.night-mode) #gameTitle,
+        body:not(.eye-mode):not(.night-mode) #startTitle {
+            color: #1d4ed8;
+        }
+
+        /* 夜晚模式下的选项按钮颜色 */
+        body.night-mode .option-btn {
+            color: white;
+        }
+
+        /* 透明body背景，让星空背景显示 */
+        body {
+            background: transparent !important;
+        }
+
         /* 头部导航 - 复用 index.html */
         .header-container {
             position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; height: 80px; padding: 0 4vw;
-            background: var(--surface); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color);
+            background: transparent; backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color);
             display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-md);
         }
         .logo { font-size: clamp(1.2rem, 2.5vw, 1.6rem); font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; }
@@ -73,9 +126,10 @@
         .breadcrumb a { color: var(--primary); font-weight: 600; text-decoration: none; }
 
         .game-card-main {
-            width: 100%; background: var(--surface); backdrop-filter: blur(12px);
+            width: 100%; background: transparent; backdrop-filter: blur(12px);
             border: 1px solid var(--border-color); border-radius: var(--radius-xl);
             padding: 40px; box-shadow: var(--shadow-lg); text-align: center;
+            margin-bottom: 20px;
         }
 
         .game-info {
@@ -122,11 +176,36 @@
             .nav-main { display: none; }
             .options-grid { grid-template-columns: 1fr; }
         }
+
+        .setting-wrap {
+            position: relative;
+        }
+        .setting-icon {
+            font-size: 1.2rem; color: var(--muted); width: 42px; height: 42px;
+            display: flex; justify-content: center; align-items: center;
+            background: transparent; border-radius: 50%;
+            border: 1px solid var(--border-color); cursor: pointer;
+        }
+        .setting-menu {
+            display: none; position: absolute; top: 50px; right: 0;
+            width: 200px; background: transparent;
+            border-radius: var(--radius-md); border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg); padding: 12px; z-index: 10000;
+        }
+        .menu-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px; font-size: 0.9rem; color: var(--text);
+            border-radius: 8px; cursor: pointer;
+        }
+        .menu-item:hover { background: var(--bg-color); color: var(--primary); }
     </style>
     <link rel="stylesheet" href="../css/common.css">
     <script src="../js/common.js" defer></script>
 </head>
 <body>
+    <!-- 星空背景 -->
+    <div class="starry-background" id="starryBackground"></div>
+    
     <header class="header-container">
         <div class="logo" id="logoText">圆几何交互式学习平台</div>
         <nav class="nav-main">
@@ -140,6 +219,14 @@
                 <a href="javascript:;" class="lang-link active" data-lang="zh-CN" id="langZh">简体中文</a>
                 <span>/</span>
                 <a href="javascript:;" class="lang-link" data-lang="en" id="langEn">English</a>
+            </div>
+            <div class="setting-wrap">
+                <a href="javascript:;" class="setting-icon"><i class="fas fa-cog"></i></a>
+                <div class="setting-menu">
+                    <a href="javascript:;" class="menu-item" data-style="eye" id="menuEye">护眼模式</a>
+                    <a href="javascript:;" class="menu-item" data-style="night" id="menuNight">夜晚模式</a>
+                    <a href="javascript:;" class="menu-item" data-style="default" id="menuDefault">默认模式</a>
+                </div>
             </div>
         </div>
     </header>
@@ -172,6 +259,14 @@
         </div>
     </main>
 
+    <div class="modal-overlay" id="startPanel" style="display: flex;">
+        <div class="modal-content">
+            <h3 id="startTitle" style="font-size: 1.8rem; color: var(--primary); margin-bottom: 20px;">切线判定闯关</h3>
+            <p id="startDesc" style="font-size: 1.1rem; margin-bottom: 30px; line-height: 1.6;">判断直线与圆的位置关系！<br>选择正确答案获得分数，错误则扣分。<br>在规定时间内完成10道题目！</p>
+            <button class="btn-action" id="startGameBtn">开始游戏</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="gameOverModal">
         <div class="modal-content">
             <h3 id="gameOverTitle" style="font-size: 1.8rem; color: var(--primary); margin-bottom: 20px;">游戏结束！</h3>
@@ -179,7 +274,7 @@
             <p id="questionCountText" style="margin-bottom: 30px;">总题目数: 0 / 10</p>
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 <button class="btn-action" onclick="startGame()">重新开始</button>
-                <button class="btn-action" onclick="window.location.href='index.html'" id="backToHomeBtn" style="background: var(--muted);">返回首页</button>
+                <button class="btn-action" onclick="window.location.href='game.html'" id="backToHomeBtn" style="background: var(--muted);">返回首页</button>
             </div>
         </div>
     </div>
@@ -194,7 +289,11 @@
                 scoreLabel: '分数:', timeLabel: '时间:', timeUnit: '秒', chooseText: '选择直线与圆的位置关系',
                 startBtn: '开始游戏', backToGameCenter: '返回游戏中心', gameOverTitle: '游戏结束！',
                 finalScoreText: '最终分数:', backToHomeBtn: '返回首页',
-                tangent: '相切', intersecting: '相交', separate: '相离'
+                tangent: '相切', intersecting: '相交', separate: '相离',
+                menuEye: '护眼模式', menuNight: '夜晚模式', menuDefault: '默认模式',
+                startTitle: '切线判定闯关',
+                startDesc: '判断直线与圆的位置关系！<br>选择正确答案获得分数，错误则扣分。<br>在规定时间内完成10道题目！',
+                startGameBtn: '开始游戏'
             },
             'en': {
                 logoText: 'Circle Geometry Platform', navHome: 'Home', navGame: 'Game', navQuiz: 'Quiz',
@@ -204,7 +303,11 @@
                 scoreLabel: 'Score:', timeLabel: 'Time:', timeUnit: 's', chooseText: 'Choose the relationship',
                 startBtn: 'Start Game', backToGameCenter: 'Game Center', gameOverTitle: 'Game Over!',
                 finalScoreText: 'Final Score:', backToHomeBtn: 'Home',
-                tangent: 'Tangent', intersecting: 'Intersecting', separate: 'Separate'
+                tangent: 'Tangent', intersecting: 'Intersecting', separate: 'Separate',
+                menuEye: 'Eye Protection', menuNight: 'Night Mode', menuDefault: 'Default Mode',
+                startTitle: 'Tangent Judgment',
+                startDesc: 'Judge the relationship between line and circle!<br>Choose correct answers to score points, wrong answers deduct points.<br>Complete 10 questions within the time limit!',
+                startGameBtn: 'Start Game'
             }
         };
 
@@ -239,6 +342,12 @@
             document.getElementById('gameOverTitle').textContent = texts.gameOverTitle;
             document.getElementById('finalScoreText').textContent = texts.finalScoreText;
             document.getElementById('backToHomeBtn').textContent = texts.backToHomeBtn;
+            document.getElementById('menuEye').textContent = texts.menuEye;
+            document.getElementById('menuNight').textContent = texts.menuNight;
+            document.getElementById('menuDefault').textContent = texts.menuDefault;
+            document.getElementById('startTitle').textContent = texts.startTitle;
+            document.getElementById('startDesc').innerHTML = texts.startDesc;
+            document.getElementById('startGameBtn').textContent = texts.startGameBtn;
             document.documentElement.lang = lang;
 
             document.body.classList.remove('eye-mode', 'night-mode');
@@ -248,6 +357,36 @@
             document.documentElement.style.fontSize = fontSize + 'px';
 
             if (isGameRunning) refreshOptions();
+        }
+
+        // 生成星空背景
+        function createStars() {
+            const container = document.getElementById('starryBackground');
+            container.innerHTML = '';
+            
+            const starCount = 200;
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // 随机位置
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                
+                // 随机大小
+                const size = Math.random() * 2 + 0.5;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                
+                // 随机动画持续时间
+                const duration = Math.random() * 3 + 2;
+                star.style.animationDuration = duration + 's';
+                
+                // 随机延迟
+                star.style.animationDelay = Math.random() * 2 + 's';
+                
+                container.appendChild(star);
+            }
         }
 
         function drawGame(relationship) {
@@ -312,6 +451,7 @@
             score = 0; timeLeft = 10; currentQuestion = 0; isGameRunning = true;
             document.getElementById('score').textContent = score;
             document.getElementById('gameOverModal').style.display = 'none';
+            document.getElementById('startPanel').style.display = 'none';
             generateQuestion();
             if (timer) clearInterval(timer);
             timer = setInterval(() => {
@@ -330,10 +470,28 @@
             link.onclick = () => { localStorage.setItem('appLang', link.dataset.lang); applyState(); };
         });
         document.getElementById('startBtn').onclick = startGame;
-        window.onload = () => { canvas.width = 240; canvas.height = 240; applyState(); };
+        document.getElementById('startGameBtn').onclick = startGame;
+        window.onload = () => { canvas.width = 240; canvas.height = 240; applyState(); createStars(); };
         window.addEventListener('storage', (e) => {
             if (['appLang', 'appTheme', 'appFontSize'].includes(e.key)) applyState();
         });
+
+        const settingWrap = document.querySelector('.setting-wrap');
+        const settingMenu = document.querySelector('.setting-menu');
+        let menuHideTimer = null;
+
+        if (settingWrap && settingMenu) {
+            settingWrap.addEventListener('mouseenter', () => { clearTimeout(menuHideTimer); settingMenu.style.display = 'block'; });
+            settingWrap.addEventListener('mouseleave', () => { menuHideTimer = setTimeout(() => { settingMenu.style.display = 'none'; }, 1000); });
+            settingMenu.addEventListener('mouseenter', () => clearTimeout(menuHideTimer));
+
+            document.querySelectorAll('.menu-item[data-style]').forEach(item => {
+                item.addEventListener('click', () => {
+                    localStorage.setItem('appTheme', item.dataset.style);
+                    applyState();
+                });
+            });
+        }
     </script>
 </body>
 </html>
