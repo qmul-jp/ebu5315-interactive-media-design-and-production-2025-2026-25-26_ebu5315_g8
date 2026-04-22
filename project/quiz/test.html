@@ -607,13 +607,13 @@ body.eye-mode .quiz-return {
 }
 
 #logoText {
-    color: #5f92dc;
-    font-size: clamp(1.5rem, 2.3vw, 2.18rem);
+    color: inherit;
+    font-size: clamp(1.2rem, 2.5vw, 1.65rem);
     font-weight: 800;
-    letter-spacing: 0.01em;
-    line-height: 1.1;
-    padding-bottom: 8px;
-    border-bottom: 3px solid rgba(59, 130, 246, 0.72);
+    letter-spacing: 1.2px;
+    line-height: 1;
+    padding-bottom: 0;
+    border-bottom: none;
     white-space: nowrap;
 }
 
@@ -671,29 +671,32 @@ body.eye-mode .quiz-return {
     justify-self: end;
 }
 
-.lang-switch {
+.header-right .lang-switch {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 18px;
-    border-radius: 999px;
-    border: 1px solid rgba(148, 163, 184, 0.45);
-    background: rgba(255, 255, 255, 0.74);
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    padding: 6px 16px;
+    border-radius: 100px;
+    border: 1px solid var(--border-color);
+    background: var(--surface-strong);
+    box-shadow: none;
+    font-size: 0.85rem;
+    color: var(--muted);
 }
 
-.lang-switch span {
-    color: #94a3b8;
+.header-right .lang-switch span {
+    color: inherit;
+    font-weight: 400;
+}
+
+.header-right .lang-link {
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.header-right .lang-link.active {
+    color: var(--primary);
     font-weight: 700;
-}
-
-.lang-link {
-    color: #64748b;
-    font-weight: 700;
-}
-
-.lang-link.active {
-    color: #2563eb;
 }
 
 .main-wrapper {
@@ -727,22 +730,56 @@ body.eye-mode .quiz-return {
 }
 
 @media (max-width: 640px) {
+    #logoText {
+        display: none;
+    }
+
+    .logo {
+        display: none;
+    }
+
+    .header-right {
+        width: auto;
+        margin-left: auto;
+        justify-self: end;
+    }
+
     .nav-main {
+        display: inline-flex !important;
         width: 100%;
-        justify-content: space-between;
-        padding: 8px 10px;
+        justify-content: center;
+        gap: clamp(8px, 1.6vw, 14px);
+        padding: 4px;
     }
 
     .header-container .nav-link {
         min-width: auto;
-        padding: 8px 12px;
-        font-size: 0.95rem;
+        padding: 7px clamp(10px, 3.4vw, 18px);
+        font-size: clamp(0.8rem, 3.4vw, 0.9rem);
     }
 
-    .lang-switch {
-        padding: 8px 12px;
+    .header-right .lang-switch {
+        padding: 5px 12px;
+        font-size: 0.8rem;
+        white-space: nowrap;
     }
 
+}
+
+@media (max-width: 768px) {
+    .header-container {
+        padding: 8px 14px 10px;
+        gap: 8px;
+    }
+
+    .header-right {
+        width: auto;
+        margin-left: auto;
+    }
+
+    .nav-main {
+        display: inline-flex !important;
+    }
 }
 </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -880,7 +917,7 @@ body.eye-mode .quiz-return {
                 footerText: '圆几何互动学习网站 © 2026 EBU5315 Coursework'
             },
             'en': {
-                logoText: 'Interactive Learning Platform for Circle Geometry',
+                logoText: 'Circle-learning Platform',
                 logoSubText: 'Geometry Learning Lab',
                 navHome: 'Home',
                 navGame: 'Game',

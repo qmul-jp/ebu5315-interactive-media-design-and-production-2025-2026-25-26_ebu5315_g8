@@ -374,9 +374,40 @@
         }
 
         @media (max-width: 768px) {
-            .header-container { padding: 0 20px; height: 70px; }
-            .nav-main { display: none; }
-            .main-container { padding-top: 100px; }
+            .header-container {
+                padding: 8px 14px 10px;
+                height: auto;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .logo {
+                display: none;
+            }
+            .nav-main {
+                display: flex !important;
+                order: 2;
+                width: 100%;
+                justify-content: center;
+                gap: clamp(8px, 1.6vw, 14px);
+                padding: 4px;
+            }
+            .nav-link {
+                font-size: clamp(0.8rem, 3.4vw, 0.9rem);
+                padding: 7px clamp(10px, 3.4vw, 18px);
+            }
+            .header-right {
+                order: 1;
+                width: auto;
+                margin-left: auto;
+                justify-content: flex-end;
+                gap: 8px;
+            }
+            .lang-switch {
+                font-size: 0.8rem;
+                padding: 5px 12px;
+                white-space: nowrap;
+            }
+            .main-container { padding-top: 126px; }
             .game-grid { grid-template-columns: 1fr; }
             .game-category { margin-bottom: 20px; }
         }
@@ -489,18 +520,6 @@
                 <div class="game-desc" id="game4Desc">30秒内用直线不断切割旋转的“液态圆”，切得越多分越高。</div>
             </div>
 
-            <div class="game-card" onclick="window.location.href='game fourth version final.html'">
-                <div class="game-icon-svg">
-                    <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="256" cy="256" r="210" stroke="currentColor" stroke-width="28"/>
-                        <path d="M132 342L420 170" stroke="currentColor" stroke-width="28" stroke-linecap="round"/>
-                        <path d="M110 198L402 312" stroke="currentColor" stroke-width="18" stroke-dasharray="10 10" stroke-linecap="round"/>
-                        <path d="M96 256H416" stroke="currentColor" stroke-width="10" stroke-dasharray="6 12" stroke-linecap="round" opacity="0.75"/>
-                    </svg>
-                </div>
-                <div class="game-name" id="game4Name">割圆术·弓箭切割</div>
-                <div class="game-desc" id="game4Desc">30秒内用直线不断切割旋转的“液态圆”，切得越多分越高。</div>
-            </div>
         </div>
     </main>
 
@@ -535,7 +554,7 @@
                 funCategoryDesc: '飞刀破界穿星海，锐刃吞空入黑洞'
             },
             'en': {
-                logoText: 'Interactive Learning Platform for Circle Geometry',
+                logoText: 'Circle-learning Platform',
                 navHome: 'Home',
                 navGame: 'Game',
                 navQuiz: 'Quiz',

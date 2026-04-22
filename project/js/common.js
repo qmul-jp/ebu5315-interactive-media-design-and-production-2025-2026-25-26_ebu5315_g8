@@ -95,7 +95,7 @@
             quizReturn: '返回测试首页'
         },
         'en': {
-            logoText: 'Interactive Learning Platform for Circle Geometry',
+            logoText: 'Circle-learning Platform',
             navHome: 'Home',
             navGame: 'Game',
             navQuiz: 'Quiz',
