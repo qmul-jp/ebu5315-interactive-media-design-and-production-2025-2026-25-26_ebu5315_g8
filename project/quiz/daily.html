@@ -504,14 +504,8 @@ body.eye-mode .quiz-return {
             });
         }
 
-        function normalizeLang(lang) {
-            const value = String(lang || '').toLowerCase();
-            if (value === 'en' || value === 'en-us' || value === 'en_us' || value === 'en-gb' || value === 'en_gb') return 'en';
-            return 'zh-CN';
-        }
-
         function applyState() {
-            const lang = normalizeLang(localStorage.getItem('appLang') || 'zh-CN');
+            const lang = localStorage.getItem('appLang') || 'zh-CN';
             const theme = localStorage.getItem('appTheme') || 'default';
             const fontSize = localStorage.getItem('appFontSize') || '16';
 
@@ -523,8 +517,6 @@ body.eye-mode .quiz-return {
 
             const texts = {
                 'zh-CN': {
-                    docTitle: '每日一题 | 圆几何测试学习中心',
-                    returnHome: '返回测试首页',
                     navHome: '首页',
                     navGame: '游戏',
                     navQuiz: '测试',
@@ -561,12 +553,9 @@ body.eye-mode .quiz-return {
                     tip2Text: '如果答错，建议顺手进入专题练习继续补强。',
                     tip3Title: '保持连续记录',
                     tip3Text: '连续打卡比偶尔高强度训练更容易形成稳定进步。',
-                    footerText: '圆几何互动学习网站 © 2026 EBU5315 Coursework',
-                    weekPills: ['周四<br>✓', '周五<br>✓', '周六<br>✓', '周日<br>✓', '周一<br>✓', '周二<br>✓', '今天<br>待答']
+                    footerText: '圆几何互动学习网站 © 2026 EBU5315 Coursework'
                 },
                 'en': {
-                    docTitle: 'Daily Question | Circle Geometry Learning Center',
-                    returnHome: 'Back to Test Home',
                     navHome: 'Home',
                     navGame: 'Game',
                     navQuiz: 'Test',
@@ -603,8 +592,7 @@ body.eye-mode .quiz-return {
                     tip2Text: 'If you miss it, move into topic practice right away.',
                     tip3Title: 'Protect The Streak',
                     tip3Text: 'A steady streak usually beats occasional intensive study.',
-                    footerText: 'Circle Geometry Learning © 2026 EBU5315 Coursework',
-                    weekPills: ['Thu<br>✓', 'Fri<br>✓', 'Sat<br>✓', 'Sun<br>✓', 'Mon<br>✓', 'Tue<br>✓', 'Today<br>Pending']
+                    footerText: 'Circle Geometry Learning © 2026 EBU5315 Coursework'
                 }
             }[lang] || {};
 
@@ -612,16 +600,6 @@ body.eye-mode .quiz-return {
                 const el = document.getElementById(id);
                 if (el) el.textContent = texts[id];
             });
-
-            if (texts.docTitle) document.title = texts.docTitle;
-            const quizReturn = document.querySelector('.quiz-return');
-            if (quizReturn && texts.returnHome) quizReturn.textContent = texts.returnHome;
-            const weekPills = document.querySelectorAll('.record-grid .day-pill');
-            if (Array.isArray(texts.weekPills) && weekPills.length) {
-                weekPills.forEach((pill, idx) => {
-                    if (texts.weekPills[idx]) pill.innerHTML = texts.weekPills[idx];
-                });
-            }
 
             document.getElementById('todayDate').textContent = formatToday(lang);
             document.documentElement.lang = lang;
