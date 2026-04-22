@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>圆几何知识演示</title>
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../js/common.js" defer></script>
+    <style>
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 140px 24px 60px;
+        }
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            backdrop-filter: blur(12px);
+            padding: 34px;
+            text-align: center;
+        }
+        .title {
+            font-size: clamp(1.6rem, 4vw, 2.1rem);
+            font-weight: 900;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+        .desc {
+            color: var(--muted);
+            font-size: 1.05rem;
+            line-height: 1.8;
+            margin-bottom: 18px;
+        }
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 18px;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            background: var(--surface-strong);
+            color: var(--text);
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .btn.primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header class="header-container">
+        <div class="logo">
+            <span>圆几何交互式学习平台</span>
+        </div>
+        <nav class="nav-main">
+            <span class="nav-droplet" aria-hidden="true"></span>
+            <a href="index.html" class="nav-link active">首页</a>
+            <a href="../game/game.html" class="nav-link">游戏</a>
+            <a href="../quiz/test.html" class="nav-link">测试</a>
+        </nav>
+        <div class="header-right"></div>
+    </header>
+
+    <main class="main">
+        <section class="card">
+            <div class="title">该模块正在建设中</div>
+            <div class="desc">已为轮播图第 4 张补齐跳转页面，后续可在此添加对应的知识点动态演示。</div>
+            <div class="btn-row">
+                <a class="btn primary" href="index.html">返回首页</a>
+                <a class="btn" href="usage-guide.html">使用说明</a>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        (function() {
+            const theme = localStorage.getItem('appTheme') || 'default';
+            const fontSize = localStorage.getItem('appFontSize') || '16';
+            document.body.classList.remove('eye-mode', 'night-mode');
+            if (theme === 'eye') document.body.classList.add('eye-mode');
+            if (theme === 'night') document.body.classList.add('night-mode');
+            document.documentElement.style.setProperty('--font-size', fontSize + 'px');
+            document.documentElement.style.fontSize = fontSize + 'px';
+        })();
+    </script>
+</body>
+</html>

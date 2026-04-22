@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>圆经典定理 - 圆几何交互式学习平台</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Trebuchet MS", "Microsoft YaHei", sans-serif; }
+
+        :root {
+            --primary: #2563eb;
+            --primary-strong: #1d4ed8;
+            --text: #1f2937;
+            --muted: #64748b;
+            --bg-color: #f8fafc;
+            --surface: rgba(255, 255, 255, 0.85);
+            --surface-strong: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-lg: 0 24px 60px rgba(31, 41, 55, 0.12);
+            --radius-xl: 28px;
+            --font-size: 16px;
+        }
+
+        body {
+            color: var(--text); font-size: var(--font-size);
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            min-height: 100vh; line-height: 1.6; transition: all 0.3s ease;
+        }
+
+        body.eye-mode { --bg-color: #f0f9eb; --surface: rgba(247, 251, 242, 0.88); --text: #166534; --border-color: #c7e3b4; --primary: #438a4c; }
+        body.night-mode {
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --primary: #60a5fa;
+            --surface: rgba(15, 23, 42, 0.9);
+            --surface-strong: #0f172a;
+            --border-color: #334155;
+            --bg-color: #020617;
+            background:
+                radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.15), transparent 25%),
+                radial-gradient(circle at 86% 14%, rgba(56, 189, 248, 0.15), transparent 22%),
+                linear-gradient(rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+        }
+
+        .header-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 80px; padding: 0 4vw;
+            background: var(--surface); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem; font-weight: 800; font-family: "Orbitron", sans-serif;
+            background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+
+        .back-btn {
+            padding: 8px 20px; border-radius: 100px; background: var(--primary); color: white;
+            font-weight: 600; text-decoration: none; transition: all 0.3s;
+        }
+        .back-btn:hover { transform: translateX(-5px); background: var(--primary-strong); }
+
+        .content-container {
+            max-width: 1000px; margin: 0 auto; padding: 120px 4vw 60px;
+        }
+
+        .glass-panel {
+            background: var(--surface); backdrop-filter: blur(20px); border-radius: 40px;
+            padding: 50px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg);
+        }
+
+        h1 { font-size: 2.5rem; color: var(--primary); margin-bottom: 40px; text-align: center; font-weight: 800; }
+        
+        .level-section { margin-bottom: 60px; }
+        .level-title { 
+            font-size: 1.8rem; color: white; background: var(--primary); 
+            padding: 10px 30px; border-radius: 100px; display: inline-block; margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+        }
+
+        .theorem-card {
+            background: rgba(255, 255, 255, 0.5); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 30px; margin-bottom: 30px; transition: all 0.3s;
+        }
+        .theorem-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.05); border-color: var(--primary); }
+        .theorem-card h3 { color: var(--primary-strong); margin-bottom: 15px; font-size: 1.3rem; }
+        .theorem-card p { font-size: 1.05rem; color: var(--text); margin-bottom: 20px; }
+
+        .diagram-box {
+            background: var(--bg-color); border-radius: 15px; padding: 20px;
+            display: flex; flex-direction: column; align-items: center; border: 1px dashed var(--border-color);
+        }
+        .diagram-box svg { width: 180px; height: 180px; }
+
+        @media (max-width: 768px) {
+            .glass-panel { padding: 30px 20px; }
+            h1 { font-size: 1.8rem; }
+            .level-title { font-size: 1.3rem; padding: 8px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header-container">
+        <a href="index.html" class="logo">CIRCLE GEOMETRY</a>
+        <a href="index.html" class="back-btn" id="backBtn">返回首页</a>
+    </header>
+
+    <main class="content-container">
+        <div class="glass-panel">
+            <h1 id="pageTitle">圆经典定理</h1>
+            <div id="theoremContent"></div>
+        </div>
+    </main>
+
+    <script>
+        const langTexts = {
+            'zh-CN': {
+                backBtn: '返回首页',
+                pageTitle: '圆经典定理（由易到难·三层体系）',
+                levels: [
+                    { title: '第一层：基础入门定理', theorems: [
+                        { t: '1. 圆的基本性质定理', d: '圆上任意一点到圆心的距离相等，均为半径；圆是轴对称与中心对称图形。', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><circle cx="50" cy="50" r="2" fill="var(--primary-strong)"/><line x1="50" y1="50" x2="84.64" y2="30" stroke="var(--primary-strong)" stroke-width="1.2"/><line x1="50" y1="50" x2="15.36" y2="30" stroke="var(--primary-strong)" stroke-width="1.2"/><text x="52" y="48" font-size="6" fill="var(--text)">O</text><text x="86" y="28" font-size="6" fill="var(--text)">A</text><text x="10" y="28" font-size="6" fill="var(--text)">B</text><text x="65" y="38" font-size="5" fill="var(--primary-strong)" transform="rotate(-30 65 38)">r</text></svg>' },
+                        { t: '2. 直径性质定理', d: '直径是圆内最长的弦；直径将圆分为两个完全相等的半圆。', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="10" y1="50" x2="90" y2="50" stroke="var(--primary-strong)" stroke-width="1.5"/><line x1="20" y1="20" x2="80" y2="25" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2,2"/><text x="48" y="58" font-size="6" fill="var(--text)">O</text><text x="5" y="52" font-size="6" fill="var(--text)">A</text><text x="92" y="52" font-size="6" fill="var(--text)">B</text><text x="45" y="48" font-size="5" fill="var(--primary-strong)">直径 d</text></svg>' },
+                        { t: '3. 圆心角定理', d: '同圆或等圆中，相等的圆心角所对的弧相等、弦相等。', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><path d="M 50 50 L 84.64 30 M 50 50 L 84.64 70" stroke="var(--primary-strong)" stroke-width="1.2"/><path d="M 50 50 L 15.36 30 M 50 50 L 15.36 70" stroke="var(--primary-strong)" stroke-width="1.2"/><path d="M 60 44.2 A 11.5 11.5 0 0 1 60 55.8" fill="none" stroke="var(--primary-strong)" stroke-width="1"/><path d="M 40 44.2 A 11.5 11.5 0 0 0 40 55.8" fill="none" stroke="var(--primary-strong)" stroke-width="1"/><text x="48" y="55" font-size="6" fill="var(--text)">O</text></svg>' },
+                        { t: '4. 垂径定理', d: '垂直于弦的直径平分这条弦，且平分弦所对的弧。', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="20" y1="30" x2="80" y2="30" stroke="var(--text)" stroke-width="1.2"/><line x1="50" y1="10" x2="50" y2="90" stroke="var(--primary-strong)" stroke-width="1.5"/><rect x="50" y="30" width="5" height="5" fill="none" stroke="var(--primary-strong)" stroke-width="0.8"/><text x="52" y="28" font-size="6" fill="var(--text)">M</text><text x="14" y="32" font-size="6" fill="var(--text)">A</text><text x="82" y="32" font-size="6" fill="var(--text)">B</text><text x="48" y="8" font-size="6" fill="var(--text)">C</text><text x="48" y="98" font-size="6" fill="var(--text)">D</text></svg>' },
+                        { t: '5. 半圆圆周角定理', d: '半圆（或直径）所对的圆周角恒为直角（90°）。', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="10" y1="50" x2="90" y2="50" stroke="var(--text)" stroke-width="1.2"/><path d="M 10 50 L 50 10 L 90 50" fill="none" stroke="var(--primary-strong)" stroke-width="1.2"/><rect x="48" y="12" width="4" height="4" transform="rotate(45 50 10)" fill="none" stroke="var(--primary-strong)" stroke-width="0.8"/><text x="5" y="52" font-size="6" fill="var(--text)">A</text><text x="92" y="52" font-size="6" fill="var(--text)">B</text><text x="48" y="8" font-size="6" fill="var(--text)">C</text></svg>' }
+                    ]},
+                    { title: '第二层：核心进阶定理', theorems: [
+                        { t: '6. 圆周角定理', d: '同弧所对的圆周角相等；等于它所对圆心角的一半。', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><path d="M 15.36 70 L 50 10 L 84.64 70" fill="none" stroke="var(--primary-strong)" stroke-width="1.2"/><path d="M 15.36 70 L 21.72 21.72 L 84.64 70" fill="none" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2,2"/><path d="M 15.36 70 L 50 50 L 84.64 70" fill="none" stroke="var(--primary-strong)" stroke-width="1.2"/><text x="48" y="8" font-size="6" fill="var(--text)">C</text><text x="18" y="20" font-size="6" fill="var(--text)">D</text><text x="10" y="75" font-size="6" fill="var(--text)">A</text><text x="86" y="75" font-size="6" fill="var(--text)">B</text><text x="48" y="58" font-size="6" fill="var(--text)">O</text></svg>' },
+                        { t: '7. 圆内接四边形性质', d: '圆内接四边形的对角互补；任意一个外角等于它的内对角。', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><polygon points="50,10 90,50 50,90 10,50" fill="none" stroke="var(--primary-strong)" stroke-width="1.2"/><text x="48" y="8" font-size="6" fill="var(--text)">A</text><text x="92" y="52" font-size="6" fill="var(--text)">B</text><text x="48" y="98" font-size="6" fill="var(--text)">C</text><text x="4" y="52" font-size="6" fill="var(--text)">D</text></svg>' },
+                        { t: '8. 切线性质定理', d: '圆的切线垂直于过切点的半径。', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="50" y1="50" x2="50" y2="90" stroke="var(--primary-strong)" stroke-width="1.5"/><line x1="10" y1="90" x2="90" y2="90" stroke="var(--text)" stroke-width="1.5"/><rect x="50" y="85" width="5" height="5" fill="none" stroke="var(--primary-strong)" stroke-width="0.8"/><text x="48" y="48" font-size="6" fill="var(--text)">O</text><text x="48" y="98" font-size="6" fill="var(--text)">A</text><text x="92" y="95" font-size="6" fill="var(--text)">l</text></svg>' },
+                        { t: '9. 切线判定定理', d: '经过半径外端且垂直于该半径的直线是切线。', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="50" y1="50" x2="90" y2="50" stroke="var(--primary-strong)" stroke-width="1.5"/><line x1="90" y1="10" x2="90" y2="90" stroke="var(--text)" stroke-width="1.5"/><rect x="85" y="45" width="5" height="5" fill="none" stroke="var(--primary-strong)" stroke-width="0.8"/><text x="48" y="48" font-size="6" fill="var(--text)">O</text><text x="92" y="55" font-size="6" fill="var(--text)">A</text></svg>' },
+                        { t: '10. 切线长定理', d: '从圆外一点引圆的两条切线，它们的切线长相等。', svg: '<svg viewBox="0 0 100 100"><circle cx="40" cy="50" r="30" fill="none" stroke="var(--primary)" stroke-width="1.5"/><circle cx="90" cy="50" r="2" fill="var(--primary-strong)"/><path d="M 90 50 L 58 26 M 90 50 L 58 74" stroke="var(--primary-strong)" stroke-width="1.2"/><line x1="40" y1="50" x2="58" y2="26" stroke="var(--muted)" stroke-width="0.8" stroke-dasharray="2,2"/><line x1="40" y1="50" x2="58" y2="74" stroke="var(--muted)" stroke-width="0.8" stroke-dasharray="2,2"/><text x="38" y="48" font-size="6" fill="var(--text)">O</text><text x="92" y="52" font-size="6" fill="var(--text)">P</text><text x="58" y="24" font-size="6" fill="var(--text)">A</text><text x="58" y="80" font-size="6" fill="var(--text)">B</text></svg>' },
+                        { t: '11. 弦心距与弦的关系', d: '同圆中，弦心距相等则弦相等；弦越长，弦心距越短。', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="20" y1="20" x2="80" y2="20" stroke="var(--text)" stroke-width="1.2"/><line x1="50" y1="50" x2="50" y2="20" stroke="var(--primary-strong)" stroke-width="1.2"/><rect x="50" y="20" width="4" height="4" fill="none" stroke="var(--primary-strong)" stroke-width="0.5"/><text x="48" y="58" font-size="6" fill="var(--text)">O</text><text x="52" y="35" font-size="5" fill="var(--primary-strong)">d</text></svg>' }
+                    ]},
+                    { title: '第三层：拓展拔高定理', theorems: [
+                        { t: '12. 弦切角定理', d: '弦切角等于它所夹弧所对的圆周角。', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="10" y1="90" x2="90" y2="90" stroke="var(--text)" stroke-width="1.5"/><path d="M 50 90 L 84.64 70 L 15.36 30 L 50 90" fill="none" stroke="var(--primary-strong)" stroke-width="1.2"/><text x="48" y="98" font-size="6" fill="var(--text)">A</text><text x="86" y="75" font-size="6" fill="var(--text)">B</text><text x="10" y="28" font-size="6" fill="var(--text)">C</text><text x="12" y="88" font-size="6" fill="var(--text)">l</text></svg>' },
+                        { t: '13. 相交弦定理', d: '圆内两条相交弦，被交点分成的两条线段长度的积相等。', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="10" y1="50" x2="90" y2="50" stroke="var(--text)" stroke-width="1.2"/><line x1="50" y1="10" x2="50" y2="90" stroke="var(--text)" stroke-width="1.2"/><circle cx="50" cy="50" r="2" fill="var(--primary-strong)"/><text x="52" y="58" font-size="6" fill="var(--text)">P</text><text x="5" y="52" font-size="6" fill="var(--text)">A</text><text x="92" y="52" font-size="6" fill="var(--text)">B</text><text x="48" y="8" font-size="6" fill="var(--text)">C</text><text x="48" y="98" font-size="6" fill="var(--text)">D</text></svg>' },
+                        { t: '14. 切割线定理', d: '切线长是割线全长与它外段长度的比例中项。', svg: '<svg viewBox="0 0 100 100"><circle cx="40" cy="50" r="30" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="90" y1="50" x2="58" y2="26" stroke="var(--primary-strong)" stroke-width="1.2"/><line x1="90" y1="50" x2="10" y2="50" stroke="var(--muted)" stroke-width="1.2"/><text x="92" y="52" font-size="6" fill="var(--text)">P</text><text x="58" y="24" font-size="6" fill="var(--text)">A</text><text x="70" y="58" font-size="6" fill="var(--text)">B</text><text x="10" y="58" font-size="6" fill="var(--text)">C</text></svg>' },
+                        { t: '15. 割线定理', d: '圆外一点引两条割线，外段与全长乘积相等。', svg: '<svg viewBox="0 0 100 100"><circle cx="40" cy="50" r="30" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="90" y1="50" x2="11.72" y2="40" stroke="var(--text)" stroke-width="1.2"/><line x1="90" y1="50" x2="11.72" y2="60" stroke="var(--text)" stroke-width="1.2"/><text x="92" y="52" font-size="6" fill="var(--text)">P</text></svg>' },
+                        { t: '16. 圆心角与弧度数', d: '圆心角的度数等于它所对弧的度数。', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><path d="M 50 50 L 84.64 30 M 50 50 L 84.64 70" stroke="var(--primary-strong)" stroke-width="1.5"/><path d="M 84.64 30 A 40 40 0 0 1 84.64 70" fill="none" stroke="var(--primary)" stroke-width="3" opacity="0.3"/><text x="48" y="58" font-size="6" fill="var(--text)">O</text><text x="86" y="28" font-size="6" fill="var(--text)">A</text><text x="86" y="75" font-size="6" fill="var(--text)">B</text></svg>' }
+                    ]}
+                ]
+            },
+            'en': {
+                backBtn: 'Back Home',
+                pageTitle: 'Classic Circle Theorems (Three-Level System)',
+                levels: [
+                    { title: 'Level 1: Basic Theorems', theorems: [
+                        { t: '1. Basic Properties of Circles', d: 'All points on a circle are equidistant from the center (the radius). Circles are axially and centrally symmetric.', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><circle cx="50" cy="50" r="2" fill="var(--primary-strong)"/><line x1="50" y1="50" x2="84.64" y2="30" stroke="var(--primary-strong)" stroke-width="1.2"/><line x1="50" y1="50" x2="15.36" y2="30" stroke="var(--primary-strong)" stroke-width="1.2"/><text x="52" y="48" font-size="6" fill="var(--text)">O</text><text x="86" y="28" font-size="6" fill="var(--text)">A</text><text x="10" y="28" font-size="6" fill="var(--text)">B</text><text x="65" y="38" font-size="5" fill="var(--primary-strong)" transform="rotate(-30 65 38)">r</text></svg>' },
+                        { t: '2. Diameter Property Theorem', d: 'The diameter is the longest chord in a circle and divides it into two equal semicircles.', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="10" y1="50" x2="90" y2="50" stroke="var(--primary-strong)" stroke-width="1.5"/><line x1="20" y1="20" x2="80" y2="25" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2,2"/><text x="48" y="58" font-size="6" fill="var(--text)">O</text><text x="5" y="52" font-size="6" fill="var(--text)">A</text><text x="92" y="52" font-size="6" fill="var(--text)">B</text><text x="45" y="48" font-size="5" fill="var(--primary-strong)">Diameter d</text></svg>' },
+                        { t: '3. Central Angle Theorem', d: 'In the same or equal circles, equal central angles subtend equal arcs and equal chords.', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><path d="M 50 50 L 84.64 30 M 50 50 L 84.64 70" stroke="var(--primary-strong)" stroke-width="1.2"/><path d="M 50 50 L 15.36 30 M 50 50 L 15.36 70" stroke="var(--primary-strong)" stroke-width="1.2"/><path d="M 60 44.2 A 11.5 11.5 0 0 1 60 55.8" fill="none" stroke="var(--primary-strong)" stroke-width="1"/><path d="M 40 44.2 A 11.5 11.5 0 0 0 40 55.8" fill="none" stroke="var(--primary-strong)" stroke-width="1"/><text x="48" y="55" font-size="6" fill="var(--text)">O</text></svg>' },
+                        { t: '4. Perpendicular Chord Theorem', d: 'A diameter perpendicular to a chord bisects the chord and its arcs.', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="20" y1="30" x2="80" y2="30" stroke="var(--text)" stroke-width="1.2"/><line x1="50" y1="10" x2="50" y2="90" stroke="var(--primary-strong)" stroke-width="1.5"/><rect x="50" y="30" width="5" height="5" fill="none" stroke="var(--primary-strong)" stroke-width="0.8"/><text x="52" y="28" font-size="6" fill="var(--text)">M</text><text x="14" y="32" font-size="6" fill="var(--text)">A</text><text x="82" y="32" font-size="6" fill="var(--text)">B</text><text x="48" y="8" font-size="6" fill="var(--text)">C</text><text x="48" y="98" font-size="6" fill="var(--text)">D</text></svg>' },
+                        { t: '5. Semicircle Inscribed Angle', d: 'The angle inscribed in a semicircle is always a right angle (90°).', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="10" y1="50" x2="90" y2="50" stroke="var(--text)" stroke-width="1.2"/><path d="M 10 50 L 50 10 L 90 50" fill="none" stroke="var(--primary-strong)" stroke-width="1.2"/><rect x="48" y="12" width="4" height="4" transform="rotate(45 50 10)" fill="none" stroke="var(--primary-strong)" stroke-width="0.8"/><text x="5" y="52" font-size="6" fill="var(--text)">A</text><text x="92" y="52" font-size="6" fill="var(--text)">B</text><text x="48" y="8" font-size="6" fill="var(--text)">C</text></svg>' }
+                    ]},
+                    { title: 'Level 2: Core Intermediate Theorems', theorems: [
+                        { t: '6. Inscribed Angle Theorem', d: 'Inscribed angles subtended by the same arc are equal; it is half the central angle.', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><path d="M 15.36 70 L 50 10 L 84.64 70" fill="none" stroke="var(--primary-strong)" stroke-width="1.2"/><path d="M 15.36 70 L 21.72 21.72 L 84.64 70" fill="none" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2,2"/><path d="M 15.36 70 L 50 50 L 84.64 70" fill="none" stroke="var(--primary-strong)" stroke-width="1.2"/><text x="48" y="8" font-size="6" fill="var(--text)">C</text><text x="18" y="20" font-size="6" fill="var(--text)">D</text><text x="10" y="75" font-size="6" fill="var(--text)">A</text><text x="86" y="75" font-size="6" fill="var(--text)">B</text><text x="48" y="58" font-size="6" fill="var(--text)">O</text></svg>' },
+                        { t: '7. Cyclic Quadrilateral Property', d: 'Opposite angles of a cyclic quadrilateral are supplementary (sum to 180°).', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><polygon points="50,10 90,50 50,90 10,50" fill="none" stroke="var(--primary-strong)" stroke-width="1.2"/><text x="48" y="8" font-size="6" fill="var(--text)">A</text><text x="92" y="52" font-size="6" fill="var(--text)">B</text><text x="48" y="98" font-size="6" fill="var(--text)">C</text><text x="4" y="52" font-size="6" fill="var(--text)">D</text></svg>' },
+                        { t: '8. Tangent Property Theorem', d: 'A tangent to a circle is perpendicular to the radius at the point of contact.', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="50" y1="50" x2="50" y2="90" stroke="var(--primary-strong)" stroke-width="1.5"/><line x1="10" y1="90" x2="90" y2="90" stroke="var(--text)" stroke-width="1.5"/><rect x="50" y="85" width="5" height="5" fill="none" stroke="var(--primary-strong)" stroke-width="0.8"/><text x="48" y="48" font-size="6" fill="var(--text)">O</text><text x="48" y="98" font-size="6" fill="var(--text)">A</text><text x="92" y="95" font-size="6" fill="var(--text)">l</text></svg>' },
+                        { t: '9. Tangent Determination Theorem', d: 'A line passing through the end of a radius and perpendicular to it is a tangent.', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="50" y1="50" x2="90" y2="50" stroke="var(--primary-strong)" stroke-width="1.5"/><line x1="90" y1="10" x2="90" y2="90" stroke="var(--text)" stroke-width="1.5"/><rect x="85" y="45" width="5" height="5" fill="none" stroke="var(--primary-strong)" stroke-width="0.8"/><text x="48" y="48" font-size="6" fill="var(--text)">O</text><text x="92" y="55" font-size="6" fill="var(--text)">A</text></svg>' },
+                        { t: '10. Tangent Length Theorem', d: 'Tangents from an external point to a circle are equal in length.', svg: '<svg viewBox="0 0 100 100"><circle cx="40" cy="50" r="30" fill="none" stroke="var(--primary)" stroke-width="1.5"/><circle cx="90" cy="50" r="2" fill="var(--primary-strong)"/><path d="M 90 50 L 58 26 M 90 50 L 58 74" stroke="var(--primary-strong)" stroke-width="1.2"/><line x1="40" y1="50" x2="58" y2="26" stroke="var(--muted)" stroke-width="0.8" stroke-dasharray="2,2"/><line x1="40" y1="50" x2="58" y2="74" stroke="var(--muted)" stroke-width="0.8" stroke-dasharray="2,2"/><text x="38" y="48" font-size="6" fill="var(--text)">O</text><text x="92" y="52" font-size="6" fill="var(--text)">P</text><text x="58" y="24" font-size="6" fill="var(--text)">A</text><text x="58" y="80" font-size="6" fill="var(--text)">B</text></svg>' },
+                        { t: '11. Chord Distance Relation', d: 'Equal chords are equidistant from the center; longer chords are closer to the center.', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="20" y1="20" x2="80" y2="20" stroke="var(--text)" stroke-width="1.2"/><line x1="50" y1="50" x2="50" y2="20" stroke="var(--primary-strong)" stroke-width="1.2"/><rect x="50" y="20" width="4" height="4" fill="none" stroke="var(--primary-strong)" stroke-width="0.5"/><text x="48" y="58" font-size="6" fill="var(--text)">O</text><text x="52" y="35" font-size="5" fill="var(--primary-strong)">d</text></svg>' }
+                    ]},
+                    { title: 'Level 3: Advanced Extension Theorems', theorems: [
+                        { t: '12. Alternate Segment Theorem', d: 'The angle between a tangent and a chord equals the angle in the alternate segment.', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="10" y1="90" x2="90" y2="90" stroke="var(--text)" stroke-width="1.5"/><path d="M 50 90 L 84.64 70 L 15.36 30 L 50 90" fill="none" stroke="var(--primary-strong)" stroke-width="1.2"/><text x="48" y="98" font-size="6" fill="var(--text)">A</text><text x="86" y="75" font-size="6" fill="var(--text)">B</text><text x="10" y="28" font-size="6" fill="var(--text)">C</text><text x="12" y="88" font-size="6" fill="var(--text)">l</text></svg>' },
+                        { t: '13. Intersecting Chords Theorem', d: 'The product of the segments of two intersecting chords are equal.', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="10" y1="50" x2="90" y2="50" stroke="var(--text)" stroke-width="1.2"/><line x1="50" y1="10" x2="50" y2="90" stroke="var(--text)" stroke-width="1.2"/><circle cx="50" cy="50" r="2" fill="var(--primary-strong)"/><text x="52" y="58" font-size="6" fill="var(--text)">P</text><text x="5" y="52" font-size="6" fill="var(--text)">A</text><text x="92" y="52" font-size="6" fill="var(--text)">B</text><text x="48" y="8" font-size="6" fill="var(--text)">C</text><text x="48" y="98" font-size="6" fill="var(--text)">D</text></svg>' },
+                        { t: '14. Secant-Tangent Theorem', d: 'The square of the tangent equals the product of the whole secant and its external part.', svg: '<svg viewBox="0 0 100 100"><circle cx="40" cy="50" r="30" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="90" y1="50" x2="58" y2="26" stroke="var(--primary-strong)" stroke-width="1.2"/><line x1="90" y1="50" x2="10" y2="50" stroke="var(--muted)" stroke-width="1.2"/><text x="92" y="52" font-size="6" fill="var(--text)">P</text><text x="58" y="24" font-size="6" fill="var(--text)">A</text><text x="70" y="58" font-size="6" fill="var(--text)">B</text><text x="10" y="58" font-size="6" fill="var(--text)">C</text></svg>' },
+                        { t: '15. Secant Theorem', d: 'Products of secant segments from an external point are equal.', svg: '<svg viewBox="0 0 100 100"><circle cx="40" cy="50" r="30" fill="none" stroke="var(--primary)" stroke-width="1.5"/><line x1="90" y1="50" x2="11.72" y2="40" stroke="var(--text)" stroke-width="1.2"/><line x1="90" y1="50" x2="11.72" y2="60" stroke="var(--text)" stroke-width="1.2"/><text x="92" y="52" font-size="6" fill="var(--text)">P</text></svg>' },
+                        { t: '16. Central Angle & Arc Degree', d: 'The degree of a central angle equals the degree of its intercepted arc.', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1.5"/><path d="M 50 50 L 84.64 30 M 50 50 L 84.64 70" stroke="var(--primary-strong)" stroke-width="1.5"/><path d="M 84.64 30 A 40 40 0 0 1 84.64 70" fill="none" stroke="var(--primary)" stroke-width="3" opacity="0.3"/><text x="48" y="58" font-size="6" fill="var(--text)">O</text><text x="86" y="28" font-size="6" fill="var(--text)">A</text><text x="86" y="75" font-size="6" fill="var(--text)">B</text></svg>' }
+                    ]}
+                ]
+            }
+        };
+
+        function initPage() {
+            const lang = localStorage.getItem('appLang') || 'zh-CN';
+            const theme = localStorage.getItem('appTheme') || 'default';
+            const texts = langTexts[lang] || langTexts['zh-CN'];
+
+            document.body.className = theme === 'default' ? '' : theme + '-mode';
+            document.getElementById('backBtn').textContent = texts.backBtn;
+            document.getElementById('pageTitle').textContent = texts.pageTitle;
+
+            let html = '';
+            texts.levels.forEach(level => {
+                html += '<section class="level-section"><h2 class="level-title">' + level.title + '</h2>';
+                level.theorems.forEach(th => {
+                    html += `<div class="theorem-card">
+                        <h3>${th.t}</h3>
+                        <p>${th.d}</p>
+                        <div class="diagram-box">${th.svg}</div>
+                    </div>`;
+                });
+                html += '</section>';
+            });
+            document.getElementById('theoremContent').innerHTML = html;
+        }
+
+        window.onload = initPage;
+    </script>
+</body>
+</html>
