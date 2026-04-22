@@ -1,4 +1,8 @@
+<<<<<<< b
 ﻿<!DOCTYPE html>
+=======
+<!DOCTYPE html>
+>>>>>>> main
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -27,6 +31,7 @@ body.eye-mode .quiz-return{background:rgba(247,251,242,.88)}
 </main></div><footer class="page-footer"><p>圆几何互动学习网站 © 2026 EBU5315 Coursework</p></footer>
 <script src="../question-bank.js"></script>
 <script>
+<<<<<<< b
 (() => {
     const KEY = 'quizWrongBookV1';
 
@@ -499,8 +504,27 @@ body.eye-mode .quiz-return{background:rgba(247,251,242,.88)}
     window.addEventListener('storage', (e) => {
         if (['appLang', 'appTheme', 'appFontSize'].includes(e.key)) applyState();
     });
+=======
+(()=>{const KEY="quizWrongBookV1";const qs=((window.QuizQuestionBank&&window.QuizQuestionBank.topic)||[]).map(q=>[q.question,q.options,q.answer,q.explanation,q.difficulty,q.mastery,q.topic]);const s={i:0,sel:Array(qs.length).fill(null),wrong:new Set(),started:false};const loadBook=()=>JSON.parse(localStorage.getItem(KEY)||"[]");const saveBook=v=>localStorage.setItem(KEY,JSON.stringify(v));function syncWrong(index){const raw=(window.QuizQuestionBank&&window.QuizQuestionBank.topic||[])[index],id=raw.id;const data=loadBook().filter(item=>item.id!==id);data.push({id,source:"topic",sourceLabel:"专题练习",topic:raw.topic,question:raw.question,answer:String.fromCharCode(65+raw.answer),explanation:raw.explanation,savedAt:new Date().toLocaleString("zh-CN")});saveBook(data)}document.querySelectorAll(".choice-grid").forEach(g=>g.addEventListener("click",e=>{if(e.target.classList.contains("chip")){g.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));e.target.classList.add("active")}}));const stars=n=>"★★★★★".slice(0,n)+"☆☆☆☆☆".slice(0,5-n);function show(id){["configView","quizView","resultView"].forEach(v=>document.getElementById(v).classList.add("hidden"));document.getElementById(id).classList.remove("hidden")}function grid(){const g=document.getElementById("grid");g.innerHTML="";qs.forEach((q,i)=>{const answered=s.sel[i]!==null;const b=document.createElement("button");b.className="num"+(answered?" done":"")+(i===s.i?" current":"")+(s.wrong.has(i)?" wrong":"");b.textContent=i+1;b.onclick=()=>{s.i=i;render()};g.appendChild(b)})}function render(){const q=qs[s.i],sel=s.sel[s.i];document.getElementById("topicName").textContent=q[6]||"圆的基本性质";document.getElementById("summaryMeta").textContent=`当前进度 ${s.i+1} / ${qs.length}`;document.getElementById("qIndex").textContent=s.i+1;document.getElementById("qTitle").textContent=q[0];document.getElementById("diffStars").textContent=stars(q[4]);document.getElementById("diffValue").textContent=`(${q[4].toFixed(1)})`;document.getElementById("masterStars").textContent=stars(q[5]);document.getElementById("prevBtn").disabled=s.i===0;document.getElementById("nextBtn").disabled=s.i===qs.length-1;document.getElementById("wrongBtn").textContent=`查看错题 (${s.wrong.size})`;grid();const wrap=document.getElementById("opts");wrap.innerHTML="";q[1].forEach((o,i)=>{const b=document.createElement("button");b.className="opt"+(sel===i?" selected":"")+(sel!==null&&i===q[2]?" correct":"")+(sel!==null&&sel===i&&sel!==q[2]?" wrong":"");b.innerHTML=`<span class="dot"></span><span>${String.fromCharCode(65+i)}. ${o}</span>`;b.onclick=()=>{s.sel[s.i]=i;if(i!==q[2]){s.wrong.add(s.i);syncWrong(s.i)}else s.wrong.delete(s.i);render()};wrap.appendChild(b)});const f=document.getElementById("feedback");if(sel===null){f.className="feedback hidden";f.textContent=""}else{const ok=sel===q[2];f.className="feedback "+(ok?"correct":"wrong");f.textContent=ok?`回答正确。${q[3]}`:`回答不正确，正确答案是 ${q[1][q[2]]}。${q[3]}`}}function result(){const correct=s.sel.filter((a,i)=>a===qs[i][2]).length,done=s.sel.filter(v=>v!==null).length,wrong=done-correct,score=Math.round(correct/qs.length*100);document.getElementById("scoreStat").textContent=`${score} 分`;document.getElementById("accuracyStat").textContent=`${Math.round(correct/qs.length*100)}%`;document.getElementById("correctStat").textContent=correct;document.getElementById("wrongStat").textContent=wrong;document.getElementById("aiSummary").textContent=wrong===0?"本次专题练习完成得很好，基础概念和性质判断比较稳定，可以继续挑战更高难度。":"本次专题练习已经具备一定基础，但部分知识点还不够稳定。建议优先重做错题，再回到基础内容继续巩固。";const list=document.getElementById("wrongList");list.innerHTML="";if(!s.wrong.size){list.innerHTML='<div class="wrong-item"><strong>本次没有错题</strong><span>保持这个状态继续练习即可。</span></div>'}else{Array.from(s.wrong).forEach(i=>{syncWrong(i);const item=document.createElement("div");item.className="wrong-item";item.innerHTML=`<strong>${qs[i][0]}</strong><p>所属专题: ${qs[i][6]||"圆的基本性质"}。正确答案: ${String.fromCharCode(65+qs[i][2])}</p><button class="btn" data-i="${i}">查看该题</button>`;item.querySelector("button").onclick=()=>{s.i=i;show("quizView");render()};list.appendChild(item)})}}document.getElementById("startBtn").onclick=()=>{s.started=true;show("quizView");render()};document.getElementById("backBtn").onclick=()=>show("configView");document.getElementById("prevBtn").onclick=()=>{if(s.i>0){s.i--;render()}};document.getElementById("nextBtn").onclick=()=>{if(s.i<qs.length-1){s.i++;render()}};document.getElementById("finishBtn").onclick=()=>{result();show("resultView")};document.getElementById("redoBtn").onclick=()=>{const keep=Array(qs.length).fill(null);Array.from(s.wrong).forEach(i=>keep[i]=null);s.sel=keep;s.i=s.wrong.size?Array.from(s.wrong)[0]:0;show("quizView");render()};document.getElementById("resultHomeBtn").onclick=()=>show("configView");document.getElementById("aiBtn").onclick=()=>{const f=document.getElementById("feedback");f.className="feedback";f.textContent="AI 提示：先抓住圆心、半径、弦、切线之间的关系，再排除错误选项。"};document.getElementById("markBtn").onclick=()=>{s.wrong.has(s.i)?s.wrong.delete(s.i):(s.wrong.add(s.i),syncWrong(s.i));grid();const f=document.getElementById("feedback");f.className="feedback";f.textContent="该题已加入错题标记。"};document.getElementById("wrongBtn").onclick=()=>{window.location.href="wrong-book.html"};function applyState() {
+    const t=localStorage.getItem("appTheme")||"default",fs=localStorage.getItem("appFontSize")||"16";
+    document.body.classList.remove("eye-mode","night-mode");
+    if(t==="eye")document.body.classList.add("eye-mode");
+    if(t==="night")document.body.classList.add("night-mode");
+    document.documentElement.style.setProperty("--font-size",fs+"px");
+    document.documentElement.style.fontSize = fs + "px";
+}
+window.addEventListener("load",()=>{
+    applyState();
+});
+window.addEventListener("storage", (e) => {
+    if (["appTheme", "appFontSize"].includes(e.key)) applyState();
+});
+>>>>>>> main
 })();
 </script>
 </body>
 </html>
+<<<<<<< b
 
+=======
+>>>>>>> main

@@ -1,0 +1,3219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>圆几何交互式学习平台</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/index.css">
+    <script src="../js/common.js" defer></script>
+    <script src="../js/index.js" defer></script>
+    <!-- MathJax for rendering math formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <script>
+        (function() {
+            try {
+                if (sessionStorage.getItem('index_loading_done') === '1') {
+                    document.documentElement.classList.add('skip-index-loading');
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&display=swap');
+
+        /* 加载动画样式 */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease-out;
+        }
+
+        #loading-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .skip-index-loading #loading-overlay {
+            display: none !important;
+            opacity: 0 !important;
+        }
+
+        .skip-index-loading .logo-icon-final {
+            opacity: 1;
+            transform: scale(1);
+            cursor: pointer;
+        }
+
+        .logo-icon-final {
+            width: 28px;
+            height: 28px;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(37, 99, 235, 0.4) 60%, rgba(37, 99, 235, 0.2));
+            border-radius: 50%;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 12px;
+            box-shadow: 
+                0 4px 10px rgba(37, 99, 235, 0.2),
+                inset 0 2px 4px rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .logo-icon-final.visible {
+            opacity: 1;
+            transform: scale(1);
+            cursor: pointer; /* 提示可点击 */
+        }
+
+        .logo-icon-final:active {
+            transform: scale(0.9);
+        }
+
+        .logo-icon-final.pop {
+            animation: logoBubblePop 680ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+        }
+
+        @keyframes logoBubblePop {
+            0% { transform: scale(1); filter: brightness(1); }
+            18% { transform: scale(1.16); filter: brightness(1.25); }
+            45% { transform: scale(0.92); filter: brightness(1.05); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+
+        /* 背景水波纹 Canvas */
+        #ripple-bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1; /* 置于底层 */
+        }
+
+        #theme-transition-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10001;
+            opacity: 0;
+            transition: opacity 0.22s ease;
+        }
+        #theme-transition-canvas.active {
+            opacity: 1;
+        }
+
+        .liquid-glass-bubble {
+            position: relative;
+            padding: 10px 14px;
+            border-radius: 16px;
+            background:
+                radial-gradient(circle at 22% 22%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 48%),
+                linear-gradient(145deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.12));
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(14px) saturate(160%);
+            -webkit-backdrop-filter: blur(14px) saturate(160%);
+            box-shadow: 0 18px 38px rgba(15, 23, 42, 0.16);
+            color: var(--text);
+            overflow: hidden;
+        }
+        .liquid-glass-bubble::after {
+            content: "";
+            position: absolute;
+            top: -70%;
+            left: -120%;
+            width: 60%;
+            height: 240%;
+            background: linear-gradient(115deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+            transform: rotate(18deg);
+            transition: left 0.55s ease;
+            pointer-events: none;
+        }
+        .liquid-glass-bubble:hover::after {
+            left: 155%;
+        }
+        body.night-mode .liquid-glass-bubble {
+            background:
+                radial-gradient(circle at 22% 22%, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 52%),
+                linear-gradient(145deg, rgba(2, 6, 23, 0.55), rgba(2, 6, 23, 0.22));
+            border-color: rgba(148, 163, 184, 0.22);
+            box-shadow: 0 18px 38px rgba(2, 6, 23, 0.35);
+        }
+
+        .quick-start-widget {
+            position: fixed;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%) scale(0.62);
+            transform-origin: left center;
+            z-index: 9998;
+            width: 300px;
+            height: 300px;
+            cursor: pointer;
+        }
+        .quick-start-clickzone {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            border-radius: 24px;
+            background: transparent;
+        }
+        .quick-start-art {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+        .quick-start-art .svg-frame {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            transform-style: preserve-3d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .quick-start-art .svg-frame svg {
+            position: absolute;
+            transition: .5s;
+            z-index: calc(1 - (0.2 * var(--j)));
+            transform-origin: center;
+            width: 344px;
+            height: 344px;
+            fill: none;
+        }
+        .quick-start-widget:hover .quick-start-art .svg-frame svg {
+            transform: rotate(-80deg) skew(30deg) translateX(calc(45px * var(--i))) translateY(calc(-35px * var(--i)));
+        }
+        .quick-start-art .svg-frame svg #center {
+            transition: .5s;
+            transform-origin: center;
+        }
+        .quick-start-widget:hover .quick-start-art .svg-frame svg #center {
+            transform: rotate(-30deg) translateX(45px) translateY(-3px);
+        }
+        .quick-start-widget #out2 {
+            animation: muttonRotate16 7s ease-in-out infinite alternate;
+            transform-origin: center;
+        }
+        .quick-start-widget #out3 {
+            animation: muttonRotate16 3s ease-in-out infinite alternate;
+            transform-origin: center;
+            stroke: #f59e0b;
+        }
+        .quick-start-widget #inner3,
+        .quick-start-widget #inner1 {
+            animation: muttonRotate16 4s ease-in-out infinite alternate;
+            transform-origin: center;
+        }
+        .quick-start-widget #center1 {
+            fill: #f59e0b;
+            animation: muttonRotate16 2s ease-in-out infinite alternate;
+            transform-origin: center;
+        }
+        @keyframes muttonRotate16 {
+            to { transform: rotate(360deg); }
+        }
+        .quick-start-tooltip {
+            position: absolute;
+            left: calc(100% + 14px);
+            top: 50%;
+            transform: translateY(-50%) translateX(-10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.22s ease, transform 0.22s ease;
+            white-space: nowrap;
+            font-weight: 900;
+            color: var(--text);
+        }
+        .quick-start-widget:hover .quick-start-tooltip {
+            opacity: 1;
+            transform: translateY(-50%) translateX(0);
+        }
+
+        .welcome-toast-host {
+            position: absolute;
+            left: 50%;
+            top: -14px;
+            transform: translate(-50%, -100%) scale(1.6);
+            transform-origin: bottom center;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 9998;
+            pointer-events: none;
+        }
+        .welcome-toast {
+            min-width: 140px;
+            text-align: center;
+            font-weight: 900;
+            letter-spacing: 0.4px;
+            animation: welcomeToastPop 1600ms ease both;
+        }
+        @keyframes welcomeToastPop {
+            0% { opacity: 0; transform: translateY(10px) scale(0.98); }
+            18% { opacity: 1; transform: translateY(0) scale(1); }
+            72% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-12px) scale(0.98); }
+        }
+
+    /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Trebuchet MS", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-strong: #1d4ed8;
+            --text: #1f2937;
+            --muted: #64748b;
+            --bg-color: #f8fafc;
+            --surface: rgba(255, 255, 255, 0.85);
+            --surface-strong: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-lg: 0 24px 60px rgba(31, 41, 55, 0.12);
+            --shadow-md: 0 16px 32px rgba(31, 41, 55, 0.08);
+            --radius-xl: 28px;
+            --radius-lg: 22px;
+            --radius-md: 16px;
+            --font-size: 16px;
+        }
+
+        body {
+            color: var(--text);
+            font-size: var(--font-size);
+            background:
+                radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.1), transparent 22%),
+                radial-gradient(circle at 86% 14%, rgba(37, 99, 235, 0.1), transparent 20%),
+                linear-gradient(rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+                linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: all 0.3s ease-in-out;
+            line-height: 1.6;
+        }
+
+        /* 模式切换：护眼/夜晚，修改CSS变量 */
+        body.eye-mode {
+            --bg-color: #f0f9eb;
+            --surface: rgba(247, 251, 242, 0.88);
+            --text: #166534;
+            --border-color: #c7e3b4;
+            --primary: #438a4c;
+            --primary-strong: #3f6234;
+        }
+        body.night-mode {
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --primary: #60a5fa;
+            --primary-strong: #3b82f6;
+            --surface: rgba(15, 23, 42, 0.9);
+            --surface-strong: #0f172a;
+            --border-color: #334155;
+            --bg-color: #020617;
+            background:
+                radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.15), transparent 25%),
+                radial-gradient(circle at 86% 14%, rgba(56, 189, 248, 0.15), transparent 22%),
+                linear-gradient(rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 头部样式：现代化设计 */
+        .header-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            width: 100%;
+            height: 80px;
+            padding: 0 4vw;
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .logo {
+            font-size: clamp(1.2rem, 2.5vw, 1.65rem);
+            font-weight: 800;
+            font-family: "Orbitron", "Trebuchet MS", "Microsoft YaHei", "PingFang SC", sans-serif;
+            letter-spacing: 1.2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #2563eb 0%, #60a5fa 55%, #dbeafe 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 18px rgba(59, 130, 246, 0.35);
+            position: relative;
+        }
+        .logo::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -8px;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.85), rgba(96, 165, 250, 0));
+            border-radius: 999px;
+        }
+        .logo i { font-size: 1.4rem; }
+
+        .nav-main {
+            display: flex;
+            gap: 2.5vw;
+            background: rgba(15, 23, 42, 0.04);
+            padding: 6px;
+            border-radius: 100px;
+            position: relative;
+            isolation: isolate;
+        }
+        .nav-droplet {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 0;
+            height: calc(100% - 12px);
+            border-radius: 999px;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateX(0) scale(var(--nav-drop-sx, 0.92), var(--nav-drop-sy, 0.92));
+            transition:
+                transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+                width 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.2s ease;
+            background:
+                radial-gradient(circle at 25% 30%, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 45%),
+                radial-gradient(circle at 70% 72%, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0) 62%),
+                linear-gradient(145deg, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0.08));
+            border: 1px solid rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(8px) saturate(150%) contrast(120%);
+            -webkit-backdrop-filter: blur(8px) saturate(150%) contrast(120%);
+            box-shadow:
+                0 12px 26px rgba(15, 23, 42, 0.24),
+                inset 0 2px 0 rgba(255, 255, 255, 0.82),
+                inset 0 -10px 18px rgba(15, 23, 42, 0.15);
+            z-index: 0;
+        }
+        .nav-main:hover .nav-droplet,
+        .nav-main:focus-within .nav-droplet {
+            opacity: 1;
+            transform: translateX(var(--nav-drop-x, 0px)) scale(var(--nav-drop-sx, 1), var(--nav-drop-sy, 1));
+            width: var(--nav-drop-w, 96px);
+        }
+        .nav-main.is-nav-droplet-moving .nav-droplet {
+            border-radius: 999px 26px 999px 26px;
+        }
+        .nav-link {
+            font-size: 0.95rem;
+            color: var(--muted);
+            font-weight: 600;
+            padding: 8px 24px;
+            border-radius: 100px;
+            position: relative;
+            z-index: 1;
+            transform-origin: center center;
+            transition: color 0.28s ease, text-shadow 0.28s ease, transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .nav-link:hover {
+            color: #1d4ed8;
+            text-shadow: 0 0 10px rgba(147, 197, 253, 0.65);
+            background: transparent;
+        }
+        .nav-link.nav-hovered {
+            color: #1d4ed8;
+            text-shadow: 0 0 10px rgba(147, 197, 253, 0.65);
+        }
+        .nav-main:hover .nav-link.nav-side,
+        .nav-main:focus-within .nav-link.nav-side {
+            transform: scale(1.06);
+        }
+        .nav-main:hover .nav-link.nav-peak,
+        .nav-main:focus-within .nav-link.nav-peak {
+            transform: scale(1.14);
+        }
+        .nav-link.active {
+            color: white;
+            background: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5vw;
+        }
+
+        .lang-switch {
+            font-size: 0.85rem;
+            color: var(--muted);
+            background: var(--surface-strong);
+            padding: 6px 16px;
+            border-radius: 100px;
+            border: 1px solid var(--border-color);
+        }
+        .lang-link { color: var(--muted); cursor: pointer; }
+        .lang-link.active { color: var(--primary); font-weight: 700; }
+
+        .setting-icon {
+            font-size: 1.2rem;
+            color: var(--muted);
+            width: 42px;
+            height: 42px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.1));
+            backdrop-filter: blur(8px) saturate(160%) contrast(120%);
+            -webkit-backdrop-filter: blur(8px) saturate(160%) contrast(120%);
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.72);
+            box-shadow:
+                0 16px 32px rgba(15, 23, 42, 0.34),
+                0 2px 0 rgba(255, 255, 255, 0.45) inset,
+                0 -10px 18px rgba(15, 23, 42, 0.12) inset;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .setting-icon:hover {
+            color: var(--primary);
+            transform: rotate(45deg) translateY(-2px);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0.16));
+            border-color: rgba(255, 255, 255, 0.9);
+            box-shadow:
+                0 20px 40px rgba(15, 23, 42, 0.45),
+                0 2px 0 rgba(255, 255, 255, 0.65) inset,
+                0 -10px 18px rgba(15, 23, 42, 0.16) inset;
+        }
+
+        .setting-menu {
+            display: none;
+            position: absolute;
+            top: 90px;
+            right: 4vw;
+            width: 240px;
+            background: var(--surface-strong);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            padding: 16px;
+            z-index: 10000;
+            animation: slideDown 0.3s ease-out;
+            overflow: hidden;
+            isolation: isolate;
+        }
+        .setting-droplet {
+            position: absolute;
+            left: 16px;
+            top: 16px;
+            width: calc(100% - 32px);
+            height: 0;
+            border-radius: var(--setting-drop-radius, 10px);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(var(--setting-drop-y, 0px)) scale(var(--setting-drop-sx, 0.96), var(--setting-drop-sy, 0.96));
+            transition:
+                transform 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+                height 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.2s ease;
+            background:
+                radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0) 42%),
+                radial-gradient(circle at 82% 85%, rgba(37, 99, 235, 0.18), rgba(37, 99, 235, 0) 65%),
+                linear-gradient(150deg, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(8px) saturate(155%) contrast(120%);
+            -webkit-backdrop-filter: blur(8px) saturate(155%) contrast(120%);
+            box-shadow:
+                0 14px 30px rgba(15, 23, 42, 0.22),
+                inset 0 2px 0 rgba(255, 255, 255, 0.82),
+                inset 0 -10px 18px rgba(15, 23, 42, 0.12);
+            z-index: 2;
+        }
+        .setting-menu:hover .setting-droplet,
+        .setting-menu:focus-within .setting-droplet {
+            opacity: 1;
+            transform: translateY(var(--setting-drop-y, 0px)) scale(var(--setting-drop-sx, 1), var(--setting-drop-sy, 1));
+            height: var(--setting-drop-h, 40px);
+        }
+        .setting-menu.hide-droplet .setting-droplet {
+            opacity: 0 !important;
+        }
+        .setting-menu.is-droplet-moving .setting-droplet {
+            border-radius: 16px 10px 16px 10px;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            color: var(--text);
+            border-radius: 10px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            position: relative;
+            z-index: 3;
+            transition: color 0.26s ease, text-shadow 0.26s ease;
+        }
+        .menu-item:hover {
+            background: transparent;
+            color: var(--primary);
+        }
+        .menu-item.setting-hovered,
+        .font-size-slider-wrap.setting-hovered .font-size-label {
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(147, 197, 253, 0.6);
+        }
+
+        .font-size-slider-wrap {
+            padding: 14px;
+            background: var(--bg-color);
+            border-radius: 12px;
+            margin: 10px 0;
+            position: relative;
+            z-index: 1;
+            transition: color 0.26s ease, text-shadow 0.26s ease;
+        }
+        .font-size-slider-wrap > * {
+            position: relative;
+            z-index: 3;
+        }
+        .slider-drag-droplet {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.85);
+            transition: opacity 0.16s ease, transform 0.2s ease;
+            background:
+                radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0) 44%),
+                linear-gradient(150deg, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0.16));
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(7px) saturate(155%);
+            -webkit-backdrop-filter: blur(7px) saturate(155%);
+            box-shadow:
+                0 10px 20px rgba(15, 23, 42, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.95);
+            z-index: 4;
+        }
+        .slider-drag-droplet.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        /* 设置菜单专属：禁用旧扫光，避免与水滴层叠加导致重影 */
+        .setting-menu .menu-item::before {
+            display: none;
+        }
+        .setting-menu .menu-item:hover {
+            transform: none;
+            box-shadow: none;
+            filter: none;
+        }
+        .font-size-label { font-size: 0.85rem; margin-bottom: 8px; font-weight: 600; }
+        .font-size-slider { width: 100%; cursor: pointer; }
+        .font-size-value { font-size: 0.75rem; text-align: center; margin-top: 6px; color: var(--muted); }
+
+        .ad-tip {
+            position: absolute;
+            bottom: -25px;
+            right: 0;
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        /* 主体内容布局 */
+        .main-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 120px 4vw 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .carousel-container {
+            width: 100%;
+            max-width: 1200px;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+        .carousel-wrap { position: relative; width: 100%; padding-bottom: 40%; }
+        .carousel-list { position: absolute; top: 0; left: 0; width: 500%; height: 100%; display: flex; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .carousel-item { width: 20%; height: 100%; }
+
+        .ai-search-container {
+            width: 100%;
+            max-width: 900px;
+            background:
+                radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.08) 45%, rgba(255, 255, 255, 0.02) 70%),
+                linear-gradient(150deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08));
+            padding: 50px;
+            border-radius: 58px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow:
+                0 22px 45px rgba(15, 23, 42, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.72),
+                inset 0 -18px 28px rgba(15, 23, 42, 0.08);
+            backdrop-filter: blur(28px) saturate(150%);
+            -webkit-backdrop-filter: blur(28px) saturate(150%);
+            text-align: center;
+            position: relative;
+            overflow: visible;
+            isolation: isolate;
+        }
+        .ai-search-container::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            padding: 3px;
+            border-radius: 62px;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 10% 15%, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0) 40%),
+                radial-gradient(circle at 88% 84%, rgba(56, 189, 248, 0.1), rgba(56, 189, 248, 0) 48%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.04));
+            backdrop-filter: blur(22px) saturate(220%) contrast(165%);
+            -webkit-backdrop-filter: blur(22px) saturate(220%) contrast(165%);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            z-index: 1;
+        }
+        .ai-search-container::after {
+            content: "";
+            position: absolute;
+            inset: 10px;
+            border-radius: 52px;
+            pointer-events: none;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0));
+            opacity: 0.6;
+            z-index: 1;
+        }
+
+        /* 知识模块网格 */
+        .knowledge-modules-grid {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .knowledge-card {
+            aspect-ratio: 1 / 1;
+            background:
+                radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.08) 45%, rgba(255, 255, 255, 0.02) 70%),
+                linear-gradient(150deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08));
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow:
+                0 15px 35px rgba(15, 23, 42, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.72),
+                inset 0 -12px 20px rgba(15, 23, 42, 0.05);
+            backdrop-filter: blur(20px) saturate(150%);
+            -webkit-backdrop-filter: blur(20px) saturate(150%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            isolation: isolate;
+            text-decoration: none; /* 确保作为链接时无下划线 */
+        }
+
+        .knowledge-card::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            padding: 2px;
+            border-radius: 42px;
+            pointer-events: none;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05));
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            z-index: 1;
+        }
+
+        .knowledge-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(37, 99, 235, 0.25);
+            border-color: var(--primary);
+        }
+
+        .knowledge-card i {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            transition: transform 0.4s;
+        }
+
+        .knowledge-card:hover i {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .knowledge-card h4 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .knowledge-card p {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .circle66-entry-container {
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 40px;
+        }
+
+        .circle66-entry {
+            width: 100%;
+            background:
+                radial-gradient(circle at 12% 35%, rgba(37, 99, 235, 0.12), transparent 52%),
+                radial-gradient(circle at 90% 65%, rgba(96, 165, 250, 0.14), transparent 55%),
+                var(--surface);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border-radius: 30px;
+            padding: 26px 46px;
+            border: 1px solid rgba(37, 99, 235, 0.26);
+            box-shadow:
+                0 14px 46px rgba(37, 99, 235, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .circle66-entry:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 22px 62px rgba(37, 99, 235, 0.2);
+            border-color: rgba(37, 99, 235, 0.5);
+        }
+
+        .circle66-entry-info { display: flex; align-items: center; gap: 22px; }
+        .circle66-entry-icon {
+            font-size: 2.4rem;
+            background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(0 6px 16px rgba(37, 99, 235, 0.22));
+        }
+        .circle66-entry-text h4 { font-size: 1.55rem; font-weight: 900; color: var(--primary-strong); margin-bottom: 5px; }
+        .circle66-entry-text p { font-size: 1rem; color: var(--muted); }
+
+        .circle66-entry-tag {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 100px;
+            font-weight: 900;
+            font-size: 1.05rem;
+            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
+            flex-shrink: 0;
+        }
+
+        body.night-mode .circle66-entry {
+            background:
+                radial-gradient(circle at 12% 35%, rgba(96, 165, 250, 0.14), transparent 52%),
+                var(--surface);
+            border-color: rgba(96, 165, 250, 0.22);
+        }
+
+        /* VIP模块样式 */
+        .vip-banner-container {
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 40px;
+        }
+
+        .vip-banner {
+            width: 100%;
+            background: 
+                radial-gradient(circle at 5% 50%, rgba(245, 158, 11, 0.15), transparent 40%),
+                radial-gradient(circle at 95% 50%, rgba(245, 158, 11, 0.15), transparent 40%),
+                var(--surface);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border-radius: 30px;
+            padding: 30px 50px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            box-shadow: 
+                0 10px 40px rgba(245, 158, 11, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vip-banner:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 20px 60px rgba(245, 158, 11, 0.2);
+            border-color: #f59e0b;
+        }
+
+        .vip-info { display: flex; align-items: center; gap: 25px; }
+        .vip-icon { 
+            font-size: 2.8rem; 
+            color: #f59e0b;
+            filter: drop-shadow(0 4px 10px rgba(245, 158, 11, 0.3));
+        }
+        .vip-text h4 { font-size: 1.6rem; font-weight: 800; color: #b45309; margin-bottom: 5px; }
+        .vip-text p { font-size: 1rem; color: var(--muted); }
+
+        .vip-price-tag {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 100px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            box-shadow: 0 8px 20px rgba(217, 119, 6, 0.3);
+        }
+
+        body.night-mode .vip-banner {
+            background: 
+                radial-gradient(circle at 5% 50%, rgba(245, 158, 11, 0.1), transparent 40%),
+                var(--surface);
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+        body.night-mode .vip-text h4 { color: #f59e0b; }
+
+        /* 右侧圆规入口 */
+        .drawing-tool-entrance {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 70px;
+            height: 70px;
+            background: var(--surface);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-decoration: none;
+        }
+
+        .drawing-tool-entrance:hover {
+            transform: translateY(-50%) scale(1.1);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+        }
+
+        .drawing-tool-entrance i {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .drawing-tool-entrance::after {
+            content: var(--tooltip, "绘图工具");
+            position: absolute;
+            right: 85px;
+            background: var(--primary);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateX(10px);
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+
+        .drawing-tool-entrance:hover::after {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* 绘图工具气泡动画样式 */
+        .bubble-container {
+            position: fixed;
+            right: 30px; /* 与圆规图标对齐 */
+            top: 50%;
+            width: 70px; /* 与圆规图标宽度一致 */
+            height: 70px;
+            z-index: 9998;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .drawing-bubble {
+            position: absolute;
+            background: var(--surface);
+            backdrop-filter: blur(12px) saturate(150%);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0;
+            white-space: nowrap;
+            opacity: 0;
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: translateY(45px); /* 初始位置在圆规下方 */
+            overflow: hidden;
+            left: 50%;
+            margin-left: -6px; /* 初始宽度一半 */
+        }
+
+        .drawing-bubble.emerge {
+            opacity: 1;
+            transform: translateY(-5px);
+            width: 20px;
+            height: 20px;
+            margin-left: -10px;
+        }
+
+        .drawing-bubble.stretch {
+            width: 130px;
+            height: 42px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            padding: 0 15px;
+            transform: translateY(-95px); /* 移动到正上方 */
+            margin-left: -65px; /* 拉伸后宽度一半 */
+        }
+
+        .drawing-bubble::after { /* 聊天云尖角 */
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid var(--primary);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .drawing-bubble.stretch::after { opacity: 1; }
+
+        #bubble-particle-canvas {
+            position: absolute;
+            top: -120px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        body.night-mode .drawing-tool-entrance {
+            background: rgba(15, 23, 42, 0.9);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+        body.night-mode .drawing-tool-entrance:hover {
+            border-color: #60a5fa;
+        }
+
+        /* 右下角回到顶部按钮 */
+        #backToTopBtn {
+            position: fixed;
+            right: 28px;
+            bottom: 24px;
+            width: 126px;
+            height: 48px;
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            background: var(--surface);
+            color: var(--primary);
+            font-size: 0.98rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            z-index: 9999;
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(12px);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        #backToTopBtn:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
+        }
+        #backToTopBtn:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        .search-title { font-size: 2rem; margin-bottom: 30px; font-weight: 800; color: var(--primary); }
+        .search-box { display: flex; gap: 12px; background: rgba(255, 255, 255, 0.42); padding: 8px; border-radius: 100px; border: 1px solid rgba(255, 255, 255, 0.62); transition: all 0.3s; }
+        .search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        .search-input { flex: 1; padding: 0 24px; font-size: 1.1rem; border: none; background: transparent; }
+        .search-btn { background: var(--primary); color: white; padding: 12px 32px; border-radius: 100px; font-weight: 700; font-size: 1rem; }
+        .search-btn:hover { background: var(--primary-strong); transform: scale(1.02); }
+
+        /* 按钮立体悬浮+泛白光效 */
+        .nav-link,
+        .search-btn,
+        .menu-item,
+        .setting-icon,
+        .lang-switch,
+        .ad-link {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+        }
+        .nav-link::before,
+        .search-btn::before,
+        .menu-item::before,
+        .setting-icon::before,
+        .lang-switch::before {
+            content: "";
+            position: absolute;
+            top: -80%;
+            left: -120%;
+            width: 60%;
+            height: 260%;
+            background: linear-gradient(115deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0));
+            transform: rotate(18deg);
+            transition: left 0.5s ease;
+            pointer-events: none;
+        }
+        .ad-link::before { display: none; }
+        .nav-link:hover,
+        .search-btn:hover,
+        .menu-item:hover,
+        .setting-icon:hover,
+        .lang-switch:hover,
+        .ad-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.2);
+            filter: brightness(1.03);
+        }
+        .nav-link:hover::before,
+        .search-btn:hover::before,
+        .menu-item:hover::before,
+        .setting-icon:hover::before,
+        .lang-switch:hover::before {
+            left: 155%;
+        }
+
+        /* 弹窗样式统一 */
+        .ai-modal, .contact-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; z-index: 100000;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            justify-content: center; align-items: center;
+            padding: 20px;
+        }
+        .ai-modal-content, .contact-modal-content {
+            background: var(--surface-strong);
+            padding: 40px;
+            border-radius: var(--radius-xl);
+            max-width: 700px;
+            width: 100%;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+        .modal-close {
+            position: absolute; top: 20px; right: 20px;
+            font-size: 1.5rem; color: var(--muted); cursor: pointer;
+            width: 40px; height: 40px; display: flex; justify-content: center; align-items: center;
+            border-radius: 50%; transition: all 0.3s;
+        }
+        .modal-close:hover { background: #fee2e2; color: #ef4444; }
+        .modal-title, .contact-title { font-size: 1.6rem; font-weight: 800; color: var(--primary); margin-bottom: 24px; }
+        .modal-result, .contact-info { font-size: 1.1rem; line-height: 1.8; color: var(--text); }
+
+        @media (max-width: 768px) {
+            .header-container {
+                padding: 0 14px;
+                height: 70px;
+                gap: 10px;
+            }
+
+            .logo {
+                font-size: clamp(1rem, 4.2vw, 1.25rem);
+                max-width: 42vw;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .nav-main {
+                gap: clamp(8px, 1.6vw, 14px);
+                padding: 4px;
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+
+            .nav-droplet {
+                top: 4px;
+                left: 4px;
+                height: calc(100% - 8px);
+            }
+
+            .nav-link {
+                font-size: clamp(0.8rem, 3.4vw, 0.9rem);
+                padding: 7px clamp(10px, 3.4vw, 18px);
+            }
+
+            .header-right {
+                gap: 6px;
+            }
+
+            .lang-switch {
+                font-size: 0.8rem;
+                padding: 5px 12px;
+                white-space: nowrap;
+            }
+
+            .exam-countdown {
+                display: none;
+            }
+
+            .setting-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 1.05rem;
+            }
+
+            .main-container { padding-top: 100px; gap: 40px; }
+            .ai-search-container { padding: 30px 20px; }
+            .knowledge-modules-grid { grid-template-columns: 1fr; gap: 20px; }
+            .knowledge-card { aspect-ratio: auto; min-height: 200px; padding: 20px; }
+            .search-title { font-size: 1.5rem; }
+            .search-box { flex-direction: column; border-radius: 20px; }
+            .search-btn { border-radius: 16px; }
+            #backToTopBtn {
+                right: 14px;
+                bottom: 14px;
+                width: 108px;
+                height: 42px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景水波纹容器 -->
+    <canvas id="ripple-bg-canvas"></canvas>
+    <canvas id="theme-transition-canvas"></canvas>
+
+    <!-- 加载动画 -->
+    <div id="loading-overlay">
+        <canvas id="loading-canvas"></canvas>
+    </div>
+
+    <!-- 悬浮圆规入口 -->
+    <a href="drawing.html" class="drawing-tool-entrance" id="drawingEntrance">
+        <i class="fas fa-drafting-compass"></i>
+    </a>
+    <div class="bubble-container">
+        <div class="drawing-bubble" id="drawingBubble">点我尝试绘图</div>
+        <canvas id="bubble-particle-canvas" width="200" height="150"></canvas>
+    </div>
+    <button id="backToTopBtn" type="button" aria-label="回到顶部">回到顶部</button>
+    <div class="quick-start-widget" id="quickStartWidget">
+        <div class="welcome-toast-host" id="welcomeToastHost" aria-hidden="true"></div>
+        <div class="quick-start-art" aria-hidden="true">
+            <div class="svg-frame">
+                <svg style="--i:0;--j:0;">
+                    <g id="out1">
+                        <path d="M72 172C72 116.772 116.772 72 172 72C227.228 72 272 116.772 272 172C272 227.228 227.228 272 172 272C116.772 272 72 227.228 72 172ZM197.322 172C197.322 158.015 185.985 146.678 172 146.678C158.015 146.678 146.678 158.015 146.678 172C146.678 185.985 158.015 197.322 172 197.322C185.985 197.322 197.322 185.985 197.322 172Z"></path>
+                        <path mask="url(#path-1-inside-1_111_3212)" stroke-miterlimit="16" stroke-width="2" stroke="#60A5FA" d="M72 172C72 116.772 116.772 72 172 72C227.228 72 272 116.772 272 172C272 227.228 227.228 272 172 272C116.772 272 72 227.228 72 172ZM197.322 172C197.322 158.015 185.985 146.678 172 146.678C158.015 146.678 146.678 158.015 146.678 172C146.678 185.985 158.015 197.322 172 197.322C185.985 197.322 197.322 185.985 197.322 172Z"></path>
+                    </g>
+                </svg>
+
+                <svg style="--i:1;--j:1;">
+                    <g id="out2">
+                        <mask fill="white" id="path-2-inside-2_111_3212">
+                            <path d="M102.892 127.966C93.3733 142.905 88.9517 160.527 90.2897 178.19L94.3752 177.88C93.1041 161.1 97.3046 144.36 106.347 130.168L102.892 127.966Z"></path>
+                            <path d="M93.3401 194.968C98.3049 211.971 108.646 226.908 122.814 237.541L125.273 234.264C111.814 224.163 101.99 209.973 97.2731 193.819L93.3401 194.968Z"></path>
+                            <path d="M152.707 92.3592C140.33 95.3575 128.822 101.199 119.097 109.421L121.742 112.55C130.981 104.739 141.914 99.1897 153.672 96.3413L152.707 92.3592Z"></path>
+                            <path d="M253.294 161.699C255.099 175.937 253.132 190.4 247.59 203.639L243.811 202.057C249.075 189.48 250.944 175.74 249.23 162.214L253.294 161.699Z"></path>
+                            <path d="M172 90.0557C184.677 90.0557 197.18 92.9967 208.528 98.6474C219.875 104.298 229.757 112.505 237.396 122.621L234.126 125.09C226.869 115.479 217.481 107.683 206.701 102.315C195.921 96.9469 184.043 94.1529 172 94.1529V90.0557Z"></path>
+                            <path d="M244.195 133.235C246.991 138.442 249.216 143.937 250.83 149.623L246.888 150.742C245.355 145.34 243.242 140.12 240.586 135.174L244.195 133.235Z"></path>
+                            <path d="M234.238 225.304C223.932 237.338 210.358 246.126 195.159 250.604C179.961 255.082 163.79 255.058 148.606 250.534L149.775 246.607C164.201 250.905 179.563 250.928 194.001 246.674C208.44 242.42 221.335 234.071 231.126 222.639L234.238 225.304Z"></path>
+                        </mask>
+                        <path mask="url(#path-2-inside-2_111_3212)" fill="#60A5FA" d="M102.892 127.966L105.579 123.75L101.362 121.063L98.6752 125.28L102.892 127.966ZM90.2897 178.19L85.304 178.567L85.6817 183.553L90.6674 183.175L90.2897 178.19ZM94.3752 177.88L94.7529 182.866L99.7386 182.488L99.3609 177.503L94.3752 177.88ZM106.347 130.168L110.564 132.855L113.251 128.638L109.034 125.951L106.347 130.168ZM93.3401 194.968L91.9387 190.168L87.1391 191.569L88.5405 196.369L93.3401 194.968ZM122.814 237.541L119.813 241.54L123.812 244.541L126.813 240.542L122.814 237.541ZM125.273 234.264L129.272 237.265L132.273 233.266L128.274 230.265L125.273 234.264ZM97.2731 193.819L102.073 192.418L100.671 187.618L95.8717 189.02L97.2731 193.819ZM152.707 92.3592L157.567 91.182L156.389 86.3226L151.53 87.4998L152.707 92.3592ZM119.097 109.421L115.869 105.603L112.05 108.831L115.278 112.649L119.097 109.421ZM121.742 112.55L117.924 115.778L121.152 119.596L124.97 116.368L121.742 112.55ZM153.672 96.3413L154.849 101.201L159.708 100.023L158.531 95.1641L153.672 96.3413ZM253.294 161.699L258.255 161.07L257.626 156.11L252.666 156.738L253.294 161.699ZM247.59 203.639L245.66 208.251L250.272 210.182L252.203 205.569L247.59 203.639ZM243.811 202.057L239.198 200.126L237.268 204.739L241.88 206.669L243.811 202.057ZM249.23 162.214L248.601 157.253L243.641 157.882L244.269 162.842L249.23 162.214ZM172 90.0557V85.0557H167V90.0557H172ZM208.528 98.6474L206.299 103.123L206.299 103.123L208.528 98.6474ZM237.396 122.621L240.409 126.611L244.399 123.598L241.386 119.608L237.396 122.621ZM234.126 125.09L230.136 128.103L233.149 132.093L237.139 129.08L234.126 125.09ZM206.701 102.315L204.473 106.791L204.473 106.791L206.701 102.315ZM172 94.1529H167V99.1529H172V94.1529ZM244.195 133.235L248.601 130.87L246.235 126.465L241.83 128.83L244.195 133.235ZM250.83 149.623L252.195 154.433L257.005 153.067L255.64 148.257L250.83 149.623ZM246.888 150.742L242.078 152.107L243.444 156.917L248.254 155.552L246.888 150.742ZM240.586 135.174L238.22 130.768L233.815 133.134L236.181 137.539L240.586 135.174ZM234.238 225.304L238.036 228.556L241.288 224.759L237.491 221.506L234.238 225.304ZM195.159 250.604L196.572 255.4L196.572 255.4L195.159 250.604ZM148.606 250.534L143.814 249.107L142.386 253.899L147.178 255.326L148.606 250.534ZM149.775 246.607L151.203 241.816L146.411 240.388L144.983 245.18L149.775 246.607ZM194.001 246.674L195.415 251.47L195.415 251.47L194.001 246.674ZM231.126 222.639L234.379 218.841L230.581 215.589L227.329 219.386L231.126 222.639ZM98.6752 125.28C88.5757 141.13 83.8844 159.826 85.304 178.567L95.2754 177.812C94.0191 161.227 98.1709 144.681 107.109 130.653L98.6752 125.28ZM90.6674 183.175L94.7529 182.866L93.9976 172.895L89.912 173.204L90.6674 183.175ZM99.3609 177.503C98.1715 161.8 102.102 146.135 110.564 132.855L102.131 127.481C92.5071 142.585 88.0368 160.4 89.3895 178.258L99.3609 177.503ZM109.034 125.951L105.579 123.75L100.205 132.183L103.661 134.385L109.034 125.951ZM88.5405 196.369C93.8083 214.41 104.78 230.259 119.813 241.54L125.815 233.542C112.512 223.558 102.802 209.532 98.1397 193.566L88.5405 196.369ZM126.813 240.542L129.272 237.265L121.274 231.263L118.815 234.54L126.813 240.542ZM128.274 230.265C115.679 220.813 106.486 207.534 102.073 192.418L92.4735 195.221C97.493 212.412 107.948 227.513 122.272 238.263L128.274 230.265ZM95.8717 189.02L91.9387 190.168L94.7415 199.767L98.6745 198.619L95.8717 189.02ZM151.53 87.4998C138.398 90.681 126.188 96.8793 115.869 105.603L122.325 113.239C131.457 105.519 142.262 100.034 153.884 97.2187L151.53 87.4998ZM115.278 112.649L117.924 115.778L125.56 109.322L122.915 106.193L115.278 112.649ZM124.97 116.368C133.616 109.059 143.846 103.866 154.849 101.201L152.495 91.4818C139.981 94.5132 128.347 100.419 118.514 108.732L124.97 116.368ZM158.531 95.1641L157.567 91.182L147.848 93.5364L148.812 97.5185L158.531 95.1641ZM248.334 162.327C250.028 175.697 248.181 189.277 242.978 201.708L252.203 205.569C258.082 191.522 260.169 176.177 258.255 161.07L248.334 162.327ZM249.521 199.027L245.741 197.445L241.88 206.669L245.66 208.251L249.521 199.027ZM248.423 203.987C254.025 190.602 256.014 175.98 254.19 161.585L244.269 162.842C245.873 175.5 244.125 188.357 239.198 200.126L248.423 203.987ZM249.858 167.174L253.923 166.659L252.666 156.738L248.601 157.253L249.858 167.174ZM172 95.0557C183.903 95.0557 195.644 97.8172 206.299 103.123L210.757 94.1717C198.717 88.1761 185.45 85.0557 172 85.0557V95.0557ZM206.299 103.123C216.954 108.429 226.233 116.135 233.406 125.634L241.386 119.608C233.281 108.874 222.796 100.167 210.757 94.1717L206.299 103.123ZM234.383 118.631L231.113 121.1L237.139 129.08L240.409 126.611L234.383 118.631ZM238.116 122.077C230.393 111.849 220.403 103.552 208.93 97.8393L204.473 106.791C214.56 111.814 223.345 119.11 230.136 128.103L238.116 122.077ZM208.93 97.8393C197.458 92.1263 184.816 89.1529 172 89.1529V99.1529C183.269 99.1529 194.385 101.767 204.473 106.791L208.93 97.8393ZM177 94.1529V90.0557H167V94.1529H177ZM239.79 135.601C242.416 140.49 244.504 145.649 246.02 150.988L255.64 148.257C253.927 142.225 251.567 136.395 248.601 130.87L239.79 135.601ZM249.464 144.813L245.523 145.932L248.254 155.552L252.195 154.433L249.464 144.813ZM251.698 149.376C250.067 143.628 247.818 138.073 244.991 132.808L236.181 137.539C238.666 142.168 240.644 147.052 242.078 152.107L251.698 149.376ZM242.951 139.579L246.561 137.64L241.83 128.83L238.22 130.768L242.951 139.579ZM230.441 222.051C220.763 233.351 208.017 241.603 193.746 245.808L196.572 255.4C212.698 250.649 227.101 241.325 238.036 228.556L230.441 222.051ZM193.746 245.808C179.475 250.012 164.291 249.99 150.033 245.742L147.178 255.326C163.289 260.125 180.447 260.151 196.572 255.4L193.746 245.808ZM153.397 251.962L154.567 248.035L144.983 245.18L143.814 249.107L153.397 251.962ZM148.348 251.399C163.7 255.973 180.049 255.997 195.415 251.47L192.588 241.877C179.077 245.858 164.702 245.837 151.203 241.816L148.348 251.399ZM195.415 251.47C210.78 246.942 224.504 238.058 234.924 225.891L227.329 219.386C218.167 230.084 206.099 237.897 192.588 241.877L195.415 251.47ZM227.874 226.436L230.986 229.101L237.491 221.506L234.379 218.841L227.874 226.436Z"></path>
+                    </g>
+                </svg>
+
+                <svg style="--i:0;--j:2;">
+                    <g id="inner3">
+                        <path d="M195.136 135.689C188.115 131.215 179.948 128.873 171.624 128.946C163.299 129.019 155.174 131.503 148.232 136.099L148.42 136.382C155.307 131.823 163.368 129.358 171.627 129.286C179.886 129.213 187.988 131.537 194.954 135.975L195.136 135.689Z"></path>
+                        <path d="M195.136 208.311C188.115 212.784 179.948 215.127 171.624 215.054C163.299 214.981 155.174 212.496 148.232 207.901L148.42 207.618C155.307 212.177 163.368 214.642 171.627 214.714C179.886 214.786 187.988 212.463 194.954 208.025L195.136 208.311Z"></path>
+                        <path mask="url(#path-5-inside-3_111_3212)" fill="#60A5FA" d="M195.136 135.689L195.474 135.904L195.689 135.566L195.351 135.352L195.136 135.689ZM171.624 128.946L171.627 129.346L171.624 128.946ZM148.232 136.099L148.011 135.765L147.678 135.986L147.899 136.32L148.232 136.099ZM148.42 136.382L148.086 136.603L148.307 136.936L148.641 136.716L148.42 136.382ZM171.627 129.286L171.63 129.686L171.627 129.286ZM194.954 135.975L194.739 136.313L195.076 136.528L195.291 136.19L194.954 135.975ZM195.136 208.311L195.351 208.648L195.689 208.433L195.474 208.096L195.136 208.311ZM171.624 215.054L171.627 214.654L171.624 215.054ZM148.232 207.901L147.899 207.68L147.678 208.014L148.011 208.234L148.232 207.901ZM148.42 207.618L148.641 207.284L148.307 207.063L148.086 207.397L148.42 207.618ZM171.627 214.714L171.63 214.314L171.627 214.714ZM194.954 208.025L195.291 207.81L195.076 207.472L194.739 207.687L194.954 208.025ZM195.351 135.352C188.265 130.836 180.022 128.473 171.62 128.546L171.627 129.346C179.874 129.274 187.966 131.594 194.921 136.026L195.351 135.352ZM171.62 128.546C163.218 128.619 155.018 131.127 148.011 135.765L148.453 136.432C155.33 131.88 163.38 129.418 171.627 129.346L171.62 128.546ZM147.899 136.32L148.086 136.603L148.753 136.161L148.566 135.878L147.899 136.32ZM148.641 136.716C155.463 132.199 163.448 129.757 171.63 129.686L171.623 128.886C163.287 128.958 155.15 131.447 148.199 136.049L148.641 136.716ZM171.63 129.686C179.812 129.614 187.839 131.916 194.739 136.313L195.169 135.638C188.138 131.158 179.959 128.813 171.623 128.886L171.63 129.686ZM195.291 136.19L195.474 135.904L194.799 135.474L194.617 135.76L195.291 136.19ZM194.921 207.974C187.966 212.406 179.874 214.726 171.627 214.654L171.62 215.454C180.022 215.527 188.265 213.163 195.351 208.648L194.921 207.974ZM171.627 214.654C163.38 214.582 155.33 212.12 148.453 207.567L148.011 208.234C155.018 212.873 163.218 215.38 171.62 215.454L171.627 214.654ZM148.566 208.122L148.753 207.838L148.086 207.397L147.899 207.68L148.566 208.122ZM148.199 207.951C155.15 212.553 163.287 215.041 171.623 215.114L171.63 214.314C163.448 214.243 155.463 211.801 148.641 207.284L148.199 207.951ZM171.623 215.114C179.959 215.187 188.138 212.842 195.169 208.362L194.739 207.687C187.839 212.084 179.812 214.386 171.63 214.314L171.623 215.114ZM194.617 208.239L194.799 208.526L195.474 208.096L195.291 207.81L194.617 208.239Z"></path>
+                    </g>
+                    <path stroke="#60A5FA" d="M240.944 172C240.944 187.951 235.414 203.408 225.295 215.738C215.176 228.068 201.095 236.508 185.45 239.62C169.806 242.732 153.567 240.323 139.5 232.804C125.433 225.285 114.408 213.12 108.304 198.384C102.2 183.648 101.394 167.25 106.024 151.987C110.654 136.723 120.434 123.537 133.696 114.675C146.959 105.813 162.884 101.824 178.758 103.388C194.632 104.951 209.472 111.97 220.751 123.249" id="out3"></path>
+                </svg>
+
+                <svg style="--i:1;--j:3;">
+                    <g id="inner1">
+                        <path fill="#60A5FA" d="M145.949 124.51L148.554 129.259C156.575 124.859 165.672 122.804 174.806 123.331C183.94 123.858 192.741 126.944 200.203 132.236C207.665 137.529 213.488 144.815 217.004 153.261C220.521 161.707 221.59 170.972 220.09 179.997L224.108 180.665L224.102 180.699L229.537 181.607C230.521 175.715 230.594 169.708 229.753 163.795L225.628 164.381C224.987 159.867 223.775 155.429 222.005 151.179C218.097 141.795 211.628 133.699 203.337 127.818C195.045 121.937 185.266 118.508 175.118 117.923C165.302 117.357 155.525 119.474 146.83 124.037C146.535 124.192 146.241 124.349 145.949 124.51ZM224.638 164.522C224.009 160.091 222.819 155.735 221.082 151.563C217.246 142.352 210.897 134.406 202.758 128.634C194.62 122.862 185.021 119.496 175.06 118.922C165.432 118.367 155.841 120.441 147.311 124.914L148.954 127.91C156.922 123.745 165.876 121.814 174.864 122.333C184.185 122.87 193.166 126.019 200.782 131.421C208.397 136.822 214.339 144.257 217.928 152.877C221.388 161.188 222.526 170.276 221.23 179.173L224.262 179.677C224.998 174.671 225.35 169.535 224.638 164.522Z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                        <path fill="#60A5FA" d="M139.91 220.713C134.922 217.428 130.469 213.395 126.705 208.758L130.983 205.286L130.985 205.288L134.148 202.721C141.342 211.584 151.417 217.642 162.619 219.839C173.821 222.036 185.438 220.232 195.446 214.742L198.051 219.491C197.759 219.651 197.465 219.809 197.17 219.963C186.252 225.693 173.696 227.531 161.577 225.154C154.613 223.789 148.041 221.08 142.202 217.234L139.91 220.713ZM142.752 216.399C148.483 220.174 154.934 222.833 161.769 224.173C173.658 226.504 185.977 224.704 196.689 219.087L195.046 216.09C185.035 221.323 173.531 222.998 162.427 220.82C151.323 218.643 141.303 212.747 134.01 204.122L131.182 206.5C134.451 210.376 138.515 213.607 142.752 216.399Z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                    </g>
+                </svg>
+
+                <svg style="--i:2;--j:4;">
+                    <path fill="#60A5FA" d="M180.956 186.056C183.849 184.212 186.103 181.521 187.41 178.349C188.717 175.177 189.013 171.679 188.258 168.332C187.503 164.986 185.734 161.954 183.192 159.65C180.649 157.346 177.458 155.883 174.054 155.46C170.649 155.038 167.197 155.676 164.169 157.288C161.14 158.9 158.683 161.407 157.133 164.468C155.582 167.528 155.014 170.992 155.505 174.388C155.997 177.783 157.524 180.944 159.879 183.439L161.129 182.259C159.018 180.021 157.648 177.186 157.207 174.141C156.766 171.096 157.276 167.989 158.667 165.245C160.057 162.5 162.261 160.252 164.977 158.806C167.693 157.36 170.788 156.788 173.842 157.167C176.895 157.546 179.757 158.858 182.037 160.924C184.317 162.99 185.904 165.709 186.581 168.711C187.258 171.712 186.992 174.849 185.82 177.694C184.648 180.539 182.627 182.952 180.032 184.606L180.956 186.056Z" id="center1"></path>
+                    <path fill="#60A5FA" d="M172 166.445C175.068 166.445 177.556 168.932 177.556 172C177.556 175.068 175.068 177.556 172 177.556C168.932 177.556 166.444 175.068 166.444 172C166.444 168.932 168.932 166.445 172 166.445ZM172 177.021C174.773 177.021 177.021 174.773 177.021 172C177.021 169.227 174.773 166.979 172 166.979C169.227 166.979 166.979 169.227 166.979 172C166.979 174.773 169.227 177.021 172 177.021Z" id="center"></path>
+                </svg>
+            </div>
+        </div>
+        <a class="quick-start-clickzone" id="quickStartClickzone" href="../game/game fourth version final.html" aria-label="快速开始游戏"></a>
+        <div class="liquid-glass-bubble quick-start-tooltip" id="quickStartTooltip">快速开始游戏</div>
+    </div>
+
+    <!-- 头部：通栏，适配所有屏幕，包含logo/导航/语言/设置/广告 -->
+    <header class="header-container">
+        <div class="logo">
+            <span class="logo-icon-final" id="finalLogoIcon"></span>
+            <span id="logoText">圆几何交互式学习平台</span>
+        </div>
+        <nav class="nav-main">
+            <span class="nav-droplet" aria-hidden="true"></span>
+            <a href="index.html" class="nav-link" id="navHome">首页</a>
+            <a href="../game/game.html" class="nav-link" id="navGame">游戏</a>
+            <a href="../quiz/test.html" class="nav-link" id="navQuiz">测试</a>
+        </nav>
+        <div class="header-right">
+            <div class="lang-switch">
+                <a href="javascript:;" class="lang-link active" data-lang="zh-CN" id="langZh">简体中文</a>
+                <span>/</span>
+                <a href="javascript:;" class="lang-link" data-lang="en" id="langEn">English</a>
+            </div>
+            <div class="exam-countdown" id="examCountdown">
+                <span class="exam-droplet" aria-hidden="true"></span>
+                <span class="exam-countdown-text" id="examCountdownText"></span>
+            </div>
+            <div class="setting-wrap">
+                <a href="javascript:;" class="setting-icon"><i class="fas fa-cog"></i></a>
+                <div class="setting-menu">
+                    <span class="setting-droplet" aria-hidden="true"></span>
+                    <a href="javascript:;" class="menu-item" data-style="eye" id="menuEye">护眼模式</a>
+                    <a href="javascript:;" class="menu-item" data-style="night" id="menuNight">夜晚模式</a>
+                    <a href="javascript:;" class="menu-item" data-style="default" id="menuDefault">默认模式</a>
+                    <!-- 字体大小滑块 -->
+                    <div class="font-size-slider-wrap">
+                        <label class="font-size-label" id="fontSizeLabel">字体大小调节</label>
+                        <input type="range" class="font-size-slider" id="fontSizeSlider" min="12" max="24" value="16" step="1">
+                        <span class="slider-drag-droplet" id="sliderDragDroplet" aria-hidden="true"></span>
+                        <div class="font-size-value" id="fontSizeValue">当前字体：16px</div>
+                    </div>
+                    <a href="javascript:;" class="menu-item" id="contactUs">联系我们</a>
+                    <a href="usage-guide.html" class="menu-item" id="menuHelp">使用说明</a>
+                </div>
+            </div>
+            <div class="ad-tip">
+                <a href="https://m.zhuanzhuan.com/" class="ad-link" id="adLink">关于广告</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主体内容：通栏自适应，轮播图+AI搜索栏 -->
+    <main class="main-container">
+        <div class="carousel-container">
+            <div class="carousel-wrap">
+                <div class="carousel-list">
+                   <a href="indexPicture01.html" class="carousel-item"><img src="../assets/images/carousel_01.jpg" alt="圆几何知识点轮播图1" class="carousel-img"></a>
+                   <a href="indexPicture02.html" class="carousel-item"><img src="../assets/images/carousel_02.jpg" alt="圆几何知识点轮播图2" class="carousel-img"></a>
+                   <a href="indexPicture03.html" class="carousel-item"><img src="../assets/images/carousel_03.jpg" alt="圆几何知识点轮播图3" class="carousel-img"></a>
+                   <a href="indexPicture04.html" class="carousel-item"><img src="../assets/images/carousel_04.jpg" alt="圆几何知识点轮播图4" class="carousel-img"></a>
+                   <a href="indexPicture05.html" class="carousel-item"><img src="../assets/images/carousel_05.jpg" alt="圆几何知识点轮播图5" class="carousel-img"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="ai-search-container">
+            <h3 class="search-title" id="searchTitle">AI圆几何知识点问答</h3>
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="请输入圆几何相关知识点，如：圆的垂径定理..." autocomplete="off" id="searchPlaceholder">
+                <button class="search-btn" id="searchBtn">发送查询</button>
+            </div>
+        </div>
+
+        <!-- 新增：三个知识模块 -->
+        <div class="knowledge-modules-grid">
+            <a href="culture.html" class="knowledge-card" data-module="culture">
+                <i class="fas fa-landmark"></i>
+                <h4 id="moduleCultureTitle">圆文化小知识</h4>
+                <p id="moduleCultureDesc">探索圆的历史演变与数学史地位</p>
+            </a>
+            <a href="theorems.html" class="knowledge-card" data-module="theorems">
+                <i class="fas fa-drafting-compass"></i>
+                <h4 id="moduleTheoremsTitle">圆经典定理</h4>
+                <p id="moduleTheoremsDesc">由易到难，系统掌握圆的核心定理</p>
+            </a>
+            <a href="methods.html" class="knowledge-card" data-module="methods">
+                <i class="fas fa-lightbulb"></i>
+                <h4 id="moduleMethodsTitle">圆学习方法</h4>
+                <p id="moduleMethodsDesc">构建系统思维链路，趣味化学习圆</p>
+            </a>
+        </div>
+
+        <div class="circle66-entry-container">
+            <a href="circle-66.html" class="circle66-entry">
+                <div class="circle66-entry-info">
+                    <i class="fas fa-drafting-compass circle66-entry-icon"></i>
+                    <div class="circle66-entry-text">
+                        <h4 id="circle66EntryTitle">圆中考题速递</h4>
+                        <p id="circle66EntryDesc">按专题刷 66 道中考经典题</p>
+                    </div>
+                </div>
+                <div class="circle66-entry-tag" id="circle66EntryTag">立即进入</div>
+            </a>
+        </div>
+
+        <!-- 新增：VIP充值模块 -->
+        <div class="vip-banner-container">
+            <a href="vip.html" class="vip-banner">
+                <div class="vip-info">
+                    <i class="fas fa-crown vip-icon"></i>
+                    <div class="vip-text">
+                        <h4 id="vipTitle">开通 VIP 会员</h4>
+                        <p id="vipDesc">解锁最新题目，抢先玩最新游戏，畅享极致学习体验</p>
+                    </div>
+                </div>
+                <div class="vip-price-tag" id="vipPriceTag">
+                    低至 0.2 元 / 天
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <!-- AI回复弹窗：默认隐藏，可关闭，自适应屏幕 -->
+    <div class="ai-modal" id="aiModal">
+        <div class="ai-modal-content">
+            <span class="modal-close" id="modalClose">&times;</span>
+            <h4 class="modal-title" id="modalTitle">AI知识点解答</h4>
+            <div class="modal-result" id="modalResult"></div>
+        </div>
+    </div>
+
+    <!-- 联系我们弹窗 -->
+    <div class="contact-modal" id="contactModal">
+        <div class="contact-modal-content">
+            <span class="modal-close" id="contactModalClose">&times;</span>
+            <h4 class="contact-title" id="contactTitle">联系我们</h4>
+            <div class="contact-info" id="contactInfo">
+                如果遇到问题，请联系我们的邮箱：<br>
+                <strong>3058168199@qq.com</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- 核心JS：轮播/模式/AI接口/弹窗，全部嵌入 -->
+    <script>
+        // ********** 语言文本映射表 **********
+        const langTexts = {
+            'zh-CN': {
+                logoText: '圆几何交互式学习平台',
+                navHome: '首页',
+                navGame: '游戏',
+                navQuiz: '测试',
+                langZh: '简体中文',
+                langEn: 'English',
+                menuEye: '护眼模式',
+                menuNight: '夜晚模式',
+                menuDefault: '默认模式',
+                fontSizeLabel: '字体大小调节',
+                fontSizeValue: '当前字体：{size}px',
+                contactUs: '联系我们',
+                menuHelp: '使用说明',
+                adLink: '关于广告',
+                searchTitle: 'AI圆几何知识点问答',
+                searchPlaceholder: '请输入圆几何相关知识点，如：圆的垂径定理...',
+                searchBtn: '发送查询',
+                modalTitle: 'AI知识点解答',
+                contactTitle: '联系我们',
+                contactInfo: '如果遇到问题，请联系我们的邮箱：<br><strong>3058168199@qq.com</strong>',
+                errorEmpty: '请输入圆几何相关的查询问题！',
+                loading: 'AI正在为你查询，请稍候...',
+                errorNoAnswer: 'AI查询失败：响应中无文本回答！',
+                errorFormat: 'AI查询失败：响应格式异常！响应数据：<br>{data}',
+                errorApi: 'AI查询失败：{code} - {msg}！',
+                errorNetwork: '调用失败（总耗时：{time}ms）：{msg}',
+                errorConsole: '可打开F12控制台查看完整日志',
+                errorCORS: '网络错误：跨域限制！请搭建后端代理或临时禁用浏览器跨域测试。',
+                error401: 'API_KEY无效/过期！请检查你的API_KEY。',
+                errorOther: '网络错误：{msg}，请检查网络或API配置！',
+                // 新增模块翻译
+                moduleCultureTitle: '圆文化小知识',
+                moduleCultureDesc: '探索圆的历史演变与数学史地位',
+                moduleTheoremsTitle: '圆经典定理',
+                moduleTheoremsDesc: '由易到难，系统掌握圆的核心定理',
+                moduleMethodsTitle: '圆学习方法',
+                moduleMethodsDesc: '构建系统思维链路，趣味化学习圆',
+                circle66EntryTitle: '圆中考题速递',
+                circle66EntryDesc: '按专题刷 66 道中考经典题',
+                circle66EntryTag: '立即进入',
+                examCountdown: '距离中考还有 {days} 天',
+                examCountdownAction: '点我刷真题',
+                // VIP 翻译
+                vipTitle: '开通 VIP 会员',
+                vipDesc: '解锁最新题目，抢先玩最新游戏，畅享极致学习体验',
+                vipPriceTag: '低至 0.2 元 / 天',
+                drawingEntrance: '绘图工具',
+                drawingBubble: '点我尝试绘图',
+                backToTop: '回到顶部',
+                welcomeBack: '欢迎回来',
+                quickStartGame: '快速开始游戏',
+                cultureContent: `
+                    <div class="content-section">
+                        <h5>派（圆周率）的历史与趣味计算</h5>
+                        <p>圆周率（π）是圆的周长与直径之比。它的探索史几乎贯穿了整个人类文明史：</p>
+                        <ul class="content-list">
+                            <li><strong>古代估算</strong>：巴比伦人（3.125）、埃及人（3.16）。</li>
+                            <li><strong>阿基米德</strong>：公元前3世纪，利用正96边形将π确定在3.1408与3.1428之间。</li>
+                            <li><strong>祖冲之</strong>：南朝时期，将π精确到小数点后7位（3.1415926-3.1415927），领先世界近千年。</li>
+                        </ul>
+                    </div>
+                    <div class="content-section">
+                        <h5>古代割圆术介绍</h5>
+                        <p>由魏晋时期数学家刘徽提出，“割之弥细，所失弥少，割之又割，以至于不可割，则与圆周合体而无所失矣。”</p>
+                        <div class="diagram-placeholder">
+                            <svg viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1"/>
+                                <polygon points="50,10 90,50 50,90 10,50" fill="none" stroke="var(--muted)" stroke-width="0.5"/>
+                                <polygon points="50,10 70,18 90,50 78,70 50,90 30,82 10,50 22,30" fill="none" stroke="var(--primary-strong)" stroke-width="0.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="content-section">
+                        <h5>圆在数学史中的地位</h5>
+                        <p>圆被古希腊哲学家视为“最完美的平面图形”。它是解析几何、三角学以及现代物理学（如简谐运动）的基石。</p>
+                    </div>
+                `,
+                theoremsContent: `
+                    <div class="theorem-level">
+                        <h6><i class="fas fa-star"></i> 第一层：基础入门</h6>
+                        <ul class="content-list">
+                            <li><strong>圆的定义</strong>：平面内到定点距离等于定长的点的集合。</li>
+                            <li><strong>轴对称性</strong>：圆是轴对称图形，任何一条直径所在的直线都是对称轴。</li>
+                            <li><strong>半径与直径</strong>：$d = 2r$。</li>
+                            <li><strong>等圆与等弧</strong>：能够重合的圆叫等圆，能够重合的弧叫等弧。</li>
+                        </ul>
+                    </div>
+                    <div class="theorem-level">
+                        <h6><i class="fas fa-star"></i><i class="fas fa-star"></i> 第二层：核心进阶</h6>
+                        <ul class="content-list">
+                            <li><strong>垂径定理</strong>：垂直于弦的直径平分这条弦，并且平分弦所对的两条弧。
+                                <div class="diagram-placeholder">
+                                    <svg viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1"/>
+                                        <line x1="20" y1="30" x2="80" y2="30" stroke="var(--text)" stroke-width="1"/>
+                                        <line x1="50" y1="10" x2="50" y2="90" stroke="var(--primary-strong)" stroke-width="1"/>
+                                        <rect x="47" y="27" width="3" height="3" fill="none" stroke="var(--primary-strong)" stroke-width="0.5"/>
+                                    </svg>
+                                </div>
+                            </li>
+                            <li><strong>圆周角定理</strong>：同弧或等弧所对的圆周角等于它所对的圆心角的一半。</li>
+                            <li><strong>切线的判定</strong>：经过半径的外端并且垂直于这条半径的直线是圆的切线。</li>
+                            <li><strong>切线长定理</strong>：从圆外一点引圆的两条切线，它们的切线长相等。</li>
+                        </ul>
+                    </div>
+                    <div class="theorem-level">
+                        <h6><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> 第三层：综合拓展</h6>
+                        <ul class="content-list">
+                            <li><strong>圆幂定理</strong>：包括相交弦定理、切割线定理及其推论。</li>
+                            <li><strong>托勒密定理</strong>：圆内接四边形的两对边乘积之和等于对角线的乘积。
+                                <div class="diagram-placeholder">
+                                    <svg viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1"/>
+                                        <polygon points="50,10 85,35 70,85 20,60" fill="none" stroke="var(--muted)" stroke-width="0.8"/>
+                                        <line x1="50" y1="10" x2="70" y2="85" stroke="var(--primary-strong)" stroke-width="0.5" stroke-dasharray="2,2"/>
+                                        <line x1="85" y1="35" x2="20" y2="60" stroke="var(--primary-strong)" stroke-width="0.5" stroke-dasharray="2,2"/>
+                                    </svg>
+                                </div>
+                            </li>
+                            <li><strong>西姆松定理</strong>：过圆周上任一点作三角形三边的垂线，三个垂足共线。</li>
+                        </ul>
+                    </div>
+                `,
+                methodsContent: `
+                    <div class="content-section">
+                        <h5>学习思维链路</h5>
+                        <div class="method-step">
+                            <div class="step-num">1</div>
+                            <div class="step-info"><h6>直观感知</h6><p>从对称性入手，理解圆的完美性。观察生活中的轮子、井盖。</p></div>
+                        </div>
+                        <div class="method-step">
+                            <div class="step-num">2</div>
+                            <div class="step-info"><h6>属性拆解</h6><p>掌握半径、弦、弧、角之间的数量关系与位置关系。</p></div>
+                        </div>
+                        <div class="method-step">
+                            <div class="step-num">3</div>
+                            <div class="step-info"><h6>逻辑证明</h6><p>通过全等三角形和相似三角形，推导圆的核心定理。</p></div>
+                        </div>
+                    </div>
+                    <div class="content-section">
+                        <h5>趣味案例：为什么井盖是圆的？</h5>
+                        <p>因为圆的直径在各个方向都相等。如果是方形，其对角线长于边长，井盖竖起来时容易掉入井内。圆形的井盖无论怎么翻转，都不会掉下去。</p>
+                    </div>
+                `
+            },
+            'en': {
+                logoText: 'Circle-learning Platform',
+                navHome: 'Home',
+                navGame: 'Game',
+                navQuiz: 'Quiz',
+                langZh: 'Chinese',
+                langEn: 'English',
+                menuEye: 'Eye Protection Mode',
+                menuNight: 'Night Mode',
+                menuDefault: 'Default Mode',
+                fontSizeLabel: 'Font Size Adjustment',
+                fontSizeValue: 'Current Font: {size}px',
+                contactUs: 'Contact Us',
+                menuHelp: 'Usage Instructions',
+                adLink: 'About Ads',
+                searchTitle: 'AI Q&A for Circle Geometry Knowledge',
+                searchPlaceholder: 'Enter circle geometry knowledge, e.g.: Vertical Chord Theorem...',
+                searchBtn: 'Send Query',
+                modalTitle: 'AI Knowledge Answer',
+                contactTitle: 'Contact Us',
+                contactInfo: 'If you encounter problems, please contact our email:<br><strong>3058168199@qq.com</strong>',
+                errorEmpty: 'Please enter a query related to circle geometry!',
+                loading: 'AI is querying for you, please wait...',
+                errorNoAnswer: 'AI query failed: No text answer in response!',
+                errorFormat: 'AI query failed: Abnormal response format! Response data:<br>{data}',
+                errorApi: 'AI query failed: {code} - {msg}!',
+                errorNetwork: 'Call failed (Total time: {time}ms): {msg}',
+                errorConsole: 'Open F12 console to view complete logs',
+                errorCORS: 'Network error: CORS restriction! Please set up a backend proxy or disable browser CORS temporarily for testing.',
+                error401: 'API_KEY is invalid/expired! Please check your API_KEY.',
+                errorOther: 'Network error: {msg}, please check network or API configuration!',
+                // Module translations
+                moduleCultureTitle: 'Circle Culture Trivia',
+                moduleCultureDesc: 'Explore the history and status of circles in math history',
+                moduleTheoremsTitle: 'Classic Circle Theorems',
+                moduleTheoremsDesc: 'Master core theorems from easy to difficult',
+                moduleMethodsTitle: 'Circle Learning Methods',
+                moduleMethodsDesc: 'Build a systematic thinking chain for fun learning',
+                circle66EntryTitle: 'Circle Exam Express',
+                circle66EntryDesc: '66 classic exam questions by topic',
+                circle66EntryTag: 'Enter',
+                examCountdown: 'Days left: {days}',
+                examCountdownAction: 'Practice Now',
+                // VIP Translation
+                vipTitle: 'Upgrade to VIP Member',
+                vipDesc: 'Unlock latest questions, early access to new games, and enjoy premium learning experience.',
+                vipPriceTag: 'As low as 0.2 CNY / Day',
+                drawingEntrance: 'Drawing Tool',
+                drawingBubble: 'Click to draw',
+                backToTop: 'Back To Top',
+                welcomeBack: 'Welcome back',
+                quickStartGame: 'Quick start game',
+                cultureContent: `
+                    <div class="content-section">
+                        <h5>History of Pi (π)</h5>
+                        <p>Pi is the ratio of a circle\'s circumference to its diameter:</p>
+                        <ul class="content-list">
+                            <li><strong>Ancient Estimates</strong>: Babylon (3.125), Egypt (3.16).</li>
+                            <li><strong>Archimedes</strong>: 3rd century BC, used 96-sided polygons to bound π between 3.1408 and 3.1428.</li>
+                            <li><strong>Zu Chongzhi</strong>: 5th century AD, calculated π to 7 decimal places, a record for 1000 years.</li>
+                        </ul>
+                    </div>
+                    <div class="content-section">
+                        <h5>Ancient Cyclotomy</h5>
+                        <p>Proposed by mathematician Liu Hui: "The finer the cut, the smaller the loss."</p>
+                        <div class="diagram-placeholder">
+                            <svg viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1"/>
+                                <polygon points="50,10 90,50 50,90 10,50" fill="none" stroke="var(--muted)" stroke-width="0.5"/>
+                                <polygon points="50,10 70,18 90,50 78,70 50,90 30,82 10,50 22,30" fill="none" stroke="var(--primary-strong)" stroke-width="0.5"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="content-section">
+                        <h5>Status of Circles</h5>
+                        <p>Considered the "most perfect shape" by Greek philosophers. It is the foundation of geometry, trigonometry, and physics.</p>
+                    </div>
+                `,
+                theoremsContent: `
+                    <div class="theorem-level">
+                        <h6><i class="fas fa-star"></i> Level 1: Basics</h6>
+                        <ul class="content-list">
+                            <li><strong>Definition</strong>: Points equidistant from a center.</li>
+                            <li><strong>Symmetry</strong>: Any diameter is an axis of symmetry.</li>
+                            <li><strong>Radius & Diameter</strong>: $d = 2r$.</li>
+                        </ul>
+                    </div>
+                    <div class="theorem-level">
+                        <h6><i class="fas fa-star"></i><i class="fas fa-star"></i> Level 2: Core</h6>
+                        <ul class="content-list">
+                            <li><strong>Vertical Chord Theorem</strong>: Perpendicular diameter bisects the chord.
+                                <div class="diagram-placeholder">
+                                    <svg viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary)" stroke-width="1"/>
+                                        <line x1="20" y1="30" x2="80" y2="30" stroke="var(--text)" stroke-width="1"/>
+                                        <line x1="50" y1="10" x2="50" y2="90" stroke="var(--primary-strong)" stroke-width="1"/>
+                                    </svg>
+                                </div>
+                            </li>
+                            <li><strong>Inscribed Angle Theorem</strong>: Central angle is twice the inscribed angle.</li>
+                            <li><strong>Tangent Property</strong>: Radius is perpendicular to the tangent at the contact point.</li>
+                        </ul>
+                    </div>
+                    <div class="theorem-level">
+                        <h6><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> Level 3: Advanced</h6>
+                        <ul class="content-list">
+                            <li><strong>Power of a Point</strong>: Includes intersecting chords and secant-tangent theorems.</li>
+                            <li><strong>Ptolemy\'s Theorem</strong>: In a cyclic quadrilateral, the sum of products of opposite sides equals the product of diagonals.</li>
+                        </ul>
+                    </div>
+                `,
+                methodsContent: `
+                    <div class="content-section">
+                        <h5>Learning Chain</h5>
+                        <div class="method-step">
+                            <div class="step-num">1</div>
+                            <div class="step-info"><h6>Perception</h6><p>Start with symmetry and the perfection of circles. Observe wheels and lids.</p></div>
+                        </div>
+                        <div class="method-step">
+                            <div class="step-num">2</div>
+                            <div class="step-info"><h6>Properties</h6><p>Master the relations between radius, chord, arc, and angle.</p></div>
+                        </div>
+                        <div class="method-step">
+                            <div class="step-num">3</div>
+                            <div class="step-info"><h6>Proofs</h6><p>Derive core theorems using congruent and similar triangles.</p></div>
+                        </div>
+                    </div>
+                    <div class="content-section">
+                        <h5>Why are manhole covers round?</h5>
+                        <p>Because the diameter is constant in all directions. A round lid cannot fall through its opening, unlike a square one.</p>
+                    </div>
+                `
+            }
+        };
+
+        // ********** 全局变量 **********
+        const carouselList = document.querySelector('.carousel-list');
+        const carouselItems = document.querySelectorAll('.carousel-item');
+        const aiModal = document.getElementById('aiModal');
+        const modalClose = document.getElementById('modalClose');
+        const searchBtn = document.querySelector('.search-btn');
+        const searchInput = document.querySelector('.search-input');
+        const modalResult = document.getElementById('modalResult');
+        const navMain = document.querySelector('.nav-main');
+        const navLinks = navMain ? navMain.querySelectorAll('.nav-link') : [];
+        const settingWrap = document.querySelector('.setting-wrap');
+        const settingMenu = document.querySelector('.setting-menu');
+        const settingTrackItems = settingMenu
+            ? settingMenu.querySelectorAll('.menu-item, .font-size-slider-wrap')
+            : [];
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeSliderWrap = document.querySelector('.font-size-slider-wrap');
+        const sliderDragDroplet = document.getElementById('sliderDragDroplet');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        const contactUs = document.getElementById('contactUs');
+        const contactModal = document.getElementById('contactModal');
+        const contactModalClose = document.getElementById('contactModalClose');
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        const examCountdown = document.getElementById('examCountdown');
+        const examCountdownText = document.getElementById('examCountdownText');
+        let currentIndex = 0;
+        const totalCarousel = carouselItems.length;
+        let menuHideTimer = null; // 设置菜单隐藏延迟定时器
+        let currentLang = localStorage.getItem('appLang') || 'zh-CN'; // 默认中文
+        let currentTheme = localStorage.getItem('appTheme') || 'default'; // 默认主题
+        let themeTransitionReady = false;
+        const examTargetDate = new Date(2026, 5, 24);
+        examTargetDate.setHours(0, 0, 0, 0);
+        function computeExamDays() {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            const diff = examTargetDate.getTime() - now.getTime();
+            if (diff <= 0) return 0;
+            return Math.ceil(diff / (1000 * 60 * 60 * 24));
+        }
+        const examDaysLeft = computeExamDays();
+        let examAnimating = false;
+        let examMode = 'countdown';
+
+        function getExamCountdownText(texts) {
+            return texts.examCountdown.replace('{days}', examDaysLeft);
+        }
+
+        function getExamActionText(texts) {
+            return texts.examCountdownAction;
+        }
+
+        // ********** 1. 初始化语言和主题 **********
+        updateLang(currentLang);
+        applyTheme(currentTheme);
+        initSettingMenuDroplet();
+        initFontSliderDroplet();
+        initExamCountdown();
+
+        // ********** 导航栏：水滴凹透镜滑行效果 **********
+        function initNavDroplet() {
+            if (!navMain || !navLinks.length) return;
+            let lastLeft = null;
+            let lastWidth = null;
+            let navDropletResetTimer = null;
+
+            const moveDropletTo = (target) => {
+                const navRect = navMain.getBoundingClientRect();
+                const rect = target.getBoundingClientRect();
+                const nextLeft = rect.left - navRect.left;
+                const nextWidth = rect.width;
+                const dx = lastLeft === null ? 0 : Math.abs(nextLeft - lastLeft);
+                const dw = lastWidth === null ? 0 : Math.abs(nextWidth - lastWidth);
+                const intensity = Math.min(1, (dx + dw * 0.45) / 72);
+                const squeezeX = (1 + 0.22 * intensity).toFixed(3);
+                const squeezeY = (1 - 0.14 * intensity).toFixed(3);
+
+                navMain.style.setProperty('--nav-drop-x', `${nextLeft}px`);
+                navMain.style.setProperty('--nav-drop-w', `${rect.width}px`);
+                navMain.style.setProperty('--nav-drop-sx', squeezeX);
+                navMain.style.setProperty('--nav-drop-sy', squeezeY);
+                navMain.classList.add('is-nav-droplet-moving');
+                const targetIndex = Array.from(navLinks).indexOf(target);
+                navLinks.forEach((link, index) => {
+                    const distance = Math.abs(index - targetIndex);
+                    link.classList.toggle('nav-hovered', distance === 0);
+                    link.classList.toggle('nav-peak', distance === 0);
+                    link.classList.toggle('nav-side', distance === 1);
+                });
+
+                clearTimeout(navDropletResetTimer);
+                navDropletResetTimer = setTimeout(() => {
+                    navMain.style.setProperty('--nav-drop-sx', '1');
+                    navMain.style.setProperty('--nav-drop-sy', '1');
+                    navMain.classList.remove('is-nav-droplet-moving');
+                }, 150);
+
+                lastLeft = nextLeft;
+                lastWidth = nextWidth;
+            };
+
+            navLinks.forEach(link => {
+                link.addEventListener('mouseenter', () => moveDropletTo(link));
+                link.addEventListener('focus', () => moveDropletTo(link));
+            });
+
+            navMain.addEventListener('mouseleave', () => {
+                navLinks.forEach(link => {
+                    link.classList.remove('nav-hovered', 'nav-peak', 'nav-side');
+                });
+                navMain.style.setProperty('--nav-drop-sx', '1');
+                navMain.style.setProperty('--nav-drop-sy', '1');
+                navMain.classList.remove('is-nav-droplet-moving');
+            });
+
+            moveDropletTo(navLinks[0]);
+        }
+
+        function initSettingMenuDroplet() {
+            if (!settingMenu || !settingTrackItems.length) return;
+            let lastTop = null;
+            let lastHeight = null;
+            let dropletResetTimer = null;
+
+            const moveSettingDropletTo = (target) => {
+                const menuRect = settingMenu.getBoundingClientRect();
+                const rect = target.getBoundingClientRect();
+                const isFontSizeWrap = target.classList.contains('font-size-slider-wrap');
+                const dropOffsetY = isFontSizeWrap ? 0 : -6;
+                const nextTop = rect.top - menuRect.top + dropOffsetY;
+                const nextHeight = rect.height;
+                const dy = lastTop === null ? 0 : Math.abs(nextTop - lastTop);
+                const dh = lastHeight === null ? 0 : Math.abs(nextHeight - lastHeight);
+                const intensity = Math.min(1, (dy + dh * 0.6) / 56);
+                const squeezeX = (1 + 0.18 * intensity).toFixed(3);
+                const squeezeY = (1 - 0.12 * intensity).toFixed(3);
+
+                settingMenu.classList.toggle('hide-droplet', isFontSizeWrap);
+                settingMenu.style.setProperty('--setting-drop-y', `${nextTop}px`);
+                settingMenu.style.setProperty('--setting-drop-h', `${rect.height}px`);
+                settingMenu.style.setProperty('--setting-drop-radius', isFontSizeWrap ? '12px' : '10px');
+                settingMenu.style.setProperty('--setting-drop-sx', squeezeX);
+                settingMenu.style.setProperty('--setting-drop-sy', squeezeY);
+                settingMenu.classList.add('is-droplet-moving');
+                settingTrackItems.forEach(item => item.classList.toggle('setting-hovered', item === target));
+
+                clearTimeout(dropletResetTimer);
+                dropletResetTimer = setTimeout(() => {
+                    settingMenu.style.setProperty('--setting-drop-sx', '1');
+                    settingMenu.style.setProperty('--setting-drop-sy', '1');
+                    settingMenu.classList.remove('is-droplet-moving');
+                }, 150);
+
+                lastTop = nextTop;
+                lastHeight = nextHeight;
+            };
+
+            settingTrackItems.forEach(item => {
+                item.addEventListener('mouseenter', () => moveSettingDropletTo(item));
+                item.addEventListener('focusin', () => moveSettingDropletTo(item));
+            });
+
+            settingMenu.addEventListener('mouseleave', () => {
+                settingTrackItems.forEach(item => item.classList.remove('setting-hovered'));
+                settingMenu.style.setProperty('--setting-drop-sx', '1');
+                settingMenu.style.setProperty('--setting-drop-sy', '1');
+                settingMenu.classList.remove('is-droplet-moving');
+                settingMenu.classList.remove('hide-droplet');
+            });
+
+            settingWrap.addEventListener('mouseenter', () => {
+                moveSettingDropletTo(settingTrackItems[0]);
+            });
+        }
+
+        function initFontSliderDroplet() {
+            if (!fontSizeSlider || !fontSizeSliderWrap || !sliderDragDroplet) return;
+            let isDragging = false;
+
+            const updateFontSliderDropletPosition = () => {
+                const sliderRect = fontSizeSlider.getBoundingClientRect();
+                const wrapRect = fontSizeSliderWrap.getBoundingClientRect();
+                const min = Number(fontSizeSlider.min || 0);
+                const max = Number(fontSizeSlider.max || 100);
+                const value = Number(fontSizeSlider.value || min);
+                const ratio = max === min ? 0 : (value - min) / (max - min);
+                const x = sliderRect.left - wrapRect.left + ratio * sliderRect.width;
+                const y = sliderRect.top - wrapRect.top + sliderRect.height / 2;
+                sliderDragDroplet.style.left = `${x}px`;
+                sliderDragDroplet.style.top = `${y}px`;
+            };
+
+            const showDroplet = () => {
+                isDragging = true;
+                updateFontSliderDropletPosition();
+                sliderDragDroplet.classList.add('active');
+            };
+
+            const hideDroplet = () => {
+                isDragging = false;
+                sliderDragDroplet.classList.remove('active');
+            };
+
+            fontSizeSlider.addEventListener('mousedown', showDroplet);
+            fontSizeSlider.addEventListener('touchstart', showDroplet, { passive: true });
+            fontSizeSlider.addEventListener('input', () => {
+                if (isDragging) updateFontSliderDropletPosition();
+            });
+            document.addEventListener('mousemove', () => {
+                if (isDragging) updateFontSliderDropletPosition();
+            });
+            document.addEventListener('touchmove', () => {
+                if (isDragging) updateFontSliderDropletPosition();
+            }, { passive: true });
+            document.addEventListener('mouseup', hideDroplet);
+            document.addEventListener('touchend', hideDroplet);
+            document.addEventListener('touchcancel', hideDroplet);
+        }
+
+        function initExamCountdown() {
+            if (!examCountdown || !examCountdownText) return;
+            const explodeText = (raw) => {
+                const chars = (raw || '').split('');
+                examCountdownText.textContent = '';
+                const spans = [];
+                chars.forEach(ch => {
+                    const span = document.createElement('span');
+                    span.className = 'exam-char';
+                    span.textContent = ch;
+                    spans.push(span);
+                    examCountdownText.appendChild(span);
+                });
+                void examCountdownText.offsetWidth;
+                spans.forEach(span => {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 10 + Math.random() * 24;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    span.style.transform = `translate(${x}px, ${y}px) scale(0.65)`;
+                    span.style.opacity = '0';
+                });
+            };
+
+            const composeText = (text) => {
+                const chars = (text || '').split('');
+                examCountdownText.textContent = '';
+                const spans = [];
+                chars.forEach(ch => {
+                    const span = document.createElement('span');
+                    span.className = 'exam-char';
+                    span.textContent = ch;
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 10 + Math.random() * 22;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    span.style.transform = `translate(${x}px, ${y}px) scale(0.65)`;
+                    span.style.opacity = '0';
+                    spans.push(span);
+                    examCountdownText.appendChild(span);
+                });
+                void examCountdownText.offsetWidth;
+                spans.forEach(span => {
+                    span.style.transform = 'translate(0px, 0px) scale(1)';
+                    span.style.opacity = '1';
+                });
+            };
+
+            const animateTo = (targetText) => {
+                if (examAnimating) return;
+                const current = examCountdownText.textContent || '';
+                if (current === targetText) return;
+                examAnimating = true;
+                explodeText(current);
+                setTimeout(() => {
+                    composeText(targetText);
+                    examCountdown.setAttribute('aria-label', targetText);
+                    examCountdown.title = targetText;
+                }, 260);
+                setTimeout(() => {
+                    examAnimating = false;
+                }, 980);
+            };
+
+            examCountdown.addEventListener('mouseenter', () => {
+                const texts = langTexts[currentLang] || langTexts['zh-CN'];
+                examMode = 'action';
+                animateTo(getExamActionText(texts));
+            });
+
+            examCountdown.addEventListener('mouseleave', () => {
+                const texts = langTexts[currentLang] || langTexts['zh-CN'];
+                examMode = 'countdown';
+                animateTo(getExamCountdownText(texts));
+            });
+
+            examCountdown.addEventListener('click', () => {
+                window.location.href = 'circle-66.html';
+            });
+        }
+
+        const themeTransition = (function() {
+            const canvas = document.getElementById('theme-transition-canvas');
+            if (!canvas) return { play: () => {} };
+            const ctx = canvas.getContext('2d');
+            const off = document.createElement('canvas');
+            const offCtx = off.getContext('2d');
+            let width = 0;
+            let height = 0;
+            let dpr = 1;
+            let rafId = null;
+            let startTs = 0;
+            let particles = [];
+            let meta = null;
+
+            function resize() {
+                dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = Math.floor(width * dpr);
+                canvas.height = Math.floor(height * dpr);
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+            function easeInOutCubic(t) {
+                return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            }
+            function lerp(a, b, t) { return a + (b - a) * t; }
+
+            function rgba(rgb, a) { return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${a})`; }
+
+            function getColorForSymbol(symbol) {
+                if (symbol === 'grass') return { r: 34, g: 197, b: 94 };
+                if (symbol === 'moon') return { r: 200, g: 230, b: 255 };
+                return { r: 37, g: 99, b: 235 };
+            }
+
+            function drawShape(type, w, h) {
+                off.width = w;
+                off.height = h;
+                offCtx.clearRect(0, 0, w, h);
+                offCtx.save();
+                offCtx.fillStyle = '#fff';
+                offCtx.globalCompositeOperation = 'source-over';
+
+                if (type === 'pi') {
+                    const size = Math.floor(h * 0.72);
+                    offCtx.font = `900 ${size}px serif`;
+                    offCtx.textAlign = 'center';
+                    offCtx.textBaseline = 'middle';
+                    offCtx.fillText('π', w / 2, h / 2 + h * 0.05);
+                } else if (type === 'moon') {
+                    const r = Math.min(w, h) * 0.26;
+                    const cx = w / 2;
+                    const cy = h / 2;
+                    offCtx.beginPath();
+                    offCtx.arc(cx, cy, r, 0, Math.PI * 2);
+                    offCtx.fill();
+                    offCtx.globalCompositeOperation = 'destination-out';
+                    offCtx.beginPath();
+                    offCtx.arc(cx + r * 0.38, cy - r * 0.06, r * 0.92, 0, Math.PI * 2);
+                    offCtx.fill();
+                    offCtx.globalCompositeOperation = 'source-over';
+                } else if (type === 'grass') {
+                    const cx = w / 2;
+                    const cy = h / 2 + h * 0.12;
+                    const baseW = Math.min(w, h) * 0.36;
+                    const baseH = Math.min(w, h) * 0.32;
+
+                    const blades = [
+                        { x: cx - baseW * 0.22, bend: -0.22, h: baseH * 1.02, w: baseW * 0.18 },
+                        { x: cx, bend: 0.06, h: baseH * 1.22, w: baseW * 0.22 },
+                        { x: cx + baseW * 0.22, bend: 0.22, h: baseH * 1.05, w: baseW * 0.18 }
+                    ];
+
+                    for (const b of blades) {
+                        const x0 = b.x;
+                        const y0 = cy + baseH * 0.32;
+                        const x1 = x0 + b.w * b.bend * 3;
+                        const y1 = y0 - b.h;
+                        offCtx.beginPath();
+                        offCtx.moveTo(x0 - b.w, y0);
+                        offCtx.quadraticCurveTo(x0 - b.w * 0.2, y0 - b.h * 0.55, x1, y1);
+                        offCtx.quadraticCurveTo(x0 + b.w * 0.2, y0 - b.h * 0.55, x0 + b.w, y0);
+                        offCtx.closePath();
+                        offCtx.fill();
+                    }
+                }
+
+                offCtx.restore();
+            }
+
+            function getPoints(type) {
+                const w = 520;
+                const h = 360;
+                drawShape(type, w, h);
+                const img = offCtx.getImageData(0, 0, w, h).data;
+                const step = 6;
+                const pts = [];
+                for (let y = 0; y < h; y += step) {
+                    for (let x = 0; x < w; x += step) {
+                        const a = img[(y * w + x) * 4 + 3];
+                        if (a > 90) pts.push({ x: x - w / 2, y: y - h / 2 });
+                    }
+                }
+                return pts;
+            }
+
+            function getBounds(pts) {
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                for (const p of pts) {
+                    if (p.x < minX) minX = p.x;
+                    if (p.y < minY) minY = p.y;
+                    if (p.x > maxX) maxX = p.x;
+                    if (p.y > maxY) maxY = p.y;
+                }
+                return { minX, minY, maxX, maxY, w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) };
+            }
+
+            function stop() {
+                if (rafId) cancelAnimationFrame(rafId);
+                rafId = null;
+                canvas.classList.remove('active');
+                ctx.clearRect(0, 0, width, height);
+            }
+
+            function tick(ts) {
+                const p = clamp01((ts - startTs) / 980);
+                const e = easeInOutCubic(p);
+                ctx.clearRect(0, 0, width, height);
+
+                const rgb = {
+                    r: Math.round(lerp(meta.fromColor.r, meta.toColor.r, e)),
+                    g: Math.round(lerp(meta.fromColor.g, meta.toColor.g, e)),
+                    b: Math.round(lerp(meta.fromColor.b, meta.toColor.b, e))
+                };
+
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                for (const pt of particles) {
+                    const wave = Math.sin(pt.seed + e * Math.PI * 2) * (1 - e) * 6;
+                    const x = lerp(pt.sx, pt.tx, e) + wave * 0.22;
+                    const y = lerp(pt.sy, pt.ty, e) - wave * 0.22;
+                    const alpha = (0.25 + 0.75 * (1 - Math.abs(0.5 - e) * 2)) * 0.95;
+                    ctx.beginPath();
+                    ctx.arc(x, y, pt.r, 0, Math.PI * 2);
+                    ctx.fillStyle = rgba(rgb, alpha);
+                    ctx.shadowColor = rgba(rgb, 0.7);
+                    ctx.shadowBlur = 16;
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                if (p < 1) {
+                    rafId = requestAnimationFrame(tick);
+                } else {
+                    canvas.classList.remove('active');
+                    setTimeout(() => stop(), 200);
+                }
+            }
+
+            function play(fromTheme, toTheme) {
+                const map = { default: 'pi', night: 'moon', eye: 'grass' };
+                const fromType = map[fromTheme] || 'pi';
+                const toType = map[toTheme] || 'pi';
+                if (fromType === toType) return;
+
+                stop();
+                meta = {
+                    fromType,
+                    toType,
+                    fromColor: getColorForSymbol(fromType),
+                    toColor: getColorForSymbol(toType)
+                };
+
+                const fromPts = getPoints(fromType);
+                const toPts = getPoints(toType);
+                const fromB = getBounds(fromPts);
+                const toB = getBounds(toPts);
+                const targetSize = Math.min(width, height) * 0.26;
+                const scale = targetSize / Math.max(fromB.w, fromB.h, toB.w, toB.h);
+                const cx = width / 2;
+                const cy = height / 2;
+                const count = Math.max(fromPts.length, toPts.length, 540);
+                const jitter = 2.5;
+                const p = [];
+                for (let i = 0; i < count; i++) {
+                    const a = fromPts[i % fromPts.length];
+                    const b = toPts[i % toPts.length];
+                    p.push({
+                        sx: cx + a.x * scale + (Math.random() - 0.5) * jitter,
+                        sy: cy + a.y * scale + (Math.random() - 0.5) * jitter,
+                        tx: cx + b.x * scale + (Math.random() - 0.5) * 1.2,
+                        ty: cy + b.y * scale + (Math.random() - 0.5) * 1.2,
+                        r: 1.2 + Math.random() * 1.8,
+                        seed: Math.random() * Math.PI * 2
+                    });
+                }
+                particles = p;
+
+                startTs = performance.now();
+                canvas.classList.add('active');
+                rafId = requestAnimationFrame(tick);
+            }
+
+            return { play };
+        })();
+        themeTransitionReady = true;
+        // ********** 模式切换（护眼/夜晚）函数 **********
+        function applyTheme(theme) {
+            const prevTheme = currentTheme;
+            currentTheme = theme;
+            localStorage.setItem('appTheme', theme);
+            const body = document.body;
+            body.classList.remove('eye-mode', 'night-mode');
+            if (theme === 'eye') body.classList.add('eye-mode');
+            if (theme === 'night') body.classList.add('night-mode');
+            if (themeTransitionReady && prevTheme !== theme) {
+                themeTransition.play(prevTheme, theme);
+            }
+        }
+
+        // ********** 语言切换函数 **********
+        function updateLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('appLang', lang); // 保存到本地存储
+            try { window.name = JSON.stringify({ appLang: lang }); } catch (e) {}
+            const texts = langTexts[lang];
+            
+            // 更新页面文本
+            document.getElementById('logoText').textContent = texts.logoText;
+            document.getElementById('navHome').textContent = texts.navHome;
+            document.getElementById('navGame').textContent = texts.navGame;
+            document.getElementById('navQuiz').textContent = texts.navQuiz;
+            document.getElementById('langZh').textContent = texts.langZh;
+            document.getElementById('langEn').textContent = texts.langEn;
+            document.getElementById('menuEye').textContent = texts.menuEye;
+            document.getElementById('menuNight').textContent = texts.menuNight;
+            document.getElementById('menuDefault').textContent = texts.menuDefault;
+            document.getElementById('fontSizeLabel').textContent = texts.fontSizeLabel;
+            document.getElementById('fontSizeValue').textContent = texts.fontSizeValue.replace('{size}', fontSizeSlider.value);
+            document.getElementById('contactUs').textContent = texts.contactUs;
+            document.getElementById('menuHelp').textContent = texts.menuHelp;
+            document.getElementById('adLink').textContent = texts.adLink;
+            document.getElementById('searchTitle').textContent = texts.searchTitle;
+            document.getElementById('searchPlaceholder').placeholder = texts.searchPlaceholder;
+            document.getElementById('searchBtn').textContent = texts.searchBtn;
+            document.getElementById('modalTitle').textContent = texts.modalTitle;
+            document.getElementById('contactTitle').textContent = texts.contactTitle;
+            document.getElementById('contactInfo').innerHTML = texts.contactInfo;
+            
+            // 更新新增模块文本
+            document.getElementById('moduleCultureTitle').textContent = texts.moduleCultureTitle;
+            document.getElementById('moduleCultureDesc').textContent = texts.moduleCultureDesc;
+            document.getElementById('moduleTheoremsTitle').textContent = texts.moduleTheoremsTitle;
+            document.getElementById('moduleTheoremsDesc').textContent = texts.moduleTheoremsDesc;
+            document.getElementById('moduleMethodsTitle').textContent = texts.moduleMethodsTitle;
+            document.getElementById('moduleMethodsDesc').textContent = texts.moduleMethodsDesc;
+            const circle66EntryTitle = document.getElementById('circle66EntryTitle');
+            const circle66EntryDesc = document.getElementById('circle66EntryDesc');
+            const circle66EntryTag = document.getElementById('circle66EntryTag');
+            if (circle66EntryTitle) circle66EntryTitle.textContent = texts.circle66EntryTitle;
+            if (circle66EntryDesc) circle66EntryDesc.textContent = texts.circle66EntryDesc;
+            if (circle66EntryTag) circle66EntryTag.textContent = texts.circle66EntryTag;
+            if (examCountdownText && typeof examDaysLeft === 'number') {
+                examCountdownText.textContent = examMode === 'action'
+                    ? getExamActionText(texts)
+                    : getExamCountdownText(texts);
+                examCountdown.setAttribute('aria-label', examCountdownText.textContent);
+                examCountdown.title = examCountdownText.textContent;
+            }
+            document.getElementById('vipTitle').textContent = texts.vipTitle;
+            document.getElementById('vipDesc').textContent = texts.vipDesc;
+            document.getElementById('vipPriceTag').textContent = texts.vipPriceTag;
+            document.getElementById('drawingEntrance').style.setProperty('--tooltip', `"${texts.drawingEntrance}"`);
+            document.getElementById('drawingBubble').textContent = texts.drawingBubble;
+            if (backToTopBtn) {
+                backToTopBtn.textContent = texts.backToTop;
+                backToTopBtn.setAttribute('aria-label', texts.backToTop);
+            }
+            const quickStartTooltip = document.getElementById('quickStartTooltip');
+            if (quickStartTooltip) quickStartTooltip.textContent = texts.quickStartGame;
+            const quickStartWidget = document.getElementById('quickStartWidget');
+            if (quickStartWidget) quickStartWidget.setAttribute('aria-label', texts.quickStartGame);
+            const quickStartClickzone = document.getElementById('quickStartClickzone');
+            if (quickStartClickzone) quickStartClickzone.setAttribute('aria-label', texts.quickStartGame);
+
+            // 更新html lang属性
+            document.documentElement.lang = lang;
+            
+            // 更新语言按钮激活状态
+            document.querySelectorAll('.lang-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.lang === lang) {
+                    link.classList.add('active');
+                }
+            });
+
+            // 重新渲染页面中的数学公式
+            if (window.MathJax && window.MathJax.typeset) {
+                window.MathJax.typeset();
+            }
+        }
+
+        // ********** 2. 轮播图：自动循环2秒，循环播放5张 **********
+        function carouselPlay() {
+            currentIndex = (currentIndex + 1) % totalCarousel;
+            carouselList.style.transform = `translateX(-${currentIndex * 20}%)`;
+        }
+        // 页面加载后启动轮播
+        window.onload = function() {
+            setInterval(carouselPlay, 2000);
+            // 初始化弹窗隐藏
+            aiModal.style.display = 'none';
+            contactModal.style.display = 'none';
+        };
+
+        // ********** 3. 设置下拉菜单：鼠标悬浮至少停留1秒 **********
+        settingWrap.addEventListener('mouseenter', () => {
+            // 清除延迟隐藏定时器
+            clearTimeout(menuHideTimer);
+            settingMenu.style.display = 'block';
+        });
+
+        settingWrap.addEventListener('mouseleave', () => {
+            // 延迟1秒隐藏菜单
+            menuHideTimer = setTimeout(() => {
+                settingMenu.style.display = 'none';
+            }, 1000);
+        });
+
+        // 鼠标进入菜单时清除隐藏定时器（防止误关）
+        settingMenu.addEventListener('mouseenter', () => {
+            clearTimeout(menuHideTimer);
+        });
+
+        // 鼠标离开菜单时延迟1秒隐藏
+        settingMenu.addEventListener('mouseleave', () => {
+            menuHideTimer = setTimeout(() => {
+                settingMenu.style.display = 'none';
+            }, 1000);
+        });
+
+        // ********** 4. 模式切换（护眼/夜晚） **********
+        const menuItems = document.querySelectorAll('.menu-item[data-style]');
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                applyTheme(item.dataset.style);
+            });
+        });
+
+        // ********** 5. 字体大小滑块控制：等比例缩放所有汉字 **********
+        const root = document.documentElement;
+        // 初始化字体大小
+        const savedFontSize = localStorage.getItem('appFontSize') || '16';
+        fontSizeSlider.value = savedFontSize;
+        root.style.setProperty('--font-size', `${savedFontSize}px`);
+        root.style.fontSize = `${savedFontSize}px`;
+        fontSizeValue.textContent = langTexts[currentLang].fontSizeValue.replace('{size}', savedFontSize);
+
+        // 滑块事件
+        fontSizeSlider.addEventListener('input', () => {
+            const fontSize = fontSizeSlider.value;
+            localStorage.setItem('appFontSize', fontSize); // 保存到本地存储
+            root.style.setProperty('--font-size', `${fontSize}px`);
+            root.style.fontSize = `${fontSize}px`;
+            fontSizeValue.textContent = langTexts[currentLang].fontSizeValue.replace('{size}', fontSize);
+        });
+
+        // 监听其他页面对字体设置的更新
+        window.addEventListener('storage', (e) => {
+            if (e.key !== 'appFontSize') return;
+            const fontSize = e.newValue || '16';
+            fontSizeSlider.value = fontSize;
+            root.style.setProperty('--font-size', `${fontSize}px`);
+            root.style.fontSize = `${fontSize}px`;
+            fontSizeValue.textContent = langTexts[currentLang].fontSizeValue.replace('{size}', fontSize);
+        });
+
+        // ********** 6. 语言切换事件 **********
+        const langLinks = document.querySelectorAll('.lang-link');
+        langLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                updateLang(link.dataset.lang);
+            });
+        });
+
+        // ********** 7. AI弹窗：关闭功能 **********
+        modalClose.addEventListener('click', () => {
+            aiModal.style.display = 'none';
+            // 清空输入框和弹窗内容
+            searchInput.value = '';
+            modalResult.innerHTML = '';
+        });
+        // 点击遮罩层关闭弹窗
+        aiModal.addEventListener('click', (e) => {
+            if (e.target === aiModal) {
+                aiModal.style.display = 'none';
+                searchInput.value = '';
+                modalResult.innerHTML = '';
+            }
+        });
+
+        // ********** 8. 联系我们弹窗控制 **********
+        contactUs.addEventListener('click', () => {
+            contactModal.style.display = 'flex';
+        });
+
+        contactModalClose.addEventListener('click', () => {
+            contactModal.style.display = 'none';
+        });
+
+        // 点击遮罩层关闭联系弹窗
+        contactModal.addEventListener('click', (e) => {
+            if (e.target === contactModal) {
+                contactModal.style.display = 'none';
+            }
+        });
+
+        // ********** 9. 回到顶部按钮 **********
+        if (backToTopBtn) {
+            backToTopBtn.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+
+        (function() {
+            const targetHref = '../game/game fourth version final.html';
+
+            const clickzone = document.getElementById('quickStartClickzone');
+            if (clickzone) {
+                clickzone.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = targetHref;
+                });
+            }
+
+            const host = document.getElementById('welcomeToastHost');
+            if (!host) return;
+
+            function spawnToast() {
+                const texts = langTexts[currentLang] || langTexts['zh-CN'];
+                const toast = document.createElement('div');
+                toast.className = 'liquid-glass-bubble welcome-toast';
+                toast.textContent = texts.welcomeBack;
+                host.appendChild(toast);
+                while (host.children.length > 3) host.removeChild(host.firstElementChild);
+                setTimeout(() => toast.remove(), 1700);
+            }
+
+            setTimeout(spawnToast, 800);
+            setInterval(spawnToast, 2000);
+        })();
+
+        // ********** 11. 知识模块弹窗逻辑 **********
+        const knowledgeCards = document.querySelectorAll('.knowledge-card');
+
+        // 页面跳转逻辑：点击卡片时，确保语言和主题已保存到 localStorage
+        knowledgeCards.forEach(card => {
+            card.addEventListener('click', (e) => {
+                // 默认行为是跳转，这里只需要确保 localStorage 已更新（实际上已经在各自的设置函数里更新了）
+            });
+        });
+
+       // ********** 12. Logo 交互：粒子炸开与全屏水波纹 **********
+        (function() {
+            const logo = document.getElementById('finalLogoIcon');
+            const canvas = document.getElementById('ripple-bg-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            let width = 0;
+            let height = 0;
+            let dpr = 1;
+
+            let ringWaves = [];
+            let burstParticles = [];
+            let crackLines = [];
+            let rafId = null;
+            let lastTs = 0;
+
+            function resize() {
+                dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = Math.floor(width * dpr);
+                canvas.height = Math.floor(height * dpr);
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            function clamp01(v) {
+                return Math.max(0, Math.min(1, v));
+            }
+
+            function easeOutCubic(t) {
+                const p = 1 - t;
+                return 1 - p * p * p;
+            }
+
+            function parsePrimaryColor() {
+                const raw = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+                if (!raw) return { r: 37, g: 99, b: 235 };
+                const m = raw.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+                if (!m) return { r: 37, g: 99, b: 235 };
+                const hex = m[1].length === 3 ? m[1].split('').map(ch => ch + ch).join('') : m[1];
+                return {
+                    r: parseInt(hex.slice(0, 2), 16),
+                    g: parseInt(hex.slice(2, 4), 16),
+                    b: parseInt(hex.slice(4, 6), 16)
+                };
+            }
+
+            let primaryRGB = parsePrimaryColor();
+
+            class RingWave {
+                constructor(x, y) {
+                    this.x0 = x;
+                    this.y0 = y;
+                    this.x = x;
+                    this.y = y;
+                    this.t = 0;
+                    this.duration = 980;
+                    this.maxRadius = Math.hypot(width, height) * 0.86;
+                    this.driftY = Math.min(height * 0.28, 260);
+                }
+                update(dtMs) {
+                    this.t += dtMs;
+                    const p = clamp01(this.t / this.duration);
+                    const e = easeOutCubic(p);
+                    this.radius = e * this.maxRadius;
+                    this.y = this.y0 + e * this.driftY;
+                    this.alpha = (1 - p) * 0.9;
+                    this.lineWidth = 2 + (1 - p) * 8;
+                    return p < 1;
+                }
+                draw() {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'lighter';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.lineWidth = this.lineWidth;
+                    ctx.strokeStyle = `rgba(${primaryRGB.r}, ${primaryRGB.g}, ${primaryRGB.b}, ${this.alpha})`;
+                    ctx.shadowColor = `rgba(${primaryRGB.r}, ${primaryRGB.g}, ${primaryRGB.b}, ${this.alpha})`;
+                    ctx.shadowBlur = 18;
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, Math.max(0, this.radius - 18), 0, Math.PI * 2);
+                    ctx.lineWidth = Math.max(1, this.lineWidth * 0.35);
+                    ctx.strokeStyle = `rgba(${primaryRGB.r}, ${primaryRGB.g}, ${primaryRGB.b}, ${this.alpha * 0.35})`;
+                    ctx.shadowBlur = 10;
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            class BurstParticle {
+                constructor(x, y, angle, speed, radius) {
+                    this.x = x;
+                    this.y = y;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed;
+                    this.r = radius;
+                    this.life = 720 + Math.random() * 240;
+                    this.age = 0;
+                    this.drag = 0.985 + Math.random() * 0.01;
+                }
+                update(dtMs) {
+                    this.age += dtMs;
+                    const dt = dtMs / 16.6667;
+                    this.x += this.vx * dt;
+                    this.y += this.vy * dt;
+                    this.vx *= Math.pow(this.drag, dt);
+                    this.vy *= Math.pow(this.drag, dt);
+                    this.r *= Math.pow(0.994, dt);
+                    return this.age < this.life && this.r > 0.2;
+                }
+                draw() {
+                    const p = clamp01(this.age / this.life);
+                    const a = (1 - p) * 0.95;
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'lighter';
+                    ctx.globalAlpha = a;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${primaryRGB.r}, ${primaryRGB.g}, ${primaryRGB.b}, ${a})`;
+                    ctx.shadowColor = `rgba(${primaryRGB.r}, ${primaryRGB.g}, ${primaryRGB.b}, ${a})`;
+                    ctx.shadowBlur = 14;
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            class CrackLine {
+                constructor(x, y, angle, length) {
+                    this.x = x;
+                    this.y = y;
+                    this.angle = angle;
+                    this.length = length;
+                    this.age = 0;
+                    this.life = 260 + Math.random() * 120;
+                }
+                update(dtMs) {
+                    this.age += dtMs;
+                    return this.age < this.life;
+                }
+                draw() {
+                    const p = clamp01(this.age / this.life);
+                    const a = (1 - p) * 0.65;
+                    const wobble = Math.sin((p * 2.4 + this.angle) * 5) * 2.2;
+                    const len = this.length * (1 - p * 0.35);
+                    const ax = Math.cos(this.angle) * len;
+                    const ay = Math.sin(this.angle) * len;
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'lighter';
+                    ctx.lineCap = 'round';
+                    ctx.lineWidth = 1.4;
+                    ctx.strokeStyle = `rgba(${primaryRGB.r}, ${primaryRGB.g}, ${primaryRGB.b}, ${a})`;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    ctx.lineTo(this.x + ax + wobble, this.y + ay - wobble);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            function ensureAnimating(ts) {
+                if (rafId) return;
+                lastTs = ts || performance.now();
+                rafId = requestAnimationFrame(tick);
+            }
+
+            function tick(ts) {
+                const dtMs = Math.min(33, Math.max(8, ts - lastTs));
+                lastTs = ts;
+
+                ctx.clearRect(0, 0, width, height);
+
+                ringWaves = ringWaves.filter(w => {
+                    const alive = w.update(dtMs);
+                    w.draw();
+                    return alive;
+                });
+
+                crackLines = crackLines.filter(c => {
+                    const alive = c.update(dtMs);
+                    c.draw();
+                    return alive;
+                });
+
+                burstParticles = burstParticles.filter(p => {
+                    const alive = p.update(dtMs);
+                    p.draw();
+                    return alive;
+                });
+
+                if (ringWaves.length || burstParticles.length || crackLines.length) {
+                    rafId = requestAnimationFrame(tick);
+                } else {
+                    rafId = null;
+                }
+            }
+
+            function spawnEffect(x, y, baseRadius) {
+                primaryRGB = parsePrimaryColor();
+                ringWaves.push(new RingWave(x, y));
+
+                const ringCount = 120;
+                const burstCount = 48;
+
+                for (let i = 0; i < ringCount; i++) {
+                    const a = (i / ringCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.08;
+                    const speed = 7.2 + Math.random() * 3.2;
+                    const r = 1.0 + Math.random() * 1.8;
+                    const px = x + Math.cos(a) * baseRadius * (0.75 + Math.random() * 0.35);
+                    const py = y + Math.sin(a) * baseRadius * (0.75 + Math.random() * 0.35);
+                    burstParticles.push(new BurstParticle(px, py, a, speed, r));
+                }
+
+                for (let i = 0; i < burstCount; i++) {
+                    const a = Math.random() * Math.PI * 2;
+                    const speed = 2.4 + Math.random() * 4.6;
+                    const r = 0.9 + Math.random() * 2.2;
+                    burstParticles.push(new BurstParticle(x, y, a, speed, r));
+                }
+
+                const crackCount = 10 + Math.floor(Math.random() * 4);
+                for (let i = 0; i < crackCount; i++) {
+                    const a = (i / crackCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+                    const len = 10 + Math.random() * 18;
+                    crackLines.push(new CrackLine(x, y, a, len));
+                }
+
+                ensureAnimating();
+            }
+
+            logo.addEventListener('click', () => {
+                const rect = logo.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const baseRadius = Math.max(10, Math.min(22, rect.width * 0.55));
+
+                logo.classList.remove('pop');
+                void logo.offsetWidth;
+                logo.classList.add('pop');
+                setTimeout(() => logo.classList.remove('pop'), 720);
+
+                spawnEffect(centerX, centerY, baseRadius);
+            });
+        })();
+
+        // ********** 11. 绘图工具气泡循环动画 **********
+        (function() {
+            const bubble = document.getElementById('drawingBubble');
+            const particleCanvas = document.getElementById('bubble-particle-canvas');
+            const pctx = particleCanvas.getContext('2d');
+            let particles = [];
+            let particleAnimation;
+
+            class Particle {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.vx = (Math.random() - 0.5) * 4;
+                    this.vy = (Math.random() - 0.5) * 4;
+                    this.radius = Math.random() * 3 + 1;
+                    this.alpha = 1;
+                    this.color = getComputedStyle(document.documentElement).getPropertyValue('--primary');
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.alpha -= 0.02;
+                }
+                draw() {
+                    pctx.save();
+                    pctx.globalAlpha = this.alpha;
+                    pctx.beginPath();
+                    pctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    pctx.fillStyle = this.color;
+                    pctx.fill();
+                    pctx.restore();
+                }
+            }
+
+            function startParticles() {
+                const rect = bubble.getBoundingClientRect();
+                const containerRect = document.querySelector('.bubble-container').getBoundingClientRect();
+                const centerX = rect.left - containerRect.left + rect.width / 2;
+                const centerY = rect.top - containerRect.top + rect.height / 2;
+                
+                particles = [];
+                for (let i = 0; i < 30; i++) {
+                    particles.push(new Particle(centerX, centerY));
+                }
+
+                function animateParticles() {
+                    pctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+                    particles.forEach((p, i) => {
+                        p.update();
+                        p.draw();
+                        if (p.alpha <= 0) particles.splice(i, 1);
+                    });
+                    if (particles.length > 0) {
+                        particleAnimation = requestAnimationFrame(animateParticles);
+                    }
+                }
+                animateParticles();
+            }
+
+            function runCycle() {
+                // 1. 缓缓冒出 (emerge)
+                bubble.classList.add('emerge');
+                
+                setTimeout(() => {
+                    // 2. 快速拉伸 (stretch)
+                    bubble.classList.add('stretch');
+                }, 500);
+
+                setTimeout(() => {
+                    // 3. 停留2秒后粒子态消失
+                    bubble.style.opacity = '0';
+                    bubble.style.transform += ' scale(1.1)';
+                    startParticles();
+                    
+                    setTimeout(() => {
+                        // 重置状态
+                        bubble.classList.remove('emerge', 'stretch');
+                        bubble.style.opacity = '';
+                        bubble.style.transform = '';
+                    }, 500);
+                }, 3000); // 0.5s emerge + 0.5s stretch + 2s stay
+            }
+
+            // 每隔 4 秒运行一次完整周期
+            setInterval(runCycle, 4500);
+            setTimeout(runCycle, 1000); // 初始延迟 1 秒启动
+        })();
+
+        // ********** 9. AI接口调用：真实问答，返回有效结果 **********
+// 火山方舟API Key（你的密钥）
+const API_KEY = "67805b72-0e18-42da-921d-b6a86a0746da";
+// 火山方舟API地址（替换原豆包地址）
+const API_URL = "https://ark.cn-beijing.volces.com/api/v3/responses";
+
+// 搜索按钮点击事件
+searchBtn.addEventListener('click', () => {
+    getAiAnswer();
+});
+// 回车触发搜索
+searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        getAiAnswer();
+    }
+});
+
+// 调用火山方舟API获取答案
+async function getAiAnswer() {
+    const question = searchInput.value.trim();
+    const texts = langTexts[currentLang];
+    if (!question) {
+        modalResult.innerHTML = `<p style="color: #ef4444;">${texts.errorEmpty}</p>`;
+        aiModal.style.display = 'flex';
+        return;
+    }
+    modalResult.innerHTML = `<p style="color: #2563eb; text-align: center;">${texts.loading}</p>`;
+    aiModal.style.display = 'flex';
+
+    // 新增：记录请求开始时间（统计耗时）
+    const startTime = Date.now();
+
+    try {
+        // 1. 构造请求参数并打印（看参数是否正确）
+        const requestData = {
+            "model": "doubao-seed-2-0-pro-260215",
+            "input": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": question
+                        }
+                    ]
+                }
+            ]
+        };
+        console.log('🚀 发送请求参数：', JSON.stringify(requestData, null, 2));
+
+        // 2. 发送请求
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_KEY}`
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        // 新增：打印响应基础信息（状态码、耗时、响应头）
+        const endTime = Date.now();
+        console.log(`📡 响应状态码：${response.status} (耗时：${endTime - startTime}ms)`);
+        console.log('📨 响应头：', Object.fromEntries(response.headers.entries()));
+
+        // 3. 解析响应全量数据（关键：看API到底返回了什么）
+        const rawData = await response.text(); // 先以文本形式获取，避免JSON解析失败
+        console.log('🔍 响应原始数据：', rawData);
+        
+        // 尝试转JSON
+        let data;
+        try {
+            data = JSON.parse(rawData);
+        } catch (jsonError) {
+            throw new Error(`响应不是合法JSON：${rawData}`);
+        }
+
+        // 4. 检查HTTP状态码
+        if (!response.ok) {
+            throw new Error(`API返回错误（${response.status}）：${JSON.stringify(data, null, 2)}`);
+        }
+
+        // 5. 详细打印返回数据（看是否有隐藏的error或其他字段）
+        console.log('✅ 解析后的响应数据：', JSON.stringify(data, null, 2));
+
+        // 6. 适配响应逻辑（更宽松的判断）
+        if (data.output && data.output.length > 0) {
+            // 遍历所有output，找text类型的内容
+            let answer = '';
+            for (const outputItem of data.output) {
+                if (outputItem.content && outputItem.content.length > 0) {
+                    for (const contentItem of outputItem.content) {
+                        if (contentItem.type === 'output_text' && contentItem.text) {
+                            answer = contentItem.text;
+                            break;
+                        }
+                    }
+                    if (answer) break;
+                }
+            }
+            if (answer) {
+                modalResult.innerHTML = answer.replace(/\n/g, '<br>');
+            } else {
+                modalResult.innerHTML = `<p style="color: #ef4444;">${texts.errorNoAnswer}</p>`;
+            }
+        } else if (data.error) {
+            modalResult.innerHTML = `<p style="color: #ef4444;">${texts.errorApi.replace('{code}', data.error.code || '未知错误').replace('{msg}', data.error.message)}</p>`;
+        } else {
+            modalResult.innerHTML = `<p style="color: #ef4444;">${texts.errorFormat.replace('{data}', JSON.stringify(data, null, 2))}</p>`;
+        }
+
+    } catch (error) {
+        // 新增：打印完整错误栈
+        console.error('❌ 调用过程完整错误：', error);
+        const costTime = Date.now() - startTime;
+        // 友好提示+详细错误
+        let errorMsg = texts.errorNetwork.replace('{time}', costTime).replace('{msg}', error.message);
+        if (error.message.includes('CORS')) {
+            errorMsg = `<p style="color: #ef4444;">${texts.errorCORS}</p>`;
+        } else if (error.message.includes('401')) {
+            errorMsg = `<p style="color: #ef4444;">${texts.error401}</p>`;
+        } else if (!error.message.includes('API返回错误')) {
+            errorMsg = `<p style="color: #ef4444;">${texts.errorOther.replace('{msg}', error.message)}</p>`;
+        }
+        modalResult.innerHTML = `${errorMsg}<p style="font-size: 12px; color: #666; margin-top: 8px;">${texts.errorConsole}</p>`;
+    }
+}
+
+// ********** 10. 启动加载动画逻辑 **********
+(function() {
+    const canvas = document.getElementById('loading-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('loading-overlay');
+    const finalLogoIcon = document.getElementById('finalLogoIcon');
+
+    let skipLoading = false;
+    try {
+        skipLoading = sessionStorage.getItem('index_loading_done') === '1';
+    } catch (e) {}
+    if (skipLoading) {
+        if (overlay) {
+            overlay.style.display = 'none';
+            overlay.style.opacity = '0';
+        }
+        if (finalLogoIcon) finalLogoIcon.classList.add('visible');
+        return;
+    }
+    try {
+        sessionStorage.setItem('index_loading_done', '1');
+    } catch (e) {}
+
+    let width, height;
+    let particles = [];
+    let animationFrame;
+    let phase = 'pi'; // pi, explode, circle, move
+    let startTime = Date.now();
+
+    // 强行兜底：如果10秒后还没加载完，强制关闭加载层
+    const failSafeTimeout = setTimeout(() => {
+        if (overlay && overlay.style.display !== 'none') {
+            console.warn('Loading animation timed out, forcing hide.');
+            hideOverlay();
+        }
+    }, 10000);
+
+    function hideOverlay() {
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        if (overlay) {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                if (finalLogoIcon) finalLogoIcon.classList.add('visible');
+            }, 800);
+        }
+        clearTimeout(failSafeTimeout);
+    }
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Particle {
+        constructor(x, y, targetX, targetY) {
+            this.x = x;
+            this.y = y;
+            this.targetX = targetX;
+            this.targetY = targetY;
+            this.vx = (Math.random() - 0.5) * 2;
+            this.vy = (Math.random() - 0.5) * 2;
+            this.radius = Math.random() * 2 + 1;
+            this.color = 'rgba(37, 99, 235, 0.6)';
+            this.friction = 0.95;
+            this.ease = 0.1;
+        }
+
+        update() {
+            if (phase === 'pi') {
+                this.x += (this.targetX - this.x) * this.ease;
+                this.y += (this.targetY - this.y) * this.ease;
+            } else if (phase === 'explode') {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                this.vy += 0.05;
+            } else if (phase === 'circle' || phase === 'move') {
+                this.x += (this.targetX - this.x) * this.ease;
+                this.y += (this.targetY - this.y) * this.ease;
+                if (phase === 'move') {
+                    this.radius *= 0.95;
+                }
+            }
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, Math.max(0, this.radius), 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+        }
+    }
+
+    function initPiParticles() {
+        try {
+            ctx.fillStyle = 'blue';
+            ctx.font = 'bold 200px serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('π', width / 2, height / 2);
+
+            const imageData = ctx.getImageData(0, 0, width, height).data;
+            ctx.clearRect(0, 0, width, height);
+
+            for (let y = 0; y < height; y += 8) { // 稍微增加步长减少粒子数量，提升性能
+                for (let x = 0; x < width; x += 8) {
+                    const index = (y * width + x) * 4;
+                    if (imageData[index + 3] > 128) {
+                        particles.push(new Particle(
+                            width / 2 + (Math.random() - 0.5) * 100,
+                            height / 2 + (Math.random() - 0.5) * 100,
+                            x, y
+                        ));
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Failed to init particles:', e);
+            hideOverlay();
+        }
+    }
+
+    function updateTargetsToCircle() {
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = Math.min(width, height) * 0.15;
+        particles.forEach((p, i) => {
+            const angle = (i / particles.length) * Math.PI * 2;
+            p.targetX = centerX + Math.cos(angle) * radius * (0.8 + Math.random() * 0.4);
+            p.targetY = centerY + Math.sin(angle) * radius * (0.8 + Math.random() * 0.4);
+            p.ease = 0.05 + Math.random() * 0.05;
+        });
+    }
+
+    function updateTargetsToLogo() {
+        if (!finalLogoIcon) {
+            hideOverlay();
+            return;
+        }
+        const rect = finalLogoIcon.getBoundingClientRect();
+        const targetX = rect.left + rect.width / 2;
+        const targetY = rect.top + rect.height / 2;
+        particles.forEach(p => {
+            p.targetX = targetX;
+            p.targetY = targetY;
+            p.ease = 0.15;
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        const elapsed = Date.now() - startTime;
+
+        if (phase === 'pi' && elapsed > 1500) {
+            phase = 'explode';
+            particles.forEach(p => {
+                p.vx = (Math.random() - 0.5) * 15;
+                p.vy = (Math.random() - 0.5) * 15;
+            });
+            startTime = Date.now();
+        } else if (phase === 'explode' && elapsed > 1000) {
+            phase = 'circle';
+            updateTargetsToCircle();
+            startTime = Date.now();
+        } else if (phase === 'circle' && elapsed > 1200) {
+            phase = 'move';
+            updateTargetsToLogo();
+            startTime = Date.now();
+        } else if (phase === 'move' && elapsed > 800) {
+            hideOverlay();
+            return;
+        }
+
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
+
+        animationFrame = requestAnimationFrame(animate);
+    }
+
+    if (particles.length === 0) initPiParticles();
+    animate();
+})();
+    </script>
+</body>
+</html>

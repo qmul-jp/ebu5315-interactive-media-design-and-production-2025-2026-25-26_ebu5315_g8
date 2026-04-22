@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>简易几何绘图工具 - 圆几何交互式学习平台</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Trebuchet MS", "Microsoft YaHei", sans-serif; }
+
+        :root {
+            --primary: #2563eb;
+            --primary-strong: #1d4ed8;
+            --text: #1f2937;
+            --muted: #64748b;
+            --bg-color: #f8fafc;
+            --surface: rgba(255, 255, 255, 0.85);
+            --surface-strong: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-lg: 0 24px 60px rgba(31, 41, 55, 0.12);
+            --grid-size: 37.8px; /* 约等于 1cm (96dpi下 1cm ≈ 37.8px) */
+        }
+
+        body {
+            color: var(--text);
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        body.eye-mode { --bg-color: #f0f9eb; --surface: rgba(247, 251, 242, 0.88); --text: #166534; --border-color: #c7e3b4; --primary: #438a4c; }
+        body.night-mode {
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --primary: #60a5fa;
+            --surface: rgba(15, 23, 42, 0.9);
+            --surface-strong: #0f172a;
+            --border-color: #334155;
+            --bg-color: #020617;
+        }
+
+        /* 方格纸背景 */
+        #drawing-area {
+            flex: 1;
+            position: relative;
+            cursor: crosshair;
+            background-image: 
+                linear-gradient(var(--grid-color, rgba(0,0,0,0.1)) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color, rgba(0,0,0,0.1)) 1px, transparent 1px);
+            background-size: var(--grid-size) var(--grid-size);
+            overflow: hidden;
+        }
+        body.night-mode #drawing-area { --grid-color: rgba(56, 189, 248, 0.2); }
+
+        /* 工具栏 */
+        .toolbar {
+            height: 70px;
+            background: var(--surface);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            gap: 20px;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .tool-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 15px;
+            border-right: 1px solid var(--border-color);
+        }
+        .tool-group:last-child { border-right: none; }
+
+        .btn {
+            padding: 8px 15px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        .btn:hover { background: rgba(37, 99, 235, 0.1); color: var(--primary); }
+        .btn.active { background: var(--primary); color: white; }
+
+        .color-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+        .color-black { background: #000; }
+        .color-red { background: #ef4444; }
+
+        /* 测量结果框 */
+        .measure-box {
+            position: fixed;
+            right: 30px;
+            top: 100px;
+            width: 260px;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 30px 25px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+        .measure-box h4 { font-size: 1.1rem; color: var(--primary); margin-bottom: 15px; font-weight: 800; }
+        .measure-item { margin-bottom: 10px; font-size: 1rem; display: flex; justify-content: space-between; }
+        .measure-value { font-weight: 800; color: #ef4444; }
+
+        canvas { position: absolute; top: 0; left: 0; }
+
+        .back-home {
+            margin-right: auto;
+            font-family: "Orbitron", sans-serif;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .coord-axis {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .axis-line { stroke: var(--primary); stroke-width: 2; opacity: 0.6; }
+        .axis-label { fill: var(--primary); font-size: 14px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <header class="toolbar">
+        <a href="index.html" class="back-home">DRAWING TOOL</a>
+        
+        <div class="tool-group">
+            <button class="btn active" onclick="setTool('circle')" id="toolCircle">
+                <i class="fas fa-circle-notch"></i> <span id="labelCircle">圆</span>
+            </button>
+            <button class="btn" onclick="setTool('line')" id="toolLine">
+                <i class="fas fa-minus"></i> <span id="labelLine">直线</span>
+            </button>
+            <button class="btn" onclick="setTool('dash')" id="toolDash">
+                <i class="fas fa-ellipsis-h"></i> <span id="labelDash">虚线</span>
+            </button>
+        </div>
+
+        <div class="tool-group">
+            <button class="btn" onclick="toggleAxis()" id="toolAxis">
+                <i class="fas fa-arrows-alt"></i> <span id="labelAxis">坐标轴</span>
+            </button>
+        </div>
+
+        <div class="tool-group">
+            <button class="btn" onclick="setTool('measure-angle')" id="toolAngle">
+                <i class="fas fa-angle-right"></i> <span id="labelAngle">测角度</span>
+            </button>
+            <button class="btn" onclick="setTool('measure-length')" id="toolLength">
+                <i class="fas fa-ruler-horizontal"></i> <span id="labelLength">测长度</span>
+            </button>
+        </div>
+
+        <div class="tool-group">
+            <button class="btn" onclick="setColor('#000000')" id="colorBlack">
+                <div class="color-dot color-black"></div>
+            </button>
+            <button class="btn" onclick="setColor('#ef4444')" id="colorRed">
+                <div class="color-dot color-red"></div>
+            </button>
+        </div>
+
+        <button class="btn" onclick="clearCanvas()" style="color: #ef4444;">
+            <i class="fas fa-trash"></i> <span id="labelClear">清空</span>
+        </button>
+    </header>
+
+    <main id="drawing-area">
+        <svg id="axis-svg" class="coord-axis" style="display: none; width: 100%; height: 100%;">
+            <!-- 坐标轴由JS生成 -->
+        </svg>
+        <canvas id="main-canvas"></canvas>
+        <canvas id="temp-canvas"></canvas>
+    </main>
+
+    <div class="measure-box" id="measureBox">
+        <span style="position: absolute; right: 15px; top: 10px; cursor: pointer; color: var(--muted);" onclick="this.parentElement.style.display='none'">&times;</span>
+        <h4 id="measureTitle">测量结果</h4>
+        <div id="measureContent">
+            <!-- 测量值动态插入 -->
+        </div>
+    </div>
+
+    <script>
+        const langTexts = {
+            'zh-CN': {
+                labelCircle: '圆',
+                labelLine: '直线',
+                labelDash: '虚线',
+                labelAxis: '坐标轴',
+                labelAngle: '测角度',
+                labelLength: '测长度',
+                labelClear: '清空',
+                measureTitle: '测量结果',
+                angleResult: '角度大小：',
+                lengthResult: '直线长度：',
+                opError: '操作错误！请先点击角的一边，再点击另一边。',
+                notAngle: '这不是一个有效的角，请重新选择。'
+            },
+            'en': {
+                labelCircle: 'Circle',
+                labelLine: 'Line',
+                labelDash: 'Dash',
+                labelAxis: 'Axis',
+                labelAngle: 'Angle',
+                labelLength: 'Length',
+                labelClear: 'Clear',
+                measureTitle: 'Measurement',
+                angleResult: 'Angle Value: ',
+                lengthResult: 'Line Length: ',
+                opError: 'Operation Error! Click one side, then the other.',
+                notAngle: 'Not a valid angle. Please retry.'
+            }
+        };
+
+        let currentLang = localStorage.getItem('appLang') || 'zh-CN';
+        let currentTheme = localStorage.getItem('appTheme') || 'default';
+
+        const canvas = document.getElementById('main-canvas');
+        const ctx = canvas.getContext('2d');
+        const tempCanvas = document.getElementById('temp-canvas');
+        const tctx = tempCanvas.getContext('2d');
+        const drawingArea = document.getElementById('drawing-area');
+        const measureBox = document.getElementById('measureBox');
+        const measureContent = document.getElementById('measureContent');
+
+        let tool = 'circle';
+        let color = '#000000';
+        let isDrawing = false;
+        let startX, startY;
+        let shapes = [];
+        let axisVisible = false;
+        let gridPixel = 37.8; // 1cm
+
+        // 测量相关
+        let measurePoints = [];
+        let measureLines = [];
+
+        function resize() {
+            const rect = drawingArea.getBoundingClientRect();
+            canvas.width = tempCanvas.width = rect.width;
+            canvas.height = tempCanvas.height = rect.height;
+            redrawAll();
+            if(axisVisible) updateAxis();
+        }
+
+        window.addEventListener('resize', resize);
+        setTimeout(resize, 100);
+
+        function applyTheme(theme) {
+            document.body.className = theme === 'default' ? '' : theme + '-mode';
+        }
+
+        function initPage() {
+            applyTheme(currentTheme);
+            const texts = langTexts[currentLang];
+            for (const key in texts) {
+                const el = document.getElementById(key);
+                if (el) el.textContent = texts[key];
+            }
+        }
+
+        function setTool(t) {
+            tool = t;
+            document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            const btnMap = {
+                'circle': 'toolCircle', 'line': 'toolLine', 'dash': 'toolDash',
+                'measure-angle': 'toolAngle', 'measure-length': 'toolLength'
+            };
+            if(btnMap[t]) document.getElementById(btnMap[t]).classList.add('active');
+            measurePoints = [];
+            measureLines = [];
+            if(!t.startsWith('measure')) measureBox.style.display = 'none';
+        }
+
+        function setColor(c) {
+            color = c;
+            document.getElementById('colorBlack').classList.toggle('active', c === '#000000');
+            document.getElementById('colorRed').classList.toggle('active', c === '#ef4444');
+        }
+
+        function toggleAxis() {
+            axisVisible = !axisVisible;
+            document.getElementById('toolAxis').classList.toggle('active', axisVisible);
+            const svg = document.getElementById('axis-svg');
+            svg.style.display = axisVisible ? 'block' : 'none';
+            if(axisVisible) updateAxis();
+        }
+
+        function updateAxis() {
+            const svg = document.getElementById('axis-svg');
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            // 寻找最接近中心的格点
+            const midX = Math.round(w / 2 / gridPixel) * gridPixel;
+            const midY = Math.round(h / 2 / gridPixel) * gridPixel;
+            
+            svg.innerHTML = `
+                <line x1="0" y1="${midY}" x2="${w}" y2="${midY}" class="axis-line" />
+                <line x1="${midX}" y1="0" x2="${midX}" y2="${h}" class="axis-line" />
+                <!-- 刻度 -->
+                <path d="M ${midX-5} ${midY-gridPixel} L ${midX+5} ${midY-gridPixel} 
+                         M ${midX-5} ${midY+gridPixel} L ${midX+5} ${midY+gridPixel}
+                         M ${midX-gridPixel} ${midY-5} L ${midX-gridPixel} ${midY+5}
+                         M ${midX+gridPixel} ${midY-5} L ${midX+gridPixel} ${midY+5}" 
+                      stroke="var(--primary)" stroke-width="1" />
+                <text x="${w-20}" y="${midY-10}" class="axis-label">X</text>
+                <text x="${midX+10}" y="20" class="axis-label">Y</text>
+                <text x="${midX-20}" y="${midY+20}" class="axis-label">O</text>
+            `;
+        }
+
+        function drawShape(ctx, shape, isTemp = false, isSelected = false) {
+            ctx.beginPath();
+            ctx.strokeStyle = isSelected ? '#3b82f6' : shape.color;
+            ctx.lineWidth = isSelected ? 4 : 2;
+            if(shape.type === 'dash') ctx.setLineDash([10, 10]);
+            else ctx.setLineDash([]);
+
+            if(shape.type === 'circle') {
+                ctx.arc(shape.x, shape.y, shape.r, 0, Math.PI * 2);
+            } else {
+                ctx.moveTo(shape.x1, shape.y1);
+                ctx.lineTo(shape.x2, shape.y2);
+            }
+            ctx.stroke();
+            
+            // 如果是被选中的线段，额外加一个高亮阴影
+            if(isSelected) {
+                ctx.save();
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#3b82f6';
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        function redrawAll() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            shapes.forEach(s => {
+                const isSelected = measureLines.includes(s);
+                drawShape(ctx, s, false, isSelected);
+            });
+        }
+
+        drawingArea.addEventListener('mousedown', e => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if(tool.startsWith('measure')) {
+                handleMeasure(x, y);
+                return;
+            }
+
+            isDrawing = true;
+            startX = x;
+            startY = y;
+        });
+
+        drawingArea.addEventListener('mousemove', e => {
+            if(!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            tctx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+            let tempShape;
+            if(tool === 'circle') {
+                const r = Math.hypot(x - startX, y - startY);
+                tempShape = { type: 'circle', x: startX, y: startY, r: r, color: color };
+            } else {
+                tempShape = { type: tool, x1: startX, y1: startY, x2: x, y2: y, color: color };
+            }
+            drawShape(tctx, tempShape, true);
+        });
+
+        drawingArea.addEventListener('mouseup', e => {
+            if(!isDrawing) return;
+            isDrawing = false;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            let shape;
+            if(tool === 'circle') {
+                const r = Math.hypot(x - startX, y - startY);
+                if(r < 2) return;
+                shape = { type: 'circle', x: startX, y: startY, r: r, color: color };
+            } else {
+                if(Math.hypot(x - startX, y - startY) < 2) return;
+                shape = { type: tool, x1: startX, y1: startY, x2: x, y2: y, color: color };
+            }
+            shapes.push(shape);
+            tctx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+            redrawAll();
+        });
+
+        function handleMeasure(x, y) {
+            if(tool === 'measure-length') {
+                measurePoints.push({x, y});
+                if(measurePoints.length === 2) {
+                    const d = Math.hypot(measurePoints[1].x - measurePoints[0].x, measurePoints[1].y - measurePoints[0].y);
+                    const cm = (d / gridPixel).toFixed(2);
+                    showMeasure(langTexts[currentLang].lengthResult + cm + ' cm');
+                    measurePoints = [];
+                }
+            } else if(tool === 'measure-angle') {
+                // 查找点击位置附近的线段
+                const clickedShape = findLineNear(x, y);
+                if(clickedShape) {
+                    if(!measureLines.includes(clickedShape)) {
+                        measureLines.push(clickedShape);
+                        redrawAll();
+                        if(measureLines.length === 2) {
+                            const angle = calculateAngle(measureLines[0], measureLines[1]);
+                            if(angle !== null) {
+                                showMeasure(langTexts[currentLang].angleResult + angle.toFixed(1) + '°');
+                            } else {
+                                alert(langTexts[currentLang].notAngle);
+                            }
+                            // 延迟一秒清除高亮
+                            setTimeout(() => {
+                                measureLines = [];
+                                redrawAll();
+                            }, 1500);
+                        }
+                    }
+                } else {
+                    alert(langTexts[currentLang].opError);
+                }
+            }
+        }
+
+        function findLineNear(x, y) {
+            return shapes.find(s => {
+                if(s.type === 'circle') return false;
+                // 点到线段距离
+                const {x1, y1, x2, y2} = s;
+                const d = Math.abs((y2-y1)*x - (x2-x1)*y + x2*y1 - y2*x1) / Math.hypot(y2-y1, x2-x1);
+                const withinX = x >= Math.min(x1, x2) - 5 && x <= Math.max(x1, x2) + 5;
+                const withinY = y >= Math.min(y1, y2) - 5 && y <= Math.max(y1, y2) + 5;
+                return d < 10 && withinX && withinY;
+            });
+        }
+
+        function calculateAngle(l1, l2) {
+            const v1 = {x: l1.x2 - l1.x1, y: l1.y2 - l1.y1};
+            const v2 = {x: l2.x2 - l2.x1, y: l2.y2 - l2.y1};
+            
+            // 判定是否有交点或顶点相连
+            const p1 = {x: l1.x1, y: l1.y1}, p2 = {x: l1.x2, y: l1.y2};
+            const p3 = {x: l2.x1, y: l2.y1}, p4 = {x: l2.x2, y: l2.y2};
+            
+            const dot = v1.x * v2.x + v1.y * v2.y;
+            const mag1 = Math.hypot(v1.x, v1.y);
+            const mag2 = Math.hypot(v2.x, v2.y);
+            const cos = dot / (mag1 * mag2);
+            let angle = Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI;
+            
+            if(angle > 90) angle = 180 - angle;
+            return angle;
+        }
+
+        function showMeasure(text) {
+            measureBox.style.display = 'block';
+            measureContent.innerHTML = `<div class="measure-item"><span class="measure-value">${text}</span></div>`;
+        }
+
+        function clearCanvas() {
+            if(confirm('确定要清空画板吗？')) {
+                shapes = [];
+                redrawAll();
+                measureBox.style.display = 'none';
+            }
+        }
+
+        initPage();
+    </script>
+</body>
+</html>

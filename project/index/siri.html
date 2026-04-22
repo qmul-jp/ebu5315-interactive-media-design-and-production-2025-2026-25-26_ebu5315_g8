@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siri彩虹光晕动画</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Siri核心光晕容器 */
+        .siri-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 基础圆形底色 */
+        .siri-base {
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: #1a1a2e;
+            position: relative;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        /* 彩虹光晕层 - 核心旋转效果 */
+        .siri-light {
+            position: absolute;
+            top: -20%;
+            left: -20%;
+            width: 140%;
+            height: 140%;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                #ff2e63, #08d9d6, #eaeaea, #f7b2bd, 
+                #9844b7, #00d2ff, #ff2e63
+            );
+            opacity: 0.85;
+            animation: rotateLight 8s linear infinite;
+            filter: blur(15px);
+        }
+
+        /* 中心高光 */
+        .siri-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.8);
+            z-index: 2;
+        }
+
+        /* 对话气泡样式 */
+        .chat-bubble {
+            position: absolute;
+            top: -120px;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            background: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            font-size: 18px;
+            color: #333;
+            font-family: "Microsoft YaHei", sans-serif;
+            white-space: nowrap;
+            opacity: 0;
+            transition: all 0.4s ease;
+            z-index: 10;
+        }
+
+        /* 气泡小三角 */
+        .chat-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: white;
+        }
+
+        /* 气泡弹出动画 */
+        .bubble-show {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+
+        /* 气泡形变动画（切换文字时） */
+        .bubble-transform {
+            border-radius: 20px 25px 25px 20px;
+            padding: 15px 30px;
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        /* 光晕旋转动画 */
+        @keyframes rotateLight {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="siri-container">
+        <!-- Siri光晕核心 -->
+        <div class="siri-base">
+            <div class="siri-light"></div>
+            <div class="siri-center"></div>
+        </div>
+        <!-- 对话气泡 -->
+        <div class="chat-bubble" id="chatBubble"></div>
+    </div>
+
+    <script>
+        const chatBubble = document.getElementById('chatBubble');
+        let animationCycle; // 循环动画定时器
+
+        // 核心动画逻辑函数
+        function startSiriAnimation() {
+            // 第一步：1秒后弹出"欢迎回来"
+            setTimeout(() => {
+                chatBubble.textContent = "欢迎回来";
+                chatBubble.classList.add('bubble-show');
+                
+                // 第二步：保持2秒后，形变并切换文字为"点我快速开始游戏"
+                setTimeout(() => {
+                    chatBubble.classList.add('bubble-transform');
+                    chatBubble.textContent = "点我快速开始游戏";
+                    
+                    // 第三步：保持（形变后）2秒，然后消失
+                    setTimeout(() => {
+                        chatBubble.classList.remove('bubble-show', 'bubble-transform');
+                        
+                        // 第四步：消失后等待1秒，重复整个循环
+                        setTimeout(() => {
+                            startSiriAnimation();
+                        }, 1000);
+                    }, 2000);
+                }, 2000);
+            }, 1000);
+        }
+
+        // 启动动画（页面加载后立即开始）
+        startSiriAnimation();
+
+        // 可选：点击气泡触发游戏开始（增强交互）
+        chatBubble.addEventListener('click', () => {
+            alert("游戏开始！");
+            // 可替换为实际游戏启动逻辑
+        });
+    </script>
+</body>
+</html>
