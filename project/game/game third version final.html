@@ -52,10 +52,78 @@
             --surface: rgba(30, 41, 59, 0.88); --surface-strong: #1e293b; --border-color: #475569;
         }
 
+        /* 星空背景 */
+        .starry-background {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; overflow: hidden;
+        }
+        /* 模式适配 - 背景色 */
+        body:not(.eye-mode):not(.night-mode) .starry-background {
+            background: #1a2a40;
+        }
+        body.eye-mode .starry-background {
+            background: #0f3421;
+        }
+        body.night-mode .starry-background {
+            background: #000;
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle linear infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        /* 模式适配 - 星星颜色 */
+        body:not(.eye-mode):not(.night-mode) .star {
+            background: #ffffff;
+        }
+        body.eye-mode .star {
+            background: #e0e0e0;
+        }
+        body.night-mode .star {
+            background: #a0a0ff;
+        }
+
+        /* 透明body背景，让星空背景显示 */
+        body {
+            background: transparent !important;
+        }
+
+        /* 默认模式下的标题颜色 */
+        body:not(.eye-mode):not(.night-mode) .game-card-main h2 {
+            color: #1d4ed8;
+        }
+        /* 默认模式下的目标角度颜色 */
+        body:not(.eye-mode):not(.night-mode) #targetAngle {
+            color: #1d4ed8 !important;
+        }
+        /* 默认模式下的开始标题颜色 */
+        body:not(.eye-mode):not(.night-mode) #startTitle {
+            color: #1d4ed8 !important;
+        }
+        /* 默认模式下的目标角度文本颜色 */
+        body:not(.eye-mode):not(.night-mode) #targetTxt {
+            color: #1d4ed8;
+        }
+        /* 默认模式下的度数符号颜色 */
+        body:not(.eye-mode):not(.night-mode) #degreeSymbol {
+            color: #1d4ed8;
+        }
+
+        /* 默认模式下的关卡显示颜色 */
+        body:not(.eye-mode):not(.night-mode) .info-item {
+            color: #1d4ed8;
+        }
+
         /* 头部导航 - 复用 index.html */
         .header-container {
             position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; height: 80px; padding: 0 4vw;
-            background: var(--surface); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color);
+            background: transparent; backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color);
             display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-md);
         }
         .logo { font-size: clamp(1.2rem, 2.5vw, 1.6rem); font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; }
@@ -73,9 +141,10 @@
         .breadcrumb a { color: var(--primary); font-weight: 600; text-decoration: none; }
 
         .game-card-main {
-            width: 100%; background: var(--surface); backdrop-filter: blur(12px);
+            width: 100%; background: transparent; backdrop-filter: blur(12px);
             border: 1px solid var(--border-color); border-radius: var(--radius-xl);
             padding: 40px; box-shadow: var(--shadow-lg); text-align: center;
+            margin-bottom: 20px;
         }
 
         .game-info {
@@ -123,15 +192,43 @@
             .canvas-container { width: 260px; height: 260px; }
             #arcCanvas { width: 240px; height: 240px; }
         }
+
+        .setting-wrap {
+            position: relative;
+        }
+        .setting-icon {
+            font-size: 1.2rem; color: var(--muted); width: 42px; height: 42px;
+            display: flex; justify-content: center; align-items: center;
+            background: transparent; border-radius: 50%;
+            border: 1px solid var(--border-color); cursor: pointer;
+        }
+        .setting-menu {
+            display: none; position: absolute; top: 50px; right: 0;
+            width: 200px; background: transparent;
+            border-radius: var(--radius-md); border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg); padding: 12px; z-index: 10000;
+        }
+        .menu-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px; font-size: 0.9rem; color: var(--text);
+            border-radius: 8px; cursor: pointer;
+        }
+        .menu-item:hover { background: var(--bg-color); color: var(--primary); }
     </style>
+    <link rel="stylesheet" href="../css/common.css">
+    <script src="../js/common.js" defer></script>
 </head>
 <body>
+    <!-- 星空背景 -->
+    <div class="starry-background" id="starryBackground"></div>
+    
     <header class="header-container">
         <div class="logo" id="logoText">圆几何交互式学习平台</div>
         <nav class="nav-main">
-            <a href="index.html" class="nav-link" id="navHome">首页</a>
+            <span class="nav-droplet" aria-hidden="true"></span>
+            <a href="../index/index.html" class="nav-link" id="navHome">首页</a>
             <a href="game.html" class="nav-link active" id="navGame">游戏</a>
-            <a href="home.html" class="nav-link" id="navQuiz">测试</a>
+            <a href="../quiz/test.html" class="nav-link" id="navQuiz">测试</a>
         </nav>
         <div class="header-right">
             <div class="lang-switch">
@@ -139,12 +236,20 @@
                 <span>/</span>
                 <a href="javascript:;" class="lang-link" data-lang="en" id="langEn">English</a>
             </div>
+            <div class="setting-wrap">
+                <a href="javascript:;" class="setting-icon"><i class="fas fa-cog"></i></a>
+                <div class="setting-menu">
+                    <a href="javascript:;" class="menu-item" data-style="eye" id="menuEye">护眼模式</a>
+                    <a href="javascript:;" class="menu-item" data-style="night" id="menuNight">夜晚模式</a>
+                    <a href="javascript:;" class="menu-item" data-style="default" id="menuDefault">默认模式</a>
+                </div>
+            </div>
         </div>
     </header>
 
     <main class="main-container">
         <div class="breadcrumb">
-            <a href="index.html" id="breadHome">首页</a> › <a href="game.html" id="breadGame">游戏中心</a> › <span id="breadCurrent">圆心角与弧长匹配</span>
+            <a href="../index/index.html" id="breadHome">首页</a> › <a href="game.html" id="breadGame">游戏中心</a> › <span id="breadCurrent">圆心角弧长拼图</span>
         </div>
 
         <div class="game-card-main">
@@ -167,19 +272,26 @@
             </div>
 
             <div style="font-size: 1.4rem; margin-bottom: 20px; font-weight: 800;">
-                <span id="targetTxt">目标角度</span>: <span id="targetAngle" style="color: var(--primary);">?</span>°
+                <span id="targetTxt">目标角度</span>: <span id="targetAngle" style="color: var(--primary);">?</span><span id="degreeSymbol">°</span>
             </div>
 
             <div class="feedback-msg" id="feedback"></div>
 
             <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                <button class="btn-action" id="startBtn">开始</button>
                 <button class="btn-action" id="checkBtn" disabled>检查</button>
                 <button class="btn-action" id="restartBtn" disabled style="background: var(--muted);">重置</button>
                 <button class="btn-action" onclick="window.location.href='game.html'" id="backBtn" style="background: var(--muted);">返回</button>
             </div>
         </div>
     </main>
+
+    <div class="modal-overlay" id="startPanel" style="display: flex;">
+        <div class="modal-content">
+            <h3 id="startTitle" style="font-size: 1.8rem; color: var(--primary); margin-bottom: 20px;">圆心角与弧长匹配</h3>
+            <p id="startDesc" style="font-size: 1.1rem; margin-bottom: 30px; line-height: 1.6;">根据目标角度调整弧长！<br>拖动滑块来调整弧长，使其与目标角度匹配。<br>在规定时间内完成8个关卡！</p>
+            <button class="btn-action" id="startGameBtn">开始游戏</button>
+        </div>
+    </div>
 
     <div class="modal-overlay" id="gameOverModal">
         <div class="modal-content">
@@ -188,7 +300,7 @@
             <p style="margin-bottom: 30px;"><span id="finLevelTxt">关卡</span>: <span id="finalLevel">0</span>/8</p>
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 <button class="btn-action" onclick="startGame()">再来一次</button>
-                <button class="btn-action" onclick="window.location.href='index.html'" id="backToHomeBtn" style="background: var(--muted);">返回首页</button>
+                <button class="btn-action" onclick="window.location.href='game.html'" id="backToHomeBtn" style="background: var(--muted);">返回首页</button>
             </div>
         </div>
     </div>
@@ -201,10 +313,14 @@
                 breadCurrent: '圆心角与弧长匹配', gameTitle: '圆心角与弧长匹配',
                 gameTip: '根据目标角度调整弧长，拖动滑块！',
                 scoreTxt: '分数', timeTxt: '时间', levelTxt: '关卡', targetTxt: '目标角度',
-                sShort: '短', sLong: '长', startBtn: '开始', checkBtn: '检查',
+                sShort: '短', sLong: '长', checkBtn: '检查',
                 restartBtn: '重置', backBtn: '返回', unit: '秒', overTitle: '游戏结束',
                 youWin: '恭喜通关！', finalTxt: '最终分数', finLevelTxt: '关卡',
-                backToHomeBtn: '返回首页', perfect: '正确！误差：{error}%', tryAgain: '超时/错误！误差：{error}%'
+                backToHomeBtn: '返回首页', perfect: '正确！误差：{error}%', tryAgain: '超时/错误！误差：{error}%',
+                menuEye: '护眼模式', menuNight: '夜晚模式', menuDefault: '默认模式',
+                startTitle: '圆心角与弧长匹配',
+                startDesc: '根据目标角度调整弧长！<br>拖动滑块来调整弧长，使其与目标角度匹配。<br>在规定时间内完成8个关卡！',
+                startGameBtn: '开始游戏'
             },
             'en': {
                 logoText: 'Circle Geometry', navHome: 'Home', navGame: 'Game', navQuiz: 'Quiz',
@@ -212,10 +328,14 @@
                 breadCurrent: 'Arc Puzzle', gameTitle: 'Arc Length Puzzle',
                 gameTip: 'Adjust arc by target angle!',
                 scoreTxt: 'Score', timeTxt: 'Time', levelTxt: 'Level', targetTxt: 'Target Angle',
-                sShort: 'Short', sLong: 'Long', startBtn: 'Start', checkBtn: 'Check',
-                restartBtn: 'Reset', backBtn: 'Back', unit: 's', overTitle: 'Game Over',
+                sShort: 'Short', sLong: 'Long', checkBtn: 'Check',
+                restartBtn: 'Reset', backBtn: 'Back', unit: 'sec', overTitle: 'Game Over',
                 youWin: 'You Win!', finalTxt: 'Final Score', finLevelTxt: 'Level',
-                backToHomeBtn: 'Home', perfect: 'Correct! Error: {error}%', tryAgain: 'Wrong! Error: {error}%'
+                backToHomeBtn: 'Home', perfect: 'Correct! Error: {error}%', tryAgain: 'Wrong! Error: {error}%',
+                menuEye: 'Eye Protection', menuNight: 'Night Mode', menuDefault: 'Default Mode',
+                startTitle: 'Arc Length Puzzle',
+                startDesc: 'Adjust arc length by target angle!<br>Drag the slider to match the target angle.<br>Complete 8 levels within the time limit!',
+                startGameBtn: 'Start Game'
             }
         };
 
@@ -246,7 +366,6 @@
             document.getElementById('targetTxt').textContent = texts.targetTxt;
             document.getElementById('sShort').textContent = texts.sShort;
             document.getElementById('sLong').textContent = texts.sLong;
-            document.getElementById('startBtn').textContent = texts.startBtn;
             document.getElementById('checkBtn').textContent = texts.checkBtn;
             document.getElementById('restartBtn').textContent = texts.restartBtn;
             document.getElementById('backBtn').textContent = texts.backBtn;
@@ -254,6 +373,12 @@
             document.getElementById('finalTxt').textContent = texts.finalTxt;
             document.getElementById('finLevelTxt').textContent = texts.finLevelTxt;
             document.getElementById('backToHomeBtn').textContent = texts.backToHomeBtn;
+            document.getElementById('menuEye').textContent = texts.menuEye;
+            document.getElementById('menuNight').textContent = texts.menuNight;
+            document.getElementById('menuDefault').textContent = texts.menuDefault;
+            document.getElementById('startTitle').textContent = texts.startTitle;
+            document.getElementById('startDesc').innerHTML = texts.startDesc;
+            document.getElementById('startGameBtn').textContent = texts.startGameBtn;
             document.documentElement.lang = lang;
 
             document.body.classList.remove('eye-mode', 'night-mode');
@@ -281,14 +406,44 @@
             ctx.beginPath(); ctx.arc(cx, cy, r, 0, rad); ctx.lineWidth = 6; ctx.stroke();
         }
 
+        // 生成星空背景
+        function createStars() {
+            const container = document.getElementById('starryBackground');
+            container.innerHTML = '';
+            
+            const starCount = 200;
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // 随机位置
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                
+                // 随机大小
+                const size = Math.random() * 2 + 0.5;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                
+                // 随机动画持续时间
+                const duration = Math.random() * 3 + 2;
+                star.style.animationDuration = duration + 's';
+                
+                // 随机延迟
+                star.style.animationDelay = Math.random() * 2 + 's';
+                
+                container.appendChild(star);
+            }
+        }
+
         function startGame() {
             score = 0; currentPuzzle = 1; isPlaying = true;
             document.getElementById('score').textContent = 0;
             document.getElementById('puzzleNum').textContent = 1;
-            document.getElementById('startBtn').disabled = true;
             document.getElementById('checkBtn').disabled = false;
             document.getElementById('restartBtn').disabled = false;
             document.getElementById('gameOverModal').style.display = 'none';
+            document.getElementById('startPanel').style.display = 'none';
             newQuestion(); resetTimer();
         }
 
@@ -334,7 +489,6 @@
                     document.getElementById('finalScore').textContent = score;
                     document.getElementById('finalLevel').textContent = 8;
                     document.getElementById('gameOverModal').style.display = 'flex';
-                    document.getElementById('startBtn').disabled = false;
                     document.getElementById('checkBtn').disabled = true;
                     document.getElementById('restartBtn').disabled = true;
                     return;
@@ -344,14 +498,31 @@
         }
 
         document.getElementById('arcSlider').oninput = (e) => { if (isPlaying) { userArcPercent = +e.target.value; draw(); } };
-        document.getElementById('startBtn').onclick = startGame;
+        document.getElementById('startGameBtn').onclick = startGame;
         document.getElementById('checkBtn').onclick = () => check(true);
         document.getElementById('restartBtn').onclick = () => { newQuestion(); resetTimer(); };
         document.querySelectorAll('.lang-link').forEach(link => {
             link.onclick = () => { localStorage.setItem('appLang', link.dataset.lang); applyState(); };
         });
-        window.onload = () => { canvas.width = 280; canvas.height = 280; applyState(); };
+        window.onload = () => { canvas.width = 280; canvas.height = 280; applyState(); createStars(); };
         window.addEventListener('storage', (e) => { if (['appLang', 'appTheme', 'appFontSize'].includes(e.key)) applyState(); });
+
+        const settingWrap = document.querySelector('.setting-wrap');
+        const settingMenu = document.querySelector('.setting-menu');
+        let menuHideTimer = null;
+
+        if (settingWrap && settingMenu) {
+            settingWrap.addEventListener('mouseenter', () => { clearTimeout(menuHideTimer); settingMenu.style.display = 'block'; });
+            settingWrap.addEventListener('mouseleave', () => { menuHideTimer = setTimeout(() => { settingMenu.style.display = 'none'; }, 1000); });
+            settingMenu.addEventListener('mouseenter', () => clearTimeout(menuHideTimer));
+
+            document.querySelectorAll('.menu-item[data-style]').forEach(item => {
+                item.addEventListener('click', () => {
+                    localStorage.setItem('appTheme', item.dataset.style);
+                    applyState();
+                });
+            });
+        }
     </script>
 </body>
 </html>

@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>圆几何交互式学习平台 - 割圆术·弓箭切割</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Trebuchet MS", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-strong: #1d4ed8;
+            --text: #1f2937;
+            --muted: #64748b;
+            --bg-color: #f8fafc;
+            --surface: rgba(255, 255, 255, 0.85);
+            --surface-strong: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-lg: 0 24px 60px rgba(31, 41, 55, 0.12);
+            --shadow-md: 0 16px 32px rgba(31, 41, 55, 0.08);
+            --radius-xl: 28px;
+            --radius-lg: 22px;
+            --radius-md: 16px;
+            --font-size: 16px;
+        }
+
+        body {
+            color: var(--text);
+            font-size: var(--font-size);
+            background:
+                radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.1), transparent 22%),
+                radial-gradient(circle at 86% 14%, rgba(37, 99, 235, 0.1), transparent 20%),
+                linear-gradient(rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+                linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+            line-height: 1.6;
+        }
+
+        body.eye-mode {
+            --bg-color: #f0f9eb;
+            --surface: rgba(247, 251, 242, 0.88);
+            --text: #166534;
+            --border-color: #c7e3b4;
+            --primary: #438a4c;
+            --primary-strong: #3f6234;
+        }
+        body.night-mode {
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --primary: #60a5fa;
+            --primary-strong: #3b82f6;
+            --surface: rgba(15, 23, 42, 0.9);
+            --surface-strong: #0f172a;
+            --border-color: #334155;
+            --bg-color: #020617;
+            background:
+                radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.15), transparent 25%),
+                radial-gradient(circle at 86% 14%, rgba(56, 189, 248, 0.15), transparent 22%),
+                linear-gradient(rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+        }
+
+        /* 星空背景 */
+        .starry-background {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; overflow: hidden;
+        }
+        /* 模式适配 - 背景色 */
+        body:not(.eye-mode):not(.night-mode) .starry-background {
+            background: #1a2a40;
+        }
+        body.eye-mode .starry-background {
+            background: #0f3421;
+        }
+        body.night-mode .starry-background {
+            background: #000;
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle linear infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        /* 模式适配 - 星星颜色 */
+        body:not(.eye-mode):not(.night-mode) .star {
+            background: #ffffff;
+        }
+        body.eye-mode .star {
+            background: #e0e0e0;
+        }
+        body.night-mode .star {
+            background: #a0a0ff;
+        }
+
+        /* 默认模式下的规则文本颜色 */
+        body:not(.eye-mode):not(.night-mode) .overlay-text,
+        body:not(.eye-mode):not(.night-mode) .overlay-rules {
+            color: #1d4ed8;
+        }
+
+        /* 默认模式下的HUD数字颜色 */
+        body:not(.eye-mode):not(.night-mode) .hud-value {
+            color: #1d4ed8;
+        }
+
+        /* 透明body背景，让星空背景显示 */
+        body {
+            background: transparent !important;
+        }
+
+        /* 默认模式下的标题颜色 */
+        body:not(.eye-mode):not(.night-mode) .overlay-title {
+            color: #1d4ed8;
+        }
+        /* 默认模式下的规则文本颜色 */
+        body:not(.eye-mode):not(.night-mode) .overlay-content {
+            color: #1d4ed8;
+        }
+
+        .header-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            width: 100%;
+            height: 80px;
+            padding: 0 4vw;
+            background: transparent;
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .logo {
+            font-size: clamp(1.1rem, 2.5vw, 1.55rem);
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-main {
+            display: flex;
+            gap: 2.5vw;
+            background: rgba(15, 23, 42, 0.04);
+            padding: 6px;
+            border-radius: 100px;
+        }
+        .nav-link {
+            font-size: 0.95rem;
+            color: var(--muted);
+            font-weight: 600;
+            padding: 8px 24px;
+            border-radius: 100px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .nav-link:hover {
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.8);
+        }
+        .nav-link.active {
+            color: white;
+            background: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5vw;
+        }
+
+        .lang-switch {
+            font-size: 0.85rem;
+            color: var(--muted);
+            background: var(--surface-strong);
+            padding: 6px 16px;
+            border-radius: 100px;
+            border: 1px solid var(--border-color);
+        }
+        .lang-link { color: var(--muted); cursor: pointer; text-decoration: none; }
+        .lang-link.active { color: var(--primary); font-weight: 700; }
+
+        .setting-icon {
+            font-size: 1.2rem;
+            color: var(--muted);
+            width: 42px;
+            height: 42px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--surface-strong);
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .setting-menu {
+            display: none;
+            position: absolute;
+            top: 90px;
+            right: 4vw;
+            width: 240px;
+            background: var(--surface-strong);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            padding: 16px;
+            z-index: 10000;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            color: var(--text);
+            border-radius: 10px;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+        .menu-item:hover {
+            background: var(--bg-color);
+            color: var(--primary);
+        }
+
+        #gameCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            touch-action: none;
+        }
+
+        .hud {
+            position: fixed;
+            top: 96px;
+            left: 24px;
+            display: flex;
+            gap: 12px;
+            z-index: 3;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .hud-pill {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: 10px 14px;
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(12px);
+            display: flex;
+            gap: 8px;
+            align-items: baseline;
+            pointer-events: none;
+        }
+
+        .hud-label {
+            font-size: 0.85rem;
+            color: var(--muted);
+            font-weight: 700;
+        }
+        .hud-value {
+            font-size: 1.05rem;
+            color: var(--text);
+            font-weight: 900;
+            letter-spacing: 0.4px;
+            min-width: 42px;
+            text-align: right;
+        }
+
+        .hud-hint {
+            position: fixed;
+            left: 24px;
+            top: 154px;
+            z-index: 3;
+            max-width: min(520px, calc(100vw - 48px));
+            background: rgba(15, 23, 42, 0.06);
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            border-radius: 16px;
+            padding: 12px 14px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+            color: var(--muted);
+            font-size: 0.92rem;
+            line-height: 1.6;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        body.night-mode .hud-hint {
+            background: rgba(2, 6, 23, 0.42);
+            border-color: rgba(148, 163, 184, 0.16);
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(2, 6, 23, 0.45);
+            backdrop-filter: blur(8px);
+        }
+        .overlay.visible { display: flex; }
+
+        .overlay-card {
+            width: min(720px, 100%);
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            padding: 28px 26px;
+        }
+        .overlay-title {
+            font-size: clamp(1.4rem, 4vw, 1.9rem);
+            font-weight: 900;
+            color: var(--text);
+            margin-bottom: 14px;
+        }
+        .overlay-text {
+            color: var(--muted);
+            font-size: 1.02rem;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+        .overlay-rules {
+            background: rgba(15, 23, 42, 0.04);
+            border: 1px solid rgba(15, 23, 42, 0.1);
+            border-radius: 16px;
+            padding: 14px 14px;
+            margin-bottom: 18px;
+            color: var(--text);
+            line-height: 1.8;
+            font-size: 0.98rem;
+        }
+        .overlay-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: 1px solid var(--border-color);
+            background: var(--surface-strong);
+            border-radius: 999px;
+            padding: 10px 18px;
+            font-weight: 800;
+            cursor: pointer;
+            color: var(--text);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: 0 12px 22px rgba(37, 99, 235, 0.2);
+        }
+        .btn.primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .toast-layer {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 12;
+        }
+        .toast {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            background: rgba(2, 6, 23, 0.65);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 999px;
+            padding: 10px 14px;
+            font-weight: 900;
+            letter-spacing: 0.4px;
+            box-shadow: 0 16px 30px rgba(2, 6, 23, 0.25);
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            animation: toastUp 900ms ease forwards;
+        }
+        .toast.negative { background: rgba(220, 38, 38, 0.72); }
+        .toast.positive { background: rgba(37, 99, 235, 0.7); }
+        @keyframes toastUp {
+            0% { opacity: 0; transform: translate(-50%, -50%) translateY(6px) scale(0.98); }
+            18% { opacity: 1; transform: translate(-50%, -50%) translateY(0) scale(1); }
+            70% { opacity: 1; transform: translate(-50%, -50%) translateY(-10px) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) translateY(-22px) scale(0.98); }
+        }
+
+        @media (max-width: 768px) {
+            .header-container { padding: 0 20px; height: 70px; }
+            .nav-main { display: none; }
+            .hud { top: 86px; left: 14px; gap: 10px; }
+            .hud-hint { left: 14px; top: 138px; padding: 10px 12px; font-size: 0.9rem; }
+        }
+    </style>
+    <link rel="stylesheet" href="../css/common.css">
+    <script src="../js/common.js" defer></script>
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div class="starry-background" id="starryBackground"></div>
+    
+    <header class="header-container">
+        <div class="logo" id="logoText">圆几何交互式学习平台</div>
+        <nav class="nav-main">
+            <span class="nav-droplet" aria-hidden="true"></span>
+            <a href="../index/index.html" class="nav-link" id="navHome">首页</a>
+            <a href="game.html" class="nav-link" id="navGame">游戏</a>
+            <a href="game fourth version final.html" class="nav-link active" id="navThis">割圆术</a>
+        </nav>
+        <div class="header-right">
+            <div class="lang-switch">
+                <a href="javascript:;" class="lang-link active" data-lang="zh-CN" id="langZh">简体中文</a>
+                <span>/</span>
+                <a href="javascript:;" class="lang-link" data-lang="en" id="langEn">English</a>
+            </div>
+            <div class="setting-wrap">
+                <a href="javascript:;" class="setting-icon" aria-label="Settings"><i class="fas fa-cog"></i></a>
+                <div class="setting-menu">
+                    <a href="javascript:;" class="menu-item" data-style="eye" id="menuEye">护眼模式</a>
+                    <a href="javascript:;" class="menu-item" data-style="night" id="menuNight">夜晚模式</a>
+                    <a href="javascript:;" class="menu-item" data-style="default" id="menuDefault">默认模式</a>
+                </div>
+            </div>
+            <a href="game.html" class="nav-link" id="navBack">返回</a>
+        </div>
+    </header>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="hud" id="hud">
+        <div class="hud-pill">
+            <span class="hud-label" id="hudTimeLabel">时间</span>
+            <span class="hud-value" id="hudTime">30.0</span>
+        </div>
+        <div class="hud-pill">
+            <span class="hud-label" id="hudScoreLabel">得分</span>
+            <span class="hud-value" id="hudScore">1</span>
+        </div>
+        <div class="hud-pill">
+            <span class="hud-label" id="hudPiecesLabel">份数</span>
+            <span class="hud-value" id="hudPieces">1</span>
+        </div>
+    </div>
+
+    <div class="hud-hint" id="hudHint">按住鼠标拖动瞄准，松开射箭切割。每次新切割必须与上一条切割线在圆内相交，否则扣 2 分。</div>
+
+    <div class="overlay visible" id="storyOverlay">
+        <div class="overlay-card">
+            <div class="overlay-title" id="storyTitle">祖冲之的最后一步</div>
+            <div class="overlay-text" id="storyText">祖冲之在“割圆术”的艰辛推演中，只差最后一步。现在，请你用弓箭射出一条条直线，帮助他把圆切成尽可能多的份数。</div>
+            <div class="overlay-rules" id="storyRules"></div>
+            <div class="overlay-actions">
+                <button class="btn" id="practiceBtn" type="button">练习一下</button>
+                <button class="btn primary" id="startBtn" type="button">开始挑战</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="resultOverlay">
+        <div class="overlay-card">
+            <div class="overlay-title" id="resultTitle">挑战结束</div>
+            <div class="overlay-text" id="resultText"></div>
+            <div class="overlay-actions">
+                <button class="btn" id="restartBtn" type="button">再来一次</button>
+                <a class="btn primary" id="backBtn" href="game.html">返回游戏中心</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-layer" id="toastLayer"></div>
+
+    <script>
+        const langTexts = {
+            'zh-CN': {
+                logoText: '圆几何交互式学习平台',
+                navHome: '首页',
+                navGame: '游戏',
+                navThis: '割圆术',
+                navBack: '返回',
+                langZh: '简体中文',
+                langEn: 'English',
+                menuEye: '护眼模式',
+                menuNight: '夜晚模式',
+                menuDefault: '默认模式',
+                hudTimeLabel: '时间',
+                hudScoreLabel: '得分',
+                hudPiecesLabel: '份数',
+                hudHint: '按住鼠标拖动瞄准，松开射箭切割。第 n 次射箭若未与之前所有切割线在圆内相交，则扣 n 分，但本次新增份数仍计入得分。每射一次圆转得更快。',
+                storyTitle: '祖冲之的最后一步',
+                storyText: '祖冲之在“割圆术”的艰辛推演中，只差最后一步。现在，请你用弓箭射出一条条直线，帮助他把圆切成尽可能多的份数。',
+                storyRulesHtml: '<div><strong>规则：</strong></div><div>1）挑战时长：30 秒。</div><div>2）每次切割都会形成一条穿过圆的直线切割痕迹。</div><div>3）从第二次开始，第 n 次射箭的新切割线需要与之前所有切割线在圆内相交；若未满足则扣 n 分，但本次新增份数仍计入。</div><div>4）每射一次，圆的转速 +0.1。</div><div>5）得分以实时份数为基础，叠加扣分。</div>',
+                practiceBtn: '练习一下',
+                startBtn: '开始挑战',
+                resultTitle: '挑战结束',
+                resultText: '最终得分：{score}，最终份数：{pieces}',
+                restartBtn: '再来一次',
+                backBtn: '返回游戏中心',
+                toastPenalty: '扣 {n} 分',
+                toastGood: '+{inc} 份'
+            },
+            'en': {
+                logoText: 'Interactive Learning Platform for Circle Geometry',
+                navHome: 'Home',
+                navGame: 'Game',
+                navThis: 'Cyclotomy',
+                navBack: 'Back',
+                langZh: 'Simplified Chinese',
+                langEn: 'English',
+                menuEye: 'Eye Protection',
+                menuNight: 'Night Mode',
+                menuDefault: 'Default Mode',
+                hudTimeLabel: 'Time',
+                hudScoreLabel: 'Score',
+                hudPiecesLabel: 'Pieces',
+                hudHint: 'Hold and drag to aim, release to shoot. On the n-th shot, if the new cut does NOT intersect ALL previous cuts inside the circle, -n points, but new pieces still count. Each shot speeds up the rotation.',
+                storyTitle: 'Zu Chongzhi: The Final Step',
+                storyText: 'Zu Chongzhi is one step away in the hard cyclotomy journey. Shoot straight cuts to help slice the circle into as many pieces as possible.',
+                storyRulesHtml: '<div><strong>Rules:</strong></div><div>1) Duration: 30 seconds.</div><div>2) Each shot creates a straight cut through the circle.</div><div>3) From the 2nd cut, on the n-th shot the new cut should intersect ALL previous cuts inside the circle; if not, -n points, but new pieces are still counted.</div><div>4) Each shot increases rotation speed by +0.1.</div><div>5) Score is based on pieces, plus penalties.</div>',
+                practiceBtn: 'Practice',
+                startBtn: 'Start',
+                resultTitle: 'Finished',
+                resultText: 'Final score: {score}, final pieces: {pieces}',
+                restartBtn: 'Retry',
+                backBtn: 'Back to Game Center',
+                toastPenalty: '-{n}',
+                toastGood: '+{inc} pieces'
+            }
+        };
+
+        const els = {
+            logoText: document.getElementById('logoText'),
+            navHome: document.getElementById('navHome'),
+            navGame: document.getElementById('navGame'),
+            navThis: document.getElementById('navThis'),
+            navBack: document.getElementById('navBack'),
+            langZh: document.getElementById('langZh'),
+            langEn: document.getElementById('langEn'),
+            menuEye: document.getElementById('menuEye'),
+            menuNight: document.getElementById('menuNight'),
+            menuDefault: document.getElementById('menuDefault'),
+            hudTimeLabel: document.getElementById('hudTimeLabel'),
+            hudScoreLabel: document.getElementById('hudScoreLabel'),
+            hudPiecesLabel: document.getElementById('hudPiecesLabel'),
+            hudTime: document.getElementById('hudTime'),
+            hudScore: document.getElementById('hudScore'),
+            hudPieces: document.getElementById('hudPieces'),
+            hudHint: document.getElementById('hudHint'),
+            storyOverlay: document.getElementById('storyOverlay'),
+            storyTitle: document.getElementById('storyTitle'),
+            storyText: document.getElementById('storyText'),
+            storyRules: document.getElementById('storyRules'),
+            practiceBtn: document.getElementById('practiceBtn'),
+            startBtn: document.getElementById('startBtn'),
+            resultOverlay: document.getElementById('resultOverlay'),
+            resultTitle: document.getElementById('resultTitle'),
+            resultText: document.getElementById('resultText'),
+            restartBtn: document.getElementById('restartBtn'),
+            backBtn: document.getElementById('backBtn'),
+            toastLayer: document.getElementById('toastLayer')
+        };
+
+        const settingWrap = document.querySelector('.setting-wrap');
+        const settingMenu = document.querySelector('.setting-menu');
+        let menuHideTimer = null;
+
+        let currentLang = localStorage.getItem('appLang') || 'zh-CN';
+
+        function applyState() {
+            currentLang = localStorage.getItem('appLang') || 'zh-CN';
+            const theme = localStorage.getItem('appTheme') || 'default';
+            const fontSize = localStorage.getItem('appFontSize') || '16';
+            const texts = langTexts[currentLang];
+
+            els.logoText.textContent = texts.logoText;
+            els.navHome.textContent = texts.navHome;
+            els.navGame.textContent = texts.navGame;
+            els.navThis.textContent = texts.navThis;
+            els.navBack.textContent = texts.navBack;
+            els.langZh.textContent = texts.langZh;
+            els.langEn.textContent = texts.langEn;
+            els.menuEye.textContent = texts.menuEye;
+            els.menuNight.textContent = texts.menuNight;
+            els.menuDefault.textContent = texts.menuDefault;
+            els.hudTimeLabel.textContent = texts.hudTimeLabel;
+            els.hudScoreLabel.textContent = texts.hudScoreLabel;
+            els.hudPiecesLabel.textContent = texts.hudPiecesLabel;
+            els.hudHint.textContent = texts.hudHint;
+            els.storyTitle.textContent = texts.storyTitle;
+            els.storyText.textContent = texts.storyText;
+            els.storyRules.innerHTML = texts.storyRulesHtml;
+            els.practiceBtn.textContent = texts.practiceBtn;
+            els.startBtn.textContent = texts.startBtn;
+            els.resultTitle.textContent = texts.resultTitle;
+            els.restartBtn.textContent = texts.restartBtn;
+            els.backBtn.textContent = texts.backBtn;
+
+            document.documentElement.lang = currentLang;
+            document.documentElement.style.setProperty('--font-size', fontSize + 'px');
+            document.documentElement.style.fontSize = fontSize + 'px';
+
+            document.body.classList.remove('eye-mode', 'night-mode');
+            if (theme === 'eye') document.body.classList.add('eye-mode');
+            if (theme === 'night') document.body.classList.add('night-mode');
+
+            document.querySelectorAll('.lang-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.lang === currentLang) link.classList.add('active');
+            });
+        }
+
+        // 生成星空背景
+        function createStars() {
+            const container = document.getElementById('starryBackground');
+            container.innerHTML = '';
+            
+            const starCount = 200;
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // 随机位置
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                
+                // 随机大小
+                const size = Math.random() * 2 + 0.5;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                
+                // 随机动画持续时间
+                const duration = Math.random() * 3 + 2;
+                star.style.animationDuration = duration + 's';
+                
+                // 随机延迟
+                star.style.animationDelay = Math.random() * 2 + 's';
+                
+                container.appendChild(star);
+            }
+        }
+
+        document.querySelectorAll('.lang-link').forEach(link => {
+            link.addEventListener('click', () => {
+                localStorage.setItem('appLang', link.dataset.lang);
+                applyState();
+            });
+        });
+
+        document.querySelectorAll('.menu-item[data-style]').forEach(item => {
+            item.addEventListener('click', () => {
+                localStorage.setItem('appTheme', item.dataset.style);
+                applyState();
+            });
+        });
+
+        settingWrap.addEventListener('mouseenter', () => { clearTimeout(menuHideTimer); settingMenu.style.display = 'block'; });
+        settingWrap.addEventListener('mouseleave', () => { menuHideTimer = setTimeout(() => { settingMenu.style.display = 'none'; }, 900); });
+        settingMenu.addEventListener('mouseenter', () => clearTimeout(menuHideTimer));
+
+        window.addEventListener('storage', (e) => {
+            if (['appLang', 'appTheme', 'appFontSize'].includes(e.key)) applyState();
+        });
+
+        function parsePrimaryRGB() {
+            const raw = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+            if (!raw) return { r: 37, g: 99, b: 235 };
+            const m = raw.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+            if (!m) return { r: 37, g: 99, b: 235 };
+            const hex = m[1].length === 3 ? m[1].split('').map(ch => ch + ch).join('') : m[1];
+            return {
+                r: parseInt(hex.slice(0, 2), 16),
+                g: parseInt(hex.slice(2, 4), 16),
+                b: parseInt(hex.slice(4, 6), 16)
+            };
+        }
+
+        function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+        function dist2(a, b) { const dx = a.x - b.x; const dy = a.y - b.y; return dx * dx + dy * dy; }
+        function normalize(v) {
+            const l = Math.hypot(v.x, v.y);
+            if (l < 1e-8) return { x: 1, y: 0 };
+            return { x: v.x / l, y: v.y / l };
+        }
+        function cross(a, b) { return a.x * b.y - a.y * b.x; }
+
+        function worldToLocal(p, circle, angle) {
+            const dx = p.x - circle.cx;
+            const dy = p.y - circle.cy;
+            const c = Math.cos(angle);
+            const s = Math.sin(angle);
+            return { x: dx * c + dy * s, y: -dx * s + dy * c };
+        }
+
+        function localToWorld(p, circle, angle) {
+            const c = Math.cos(angle);
+            const s = Math.sin(angle);
+            return { x: circle.cx + p.x * c - p.y * s, y: circle.cy + p.x * s + p.y * c };
+        }
+
+        function segmentIntersection(p, p2, q, q2) {
+            const r = { x: p2.x - p.x, y: p2.y - p.y };
+            const s = { x: q2.x - q.x, y: q2.y - q.y };
+            const denom = cross(r, s);
+            if (Math.abs(denom) < 1e-8) return null;
+            const qp = { x: q.x - p.x, y: q.y - p.y };
+            const t = cross(qp, s) / denom;
+            const u = cross(qp, r) / denom;
+            if (t < -1e-6 || t > 1 + 1e-6 || u < -1e-6 || u > 1 + 1e-6) return null;
+            return { x: p.x + t * r.x, y: p.y + t * r.y };
+        }
+
+        function lineCircleIntersections(origin, dir, center, radius) {
+            const fx = origin.x - center.x;
+            const fy = origin.y - center.y;
+            const b = 2 * (fx * dir.x + fy * dir.y);
+            const c = fx * fx + fy * fy - radius * radius;
+            const disc = b * b - 4 * c;
+            if (disc <= 0) return null;
+            const s = Math.sqrt(disc);
+            let t1 = (-b - s) / 2;
+            let t2 = (-b + s) / 2;
+            if (t1 > t2) { const tmp = t1; t1 = t2; t2 = tmp; }
+            const p1 = { x: origin.x + dir.x * t1, y: origin.y + dir.y * t1 };
+            const p2 = { x: origin.x + dir.x * t2, y: origin.y + dir.y * t2 };
+            return { t1, t2, p1, p2 };
+        }
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = 0;
+        let height = 0;
+        let dpr = 1;
+
+        function resize() {
+            dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = Math.floor(width * dpr);
+            canvas.height = Math.floor(height * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        let running = false;
+        let practice = false;
+        let startAt = 0;
+        let durationMs = 30000;
+        let timeLeftMs = durationMs;
+
+        let pieces = 1;
+        let penalty = 0;
+        let score = 1;
+
+        let rot = 0;
+        let rotSpeed = 0.9;
+        let wobble = 0;
+        let lastCutAngle = 0;
+
+        let aimActive = false;
+        let aimPoint = { x: 0, y: 0 };
+        let aimValid = false;
+        let aimDir = { x: 1, y: 0 };
+        let aimChord = null;
+
+        let arrow = null;
+        let trail = [];
+        let chords = [];
+
+        function getCircle() {
+            const headerH = window.matchMedia('(max-width: 768px)').matches ? 70 : 80;
+            const cx = width * 0.5;
+            const cy = height * 0.52 + headerH * 0.25;
+            const r = Math.min(width, height) * 0.23;
+            return { cx, cy, r, headerH };
+        }
+
+        function getOrigin(circle) {
+            const ox = Math.max(60, circle.cx - circle.r - Math.min(260, width * 0.22));
+            const oy = circle.cy;
+            return { x: ox, y: oy };
+        }
+
+        function setHud() {
+            els.hudTime.textContent = (timeLeftMs / 1000).toFixed(1);
+            els.hudPieces.textContent = String(pieces);
+            els.hudScore.textContent = String(score);
+        }
+
+        function addToast(text, x, y, kind) {
+            const div = document.createElement('div');
+            div.className = 'toast ' + (kind || '');
+            div.textContent = text;
+            div.style.left = `${x}px`;
+            div.style.top = `${y}px`;
+            els.toastLayer.appendChild(div);
+            setTimeout(() => { div.remove(); }, 1000);
+        }
+
+        function resetGame() {
+            running = false;
+            arrow = null;
+            aimActive = false;
+            trail = [];
+            chords = [];
+            pieces = 1;
+            penalty = 0;
+            score = 1;
+            timeLeftMs = durationMs;
+            rot = 0;
+            rotSpeed = 0.9;
+            wobble = 0;
+            lastCutAngle = 0;
+            setHud();
+        }
+
+        function startGame(isPractice) {
+            resetGame();
+            practice = Boolean(isPractice);
+            running = true;
+            startAt = performance.now();
+            els.resultOverlay.classList.remove('visible');
+        }
+
+        function finishGame() {
+            running = false;
+            arrow = null;
+            aimActive = false;
+            const texts = langTexts[currentLang];
+            els.resultText.textContent = texts.resultText.replace('{score}', String(score)).replace('{pieces}', String(pieces));
+            els.resultOverlay.classList.add('visible');
+        }
+
+        function updateAim(e) {
+            const circle = getCircle();
+            const origin = getOrigin(circle);
+            const dir = normalize({ x: aimPoint.x - origin.x, y: aimPoint.y - origin.y });
+            aimDir = dir;
+            const inter = lineCircleIntersections(origin, dir, { x: circle.cx, y: circle.cy }, circle.r * 0.98);
+            if (!inter) {
+                aimValid = false;
+                aimChord = null;
+                return;
+            }
+            const forwardOk = inter.t2 > 0 && inter.t1 > -circle.r * 3;
+            if (!forwardOk) {
+                aimValid = false;
+                aimChord = null;
+                return;
+            }
+            aimValid = true;
+            aimChord = { p1: inter.p1, p2: inter.p2 };
+        }
+
+        function fire() {
+            if (!running || arrow) return;
+            if (!aimValid || !aimChord) return;
+
+            const circle = getCircle();
+            const origin = getOrigin(circle);
+            const speed = Math.min(1400, 900 + circle.r * 2.4);
+            arrow = {
+                x: origin.x,
+                y: origin.y,
+                vx: aimDir.x * speed,
+                vy: aimDir.y * speed,
+                entered: false,
+                chord: { p1: { x: aimChord.p1.x, y: aimChord.p1.y }, p2: { x: aimChord.p2.x, y: aimChord.p2.y } }
+            };
+            trail = [];
+        }
+
+        function uniquePush(points, p, eps) {
+            const e2 = eps * eps;
+            for (const q of points) {
+                if (dist2(p, q) <= e2) return;
+            }
+            points.push(p);
+        }
+
+        function registerChord(newChord) {
+            const circle = getCircle();
+            const centerLocal = { x: 0, y: 0 };
+            const r2 = (circle.r - 2) * (circle.r - 2);
+
+            const localNew = {
+                p1: worldToLocal(newChord.p1, circle, rot),
+                p2: worldToLocal(newChord.p2, circle, rot)
+            };
+
+            const intersections = [];
+            let intersectedLines = 0;
+            for (const ch of chords) {
+                const ip = segmentIntersection(localNew.p1, localNew.p2, ch.p1, ch.p2);
+                if (!ip) continue;
+                if (dist2(ip, centerLocal) > r2) continue;
+                intersectedLines += 1;
+                uniquePush(intersections, ip, 2.8);
+            }
+
+            const validWithPrev = intersectedLines === chords.length;
+            const incPieces = intersections.length + 1;
+            pieces += incPieces;
+            const shotIndex = chords.length + 1;
+            if (!validWithPrev && chords.length >= 1) penalty -= shotIndex;
+            score = Math.max(-999, pieces + penalty);
+
+            const now = performance.now();
+            const p1 = localNew.p1;
+            const p2 = localNew.p2;
+            const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+            lastCutAngle = angle;
+            wobble = Math.min(1, wobble + 0.9);
+
+            chords.push({
+                p1,
+                p2,
+                createdAt: now,
+                validWithPrev,
+                intersections
+            });
+
+            const texts = langTexts[currentLang];
+            addToast(texts.toastGood.replace('{inc}', String(incPieces)), circle.cx, circle.cy - circle.r - 26, 'positive');
+            if (!validWithPrev) addToast(texts.toastPenalty.replace('{n}', String(shotIndex)), circle.cx, circle.cy - circle.r - 58, 'negative');
+            rotSpeed += 0.1;
+        }
+
+        canvas.addEventListener('pointerdown', (e) => {
+            if (!running || arrow) return;
+            aimActive = true;
+            aimPoint = { x: e.clientX, y: e.clientY };
+            updateAim();
+            canvas.setPointerCapture(e.pointerId);
+        });
+        canvas.addEventListener('pointermove', (e) => {
+            if (!aimActive) return;
+            aimPoint = { x: e.clientX, y: e.clientY };
+            updateAim();
+        });
+        canvas.addEventListener('pointerup', (e) => {
+            if (!aimActive) return;
+            aimActive = false;
+            fire();
+            try { canvas.releasePointerCapture(e.pointerId); } catch (err) {}
+        });
+        canvas.addEventListener('pointercancel', () => { aimActive = false; });
+
+        els.practiceBtn.addEventListener('click', () => {
+            els.storyOverlay.classList.remove('visible');
+            startGame(true);
+        });
+        els.startBtn.addEventListener('click', () => {
+            els.storyOverlay.classList.remove('visible');
+            startGame(false);
+        });
+        els.restartBtn.addEventListener('click', () => {
+            els.resultOverlay.classList.remove('visible');
+            els.storyOverlay.classList.add('visible');
+        });
+
+        function drawDroplet(circle, rgb) {
+            const wob = wobble;
+            const ampA = 0.035 + 0.055 * wob;
+            const ampB = 0.018 + 0.03 * wob;
+            const ampC = 0.0 + 0.032 * wob;
+            const n = 140;
+
+            ctx.beginPath();
+            for (let i = 0; i <= n; i++) {
+                const a = (i / n) * Math.PI * 2;
+                const base = 1 + ampA * Math.sin(3 * a + rot * 1.35) + ampB * Math.sin(7 * a - rot * 1.05) + ampC * Math.sin(a - lastCutAngle + rot * 0.6);
+                const rr = circle.r * base;
+                const x = circle.cx + Math.cos(a) * rr;
+                const y = circle.cy + Math.sin(a) * rr;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+
+            const g = ctx.createRadialGradient(circle.cx - circle.r * 0.35, circle.cy - circle.r * 0.4, circle.r * 0.12, circle.cx, circle.cy, circle.r * 1.2);
+            g.addColorStop(0, `rgba(255, 255, 255, ${0.72 - 0.18 * wob})`);
+            g.addColorStop(0.42, `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${0.22 + 0.12 * wob})`);
+            g.addColorStop(1, `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${0.12})`);
+
+            ctx.save();
+            ctx.shadowColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.18)`;
+            ctx.shadowBlur = 24;
+            ctx.fillStyle = g;
+            ctx.fill();
+            ctx.restore();
+
+            ctx.save();
+            ctx.lineWidth = 2.2;
+            ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)`;
+            ctx.shadowColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.35)`;
+            ctx.shadowBlur = 14;
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(circle.cx, circle.cy);
+            ctx.rotate(rot);
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.lineCap = 'round';
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${0.14 + 0.08 * wob})`;
+            ctx.beginPath();
+            ctx.arc(0, 0, circle.r * 0.72, -0.35, 0.85);
+            ctx.stroke();
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.18 + 0.1 * wob})`;
+            ctx.beginPath();
+            ctx.arc(0, 0, circle.r * 0.62, -0.25, 0.65);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawBow(origin, rgb) {
+            ctx.save();
+            ctx.translate(origin.x, origin.y);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)`;
+            ctx.shadowColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.25)`;
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(0, 0, 18, -Math.PI * 0.38, Math.PI * 0.38);
+            ctx.stroke();
+            ctx.lineWidth = 1.4;
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.55)`;
+            ctx.beginPath();
+            ctx.moveTo(14.5, -12.5);
+            ctx.lineTo(14.5, 12.5);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawArrow(ar, rgb) {
+            const a = Math.atan2(ar.vy, ar.vx);
+            const ca = Math.cos(a);
+            const sa = Math.sin(a);
+            const nose = { x: ar.x + ca * 18, y: ar.y + sa * 18 };
+            const tail = { x: ar.x - ca * 22, y: ar.y - sa * 22 };
+
+            ctx.save();
+            ctx.lineCap = 'round';
+            ctx.lineWidth = 3.2;
+            ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.85)`;
+            ctx.shadowColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.28)`;
+            ctx.shadowBlur = 14;
+            ctx.beginPath();
+            ctx.moveTo(tail.x, tail.y);
+            ctx.lineTo(nose.x, nose.y);
+            ctx.stroke();
+
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.95)`;
+            ctx.beginPath();
+            ctx.moveTo(nose.x, nose.y);
+            ctx.lineTo(nose.x - ca * 12 - sa * 6, nose.y - sa * 12 + ca * 6);
+            ctx.lineTo(nose.x - ca * 12 + sa * 6, nose.y - sa * 12 - ca * 6);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawAim(origin, chord, rgb) {
+            ctx.save();
+            ctx.setLineDash([10, 10]);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.55)`;
+            ctx.beginPath();
+            ctx.moveTo(origin.x, origin.y);
+            const far = { x: origin.x + aimDir.x * 2400, y: origin.y + aimDir.y * 2400 };
+            ctx.lineTo(far.x, far.y);
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.32)`;
+            ctx.beginPath();
+            ctx.moveTo(chord.p1.x, chord.p1.y);
+            ctx.lineTo(chord.p2.x, chord.p2.y);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawChords(circle, rgb, now) {
+            for (const ch of chords) {
+                const p = clamp01((now - ch.createdAt) / 260);
+                const w1 = localToWorld(ch.p1, circle, rot);
+                const w2 = localToWorld(ch.p2, circle, rot);
+                const x2 = w1.x + (w2.x - w1.x) * p;
+                const y2 = w1.y + (w2.y - w1.y) * p;
+                const baseA = 0.85;
+                const bad = !ch.validWithPrev;
+                const col = bad ? { r: 239, g: 68, b: 68 } : rgb;
+
+                ctx.save();
+                ctx.lineCap = 'round';
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.lineWidth = 7;
+                ctx.strokeStyle = `rgba(${col.r}, ${col.g}, ${col.b}, ${0.14 * baseA})`;
+                ctx.shadowColor = `rgba(${col.r}, ${col.g}, ${col.b}, ${0.35 * baseA})`;
+                ctx.shadowBlur = 22;
+                ctx.beginPath();
+                ctx.moveTo(w1.x, w1.y);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+
+                ctx.shadowBlur = 14;
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = `rgba(${col.r}, ${col.g}, ${col.b}, ${0.7 * baseA})`;
+                ctx.beginPath();
+                ctx.moveTo(w1.x, w1.y);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        function drawTrail(rgb) {
+            if (!trail.length) return;
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            for (const t of trail) {
+                ctx.globalAlpha = t.a;
+                ctx.beginPath();
+                ctx.arc(t.x, t.y, 2.6, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${t.a})`;
+                ctx.shadowColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${t.a})`;
+                ctx.shadowBlur = 14;
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        let lastTs = performance.now();
+        function tick(ts) {
+            const dtMs = Math.min(33, Math.max(8, ts - lastTs));
+            lastTs = ts;
+
+            const dt = dtMs / 1000;
+            rot += dt * rotSpeed;
+            wobble *= Math.pow(0.12, dt);
+
+            if (running) {
+                timeLeftMs = Math.max(0, durationMs - (ts - startAt));
+                if (timeLeftMs <= 0 && !practice) finishGame();
+            }
+
+            const circle = getCircle();
+            const origin = getOrigin(circle);
+            const rgb = parsePrimaryRGB();
+
+            if (arrow) {
+                arrow.x += arrow.vx * dt;
+                arrow.y += arrow.vy * dt;
+
+                const inside = dist2({ x: arrow.x, y: arrow.y }, { x: circle.cx, y: circle.cy }) <= circle.r * circle.r;
+                if (inside) {
+                    trail.push({ x: arrow.x, y: arrow.y, a: 1 });
+                    arrow.entered = true;
+                } else if (arrow.entered) {
+                    registerChord(arrow.chord);
+                    arrow = null;
+                }
+                if (arrow && (arrow.x < -200 || arrow.x > width + 200 || arrow.y < -200 || arrow.y > height + 200)) arrow = null;
+            }
+
+            for (let i = trail.length - 1; i >= 0; i--) {
+                trail[i].a -= dt * 2.2;
+                if (trail[i].a <= 0) trail.splice(i, 1);
+            }
+
+            ctx.clearRect(0, 0, width, height);
+
+            drawDroplet(circle, rgb);
+            drawChords(circle, rgb, ts);
+            drawTrail(rgb);
+            drawBow(origin, rgb);
+
+            if (aimActive && running && !arrow && aimValid && aimChord) drawAim(origin, aimChord, rgb);
+            if (arrow) drawArrow(arrow, rgb);
+
+            setHud();
+            requestAnimationFrame(tick);
+        }
+
+        applyState();
+        createStars();
+        resetGame();
+        requestAnimationFrame(tick);
+    </script>
+</body>
+</html>
