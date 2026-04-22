@@ -716,9 +716,8 @@
                 transform 0.3s ease,
                 box-shadow 0.3s ease,
                 border-color 0.3s ease,
-                min-height 0.3s ease,
-                padding 0.3s ease,
-                opacity 0.3s ease;
+                opacity 0.3s ease,
+                visibility 0.3s ease;
         }
         .exam-countdown::before {
             content: "";
@@ -748,15 +747,10 @@
                 inset 0 -16px 28px rgba(15, 23, 42, 0.1);
         }
         .exam-countdown.is-collapsed {
-            min-height: 16px;
-            padding: 0 18px;
-            box-shadow:
-                0 10px 22px rgba(15, 23, 42, 0.16),
-                inset 0 1px 0 rgba(255, 255, 255, 0.7);
-        }
-        .exam-countdown.is-collapsed .exam-countdown-inner,
-        .exam-countdown.is-collapsed .exam-countdown-particles {
             opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateX(-50%) translateY(-10px) scale(0.92);
         }
         .exam-countdown-inner,
         .exam-countdown-particles {
