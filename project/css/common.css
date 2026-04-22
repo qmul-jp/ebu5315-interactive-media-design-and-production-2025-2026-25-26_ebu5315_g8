@@ -226,75 +226,6 @@ a {
 .lang-link { color: var(--muted); cursor: pointer; }
 .lang-link.active { color: var(--primary); font-weight: 700; }
 
-.exam-countdown {
-    font-size: 0.85rem;
-    color: var(--text);
-    background: var(--surface);
-    padding: 6px 18px;
-    border-radius: 999px;
-    border: 1px solid var(--border-color);
-    margin-left: 10px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: var(--shadow-md);
-    backdrop-filter: blur(14px) saturate(155%);
-    -webkit-backdrop-filter: blur(14px) saturate(155%);
-    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, filter 0.25s ease;
-    white-space: nowrap;
-    position: relative;
-    overflow: hidden;
-}
-
-.exam-countdown:hover {
-    transform: translateY(-2px);
-    border-color: rgba(37, 99, 235, 0.35);
-    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.18);
-    filter: brightness(1.03);
-}
-
-.exam-countdown-text {
-    position: relative;
-    z-index: 1;
-}
-
-.exam-char {
-    display: inline-block;
-    transition: transform 0.6s ease, opacity 0.6s ease;
-}
-
-.exam-droplet {
-    position: absolute;
-    inset: -20px;
-    opacity: 0;
-    transform: translateX(-40%) scale(0.95);
-    pointer-events: none;
-    background:
-        radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0) 46%),
-        radial-gradient(circle at 72% 70%, rgba(37, 99, 235, 0.22), rgba(37, 99, 235, 0) 58%),
-        linear-gradient(145deg, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0.08));
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    border-radius: 999px;
-    backdrop-filter: blur(10px) saturate(160%) contrast(120%);
-    -webkit-backdrop-filter: blur(10px) saturate(160%) contrast(120%);
-    box-shadow:
-        0 12px 26px rgba(15, 23, 42, 0.18),
-        inset 0 2px 0 rgba(255, 255, 255, 0.78),
-        inset 0 -10px 18px rgba(15, 23, 42, 0.12);
-}
-
-@keyframes examDropletSweep {
-    0% { transform: translateX(-45%) scale(0.92); opacity: 0; }
-    15% { opacity: 1; }
-    100% { transform: translateX(45%) scale(1.02); opacity: 0; }
-}
-
-.exam-countdown:hover .exam-droplet {
-    opacity: 1;
-    animation: examDropletSweep 1.15s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
 .setting-icon {
     font-size: 1.2rem;
     color: var(--muted);
@@ -341,55 +272,7 @@ a {
 }
 
 @media (max-width: 768px) {
-    .header-container {
-        padding: 0 14px;
-        height: 70px;
-        gap: 10px;
-    }
-
-    .logo {
-        font-size: clamp(1rem, 4.2vw, 1.25rem);
-        max-width: 42vw;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .nav-main {
-        gap: clamp(8px, 1.6vw, 14px);
-        padding: 4px;
-        flex: 1 1 auto;
-        min-width: 0;
-    }
-
-    .nav-droplet {
-        top: 4px;
-        left: 4px;
-        height: calc(100% - 8px);
-    }
-
-    .nav-link {
-        font-size: clamp(0.8rem, 3.4vw, 0.9rem);
-        padding: 7px clamp(10px, 3.4vw, 18px);
-    }
-
-    .header-right {
-        gap: 6px;
-    }
-
-    .lang-switch {
-        font-size: 0.8rem;
-        padding: 5px 12px;
-        white-space: nowrap;
-    }
-
-    .exam-countdown {
-        display: none;
-    }
-
-    .setting-icon {
-        width: 38px;
-        height: 38px;
-        font-size: 1.05rem;
-    }
+    .header-container { padding: 0 20px; height: 70px; }
+    .nav-main { display: none; }
 }
+

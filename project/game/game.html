@@ -77,6 +77,39 @@
             background-size: auto, auto, 46px 46px, 46px 46px, auto;
         }
 
+        /* 方格背景，与index.html保持一致 */
+        body {
+            background:
+                radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.1), transparent 22%),
+                radial-gradient(circle at 86% 14%, rgba(37, 99, 235, 0.1), transparent 20%),
+                linear-gradient(rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(180, 154, 109, 0.12) 1px, transparent 1px),
+                linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+            background-attachment: fixed;
+        }
+        
+        body.eye-mode {
+            background:
+                radial-gradient(circle at 12% 10%, rgba(34, 197, 94, 0.1), transparent 22%),
+                radial-gradient(circle at 86% 14%, rgba(34, 197, 94, 0.1), transparent 20%),
+                linear-gradient(rgba(167, 243, 208, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(167, 243, 208, 0.12) 1px, transparent 1px),
+                linear-gradient(180deg, #f0f9eb 0%, #dcfce7 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+            background-attachment: fixed;
+        }
+        
+        body.night-mode {
+            background:
+                radial-gradient(circle at 12% 10%, rgba(96, 165, 250, 0.1), transparent 22%),
+                radial-gradient(circle at 86% 14%, rgba(96, 165, 250, 0.1), transparent 20%),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.2) 1px, transparent 1px),
+                linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            background-size: auto, auto, 46px 46px, 46px 46px, auto;
+            background-attachment: fixed;
+        }
+
         a {
             text-decoration: none;
             color: inherit;
@@ -219,21 +252,83 @@
         .game-title {
             font-size: clamp(2rem, 5vw, 2.5rem);
             font-weight: 800;
-            color: var(--text);
             text-align: center;
+        }
+        /* 默认模式下的标题颜色 */
+        body:not(.eye-mode):not(.night-mode) .game-title {
+            color: #1d4ed8;
+        }
+        /* 其他模式保持原有颜色 */
+        body.eye-mode .game-title,
+        body.night-mode .game-title {
+            color: var(--text);
         }
 
         .game-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: auto 1fr 1fr;
             grid-auto-rows: 1fr;
             gap: 30px;
             width: 100%;
             max-width: 980px;
         }
 
+        .game-style-select {
+            grid-column: 1 / -1;
+            text-align: left;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        .game-category {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding-right: 20px;
+            min-width: 200px;
+            max-width: 250px;
+        }
+
+        .category-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        .category-desc {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        /* 模式适配 - 文字颜色 */
+        body:not(.eye-mode):not(.night-mode) .game-style-select,
+        body:not(.eye-mode):not(.night-mode) .category-title,
+        body:not(.eye-mode):not(.night-mode) .category-desc {
+            color: #3b82f6;
+        }
+
+        body.eye-mode .game-style-select,
+        body.eye-mode .category-title,
+        body.eye-mode .category-desc {
+            color: #438a4c;
+        }
+
+        body.night-mode .game-style-select,
+        body.night-mode .category-title,
+        body.night-mode .category-desc {
+            color: #f1f5f9;
+        }
+
         .game-card {
-            background: var(--surface);
+            background: transparent;
             backdrop-filter: blur(12px);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-xl);
@@ -283,6 +378,7 @@
             .nav-main { display: none; }
             .main-container { padding-top: 100px; }
             .game-grid { grid-template-columns: 1fr; }
+            .game-category { margin-bottom: 20px; }
         }
     </style>
     <link rel="stylesheet" href="../css/common.css">
@@ -323,22 +419,29 @@
         </div>
         <h1 class="game-title" id="gameCenterTitle">圆几何游戏中心</h1>
         
+        <div class="game-style-select" id="gameStyleSelect">
+            <span id="styleSelectText">请选择你的游戏风格：</span>
+        </div>
+        
         <div class="game-grid">
-            <!-- 游戏1：圆周角定理 -->
-            <div class="game-card" onclick="window.location.href='game first version final.html'">
+            <!-- 第一行：文字，圆心角游戏，切线游戏 -->
+            <div class="game-category" id="basicGameCategory">
+                <div class="category-title" id="basicCategoryTitle">基础知识小游戏：</div>
+                <div class="category-desc" id="basicCategoryDesc">弧角相切明数理，尺规方寸定根基</div>
+            </div>
+            <!-- 游戏3：圆心角弧长 -->
+            <div class="game-card" onclick="window.location.href='game third version final.html'">
                 <div class="game-icon-svg">
                     <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="256" cy="256" r="230" stroke="currentColor" stroke-width="32"/>
-                        <path d="M256 256L371 141M256 256L371 371" stroke="currentColor" stroke-width="32" stroke-linecap="round"/>
-                        <path d="M141 256L371 141M141 256L371 371" stroke="currentColor" stroke-width="24" stroke-dasharray="8 8"/>
-                        <circle cx="256" cy="256" r="12" fill="currentColor"/>
+                        <path d="M256 56C145.5 56 56 145.5 56 256S145.5 456 256 456" stroke="currentColor" stroke-width="32" stroke-linecap="round"/>
+                        <path d="M256 256L436 152M256 256L436 360" stroke="currentColor" stroke-width="32" stroke-linecap="round"/>
+                        <path d="M436 152C456 182 468 218 468 256C468 294 456 330 436 360" stroke="currentColor" stroke-width="48" stroke-linecap="round"/>
                     </svg>
                 </div>
-                <div class="game-name" id="game1Name">圆周角定理匹配赛</div>
-                <div class="game-desc" id="game1Desc">掌握圆周角定理核心知识点，挑战你的空间想象力。</div>
+                <div class="game-name" id="game3Name">圆心角弧长拼图</div>
+                <div class="game-desc" id="game3Desc">匹配圆心角与对应弧长，在拼图中理解比例关系。</div>
             </div>
-
-            <!-- 游戏2：切线判定 (中间按钮，已替换直线汉字) -->
+            <!-- 游戏2：切线判定 -->
             <div class="game-card" onclick="window.location.href='game second version final.html'">
                 <div class="game-icon-svg">
                     <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -352,17 +455,38 @@
                 <div class="game-desc" id="game2Desc">判断直线与圆的位置关系，精准掌握切线性质。</div>
             </div>
 
-            <!-- 游戏3：圆心角弧长 -->
-            <div class="game-card" onclick="window.location.href='game third version final.html'">
+            <!-- 第二行：文字，飞刀游戏，切圆游戏 -->
+            <div class="game-category" id="funGameCategory">
+                <div class="category-title" id="funCategoryTitle">趣味拓展小游戏：</div>
+                <div class="category-desc" id="funCategoryDesc">飞刀破界穿星海，锐刃吞空入黑洞</div>
+            </div>
+            <!-- 游戏1：旋转飞刀 -->
+            <div class="game-card" onclick="window.location.href='game first version final.html'">
                 <div class="game-icon-svg">
                     <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M256 56C145.5 56 56 145.5 56 256S145.5 456 256 456" stroke="currentColor" stroke-width="32" stroke-linecap="round"/>
-                        <path d="M256 256L436 152M256 256L436 360" stroke="currentColor" stroke-width="32" stroke-linecap="round"/>
-                        <path d="M436 152C456 182 468 218 468 256C468 294 456 330 436 360" stroke="currentColor" stroke-width="48" stroke-linecap="round"/>
+                        <circle cx="256" cy="256" r="180" stroke="currentColor" stroke-width="28"/>
+                        <path d="M256 256L256 80" stroke="currentColor" stroke-width="24" stroke-linecap="round"/>
+                        <path d="M240 90L256 70L272 90" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M248 100L256 88L264 100" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M256 256L256 400" stroke="currentColor" stroke-width="20" stroke-linecap="round" opacity="0.5"/>
+                        <circle cx="256" cy="256" r="8" fill="currentColor"/>
                     </svg>
                 </div>
-                <div class="game-name" id="game3Name">圆心角弧长拼图</div>
-                <div class="game-desc" id="game3Desc">匹配圆心角与对应弧长，在拼图中理解比例关系。</div>
+                <div class="game-name" id="game1Name">旋转飞刀</div>
+                <div class="game-desc" id="game1Desc">点击屏幕发射飞刀，扎在旋转的圆盘上。不能碰到已有的刀！</div>
+            </div>
+            <!-- 游戏4：割圆术 -->
+            <div class="game-card" onclick="window.location.href='game fourth version final.html'">
+                <div class="game-icon-svg">
+                    <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="256" cy="256" r="210" stroke="currentColor" stroke-width="28"/>
+                        <path d="M132 342L420 170" stroke="currentColor" stroke-width="28" stroke-linecap="round"/>
+                        <path d="M110 198L402 312" stroke="currentColor" stroke-width="18" stroke-dasharray="10 10" stroke-linecap="round"/>
+                        <path d="M96 256H416" stroke="currentColor" stroke-width="10" stroke-dasharray="6 12" stroke-linecap="round" opacity="0.75"/>
+                    </svg>
+                </div>
+                <div class="game-name" id="game4Name">割圆术·弓箭切割</div>
+                <div class="game-desc" id="game4Desc">30秒内用直线不断切割旋转的“液态圆”，切得越多分越高。</div>
             </div>
 
             <div class="game-card" onclick="window.location.href='game fourth version final.html'">
@@ -396,14 +520,19 @@
                 breadHome: '首页',
                 breadGame: '游戏中心',
                 gameCenterTitle: '圆几何游戏中心',
-                game1Name: '圆周角定理匹配赛',
-                game1Desc: '掌握圆周角定理核心知识点，挑战你的空间想象力。',
+                game1Name: '旋转飞刀',
+                game1Desc: '点击屏幕发射飞刀，扎在旋转的圆盘上。不能碰到已有的刀！',
                 game2Name: '切线判定闯关',
                 game2Desc: '判断直线与圆的位置关系，精准掌握切线性质。',
                 game3Name: '圆心角弧长拼图',
                 game3Desc: '匹配圆心角与对应弧长，在拼图中理解比例关系。',
                 game4Name: '割圆术·弓箭切割',
-                game4Desc: '30秒内用直线不断切割旋转的“液态圆”，切得越多分越高。'
+                game4Desc: '30秒内用直线不断切割旋转的“液态圆”，切得越多分越高。',
+                styleSelectText: '请选择你的游戏风格：',
+                basicCategoryTitle: '基础知识小游戏：',
+                basicCategoryDesc: '弧角相切明数理，尺规方寸定根基',
+                funCategoryTitle: '趣味拓展小游戏：',
+                funCategoryDesc: '飞刀破界穿星海，锐刃吞空入黑洞'
             },
             'en': {
                 logoText: 'Interactive Learning Platform for Circle Geometry',
@@ -419,14 +548,19 @@
                 breadHome: 'Home',
                 breadGame: 'Game Center',
                 gameCenterTitle: 'Circle Geometry Game Center',
-                game1Name: 'Inscribed Angle Match',
-                game1Desc: 'Master inscribed angle theorem and challenge your imagination.',
+                game1Name: 'Knife Hit',
+                game1Desc: 'Tap to throw knives on the rotating disk. Don\'t hit other knives!',
                 game2Name: 'Tangent Judgment Challenge',
                 game2Desc: 'Judge the relationship between line and circle precisely.',
                 game3Name: 'Central Angle & Arc Puzzle',
                 game3Desc: 'Match angles with arc lengths and understand proportions.',
                 game4Name: 'Cutting Circle: Archery',
                 game4Desc: 'Slice a rotating liquid circle with lines in 30 seconds for a higher score.',
+                styleSelectText: 'Please select your game style:',
+                basicCategoryTitle: 'Basic Knowledge Mini-Game:',
+                basicCategoryDesc: 'Arc and tangent show math\'s true light,\nRules and compass lay the base upright.',
+                funCategoryTitle: 'Fun Expansion Mini-Games:',
+                funCategoryDesc: 'Blades break bounds through starry sea,\nSharp edges swallow space\'s black hole spree.'
             }
         };
 
@@ -461,6 +595,11 @@
             document.getElementById('game3Desc').textContent = texts.game3Desc;
             document.getElementById('game4Name').textContent = texts.game4Name;
             document.getElementById('game4Desc').textContent = texts.game4Desc;
+            document.getElementById('styleSelectText').textContent = texts.styleSelectText;
+            document.getElementById('basicCategoryTitle').textContent = texts.basicCategoryTitle;
+            document.getElementById('basicCategoryDesc').textContent = texts.basicCategoryDesc;
+            document.getElementById('funCategoryTitle').textContent = texts.funCategoryTitle;
+            document.getElementById('funCategoryDesc').textContent = texts.funCategoryDesc;
             document.documentElement.lang = lang;
 
             document.body.classList.remove('eye-mode', 'night-mode');
@@ -474,6 +613,8 @@
                 if (link.dataset.lang === lang) link.classList.add('active');
             });
         }
+
+
 
         // 语言切换
         document.querySelectorAll('.lang-link').forEach(link => {
@@ -496,7 +637,10 @@
         settingWrap.onmouseleave = () => { menuHideTimer = setTimeout(() => { settingMenu.style.display = 'none'; }, 1000); };
         settingMenu.onmouseenter = () => clearTimeout(menuHideTimer);
 
-        window.onload = applyState;
+        window.onload = () => {
+            applyState();
+            createStars();
+        };
         window.addEventListener('storage', (e) => {
             if (['appLang', 'appTheme', 'appFontSize'].includes(e.key)) applyState();
         });
