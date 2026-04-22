@@ -1,4 +1,8 @@
+<<<<<<< b
+﻿<!DOCTYPE html>
+=======
 <!DOCTYPE html>
+>>>>>>> main
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -27,6 +31,480 @@ body.eye-mode .quiz-return{background:rgba(247,251,242,.88)}
 </main></div><footer class="page-footer"><p>圆几何互动学习网站 © 2026 EBU5315 Coursework</p></footer>
 <script src="../question-bank.js"></script>
 <script>
+<<<<<<< b
+(() => {
+    const KEY = 'quizWrongBookV1';
+
+    function normalizeLang(lang) {
+        const value = String(lang || '').toLowerCase();
+        if (value === 'en' || value === 'en-us' || value === 'en_us' || value === 'en-gb' || value === 'en_gb') return 'en';
+        return 'zh-CN';
+    }
+
+    function getLang() {
+        return normalizeLang(localStorage.getItem('appLang') || 'zh-CN');
+    }
+
+    function getLocale() {
+        return getLang() === 'en' ? 'en-US' : 'zh-CN';
+    }
+
+    function tpl(template, vars) {
+        return String(template || '').replace(/\{(\w+)\}/g, (_, k) => (vars && vars[k] !== undefined ? vars[k] : ''));
+    }
+
+    const i18n = {
+        'zh-CN': {
+            docTitle: '专题练习 | 圆几何测试学习中心',
+            returnHome: '返回测试首页',
+            navHome: '首页', navGame: '游戏', navQuiz: '测试',
+            menuGuide: '使用教程', menuTopic: '专题练习', menuComp: '综合练习', menuDaily: '每日一题',
+            cfgEyebrow: '专题练习配置', cfgTitle: '专题练习配置页', cfgDesc: '先选择专题、难度和题量，再进入做题页面。',
+            chooseTopic: '选择专题', chooseDifficulty: '选择难度', chooseCount: '选择题量',
+            topicChips: ['圆的基本性质', '圆心角与圆周角', '切线性质', '弦与弧'],
+            diffChips: ['基础', '进阶', '提高'],
+            countChips: ['10题', '15题', '20题'],
+            startPractice: '开始练习',
+            quizEyebrow: '专题练习', quizTitle: '专题练习', quizDesc: '做题布局参考示例图，同时保持你当前站点的整体风格。',
+            topicDefault: '圆的基本性质',
+            progress: '当前进度 {current} / {total}',
+            questionList: '题目列表',
+            avgDiff: '平均难度评分', mastery: '我的掌握度',
+            finish: '完成练习', viewWrong: '查看错题', viewWrongCount: '查看错题 ({count})', aiGuide: '展开AI指导', markWrong: '反选/错题',
+            backConfig: '返回配置', prev: '上一题', next: '下一题',
+            resultEyebrow: '练习结果', resultTitle: '专题练习结果页', resultDesc: '系统会根据本次作答生成成绩、错题列表和 AI 评估总结。',
+            statScore: '最终得分', statScoreDesc: '按本次答对题数换算为百分制成绩。',
+            statAcc: '正确率', statAccDesc: '用于快速判断当前掌握程度。',
+            statCorrect: '做对题数', statCorrectDesc: '本次练习中回答正确的题目数量。',
+            statWrong: '错题数量', statWrongDesc: '答错题目会自动进入本专题错题记录。',
+            wrongListTitle: '错题列表', wrongListDesc: '点击可回看题目信息。',
+            aiSummaryTitle: 'AI 评估总结',
+            redoWrong: '重做错题', openWrongBook: '打开错题本', backTopicHome: '返回专题首页',
+            footerText: '圆几何互动学习网站 © 2026 EBU5315 Coursework',
+            sourceLabel: '专题练习',
+            answerCorrect: '回答正确。', answerWrong: '回答不正确，正确答案是 {answer}。',
+            scoreUnit: ' 分',
+            aiTip: 'AI 提示：先抓住圆心、半径、弦、切线之间的关系，再排除错误选项。',
+            markedTip: '该题已加入错题标记。',
+            summaryPerfect: '本次专题练习完成得很好，基础概念和性质判断比较稳定，可以继续挑战更高难度。',
+            summaryNeedWork: '本次专题练习已经具备一定基础，但部分知识点还不够稳定。建议优先重做错题，再回到基础内容继续巩固。',
+            noWrongTitle: '本次没有错题', noWrongDesc: '保持这个状态继续练习即可。',
+            belongsTopic: '所属专题', correctAnswer: '正确答案',
+            viewQuestion: '查看该题'
+        },
+        'en': {
+            docTitle: 'Topic Practice | Circle Geometry Learning Center',
+            returnHome: 'Back to Test Home',
+            navHome: 'Home', navGame: 'Game', navQuiz: 'Test',
+            menuGuide: 'User Guide', menuTopic: 'Topic Practice', menuComp: 'Mixed Practice', menuDaily: 'Daily Quiz',
+            cfgEyebrow: 'TOPIC PRACTICE SETUP', cfgTitle: 'Topic Practice Setup', cfgDesc: 'Choose topic, difficulty, and amount before entering the quiz.',
+            chooseTopic: 'Choose Topic', chooseDifficulty: 'Choose Difficulty', chooseCount: 'Choose Number of Questions',
+            topicChips: ['Circle Basics', 'Central & Inscribed Angles', 'Tangent Properties', 'Chords and Arcs'],
+            diffChips: ['Basic', 'Intermediate', 'Advanced'],
+            countChips: ['10 Questions', '15 Questions', '20 Questions'],
+            startPractice: 'Start Practice',
+            quizEyebrow: 'TOPIC PRACTICE', quizTitle: 'Topic Practice', quizDesc: 'Train with a focused layout while keeping the site style consistent.',
+            topicDefault: 'Circle Basics',
+            progress: 'Progress {current} / {total}',
+            questionList: 'Question List',
+            avgDiff: 'Average Difficulty', mastery: 'My Mastery',
+            finish: 'Finish Practice', viewWrong: 'View Wrong Questions', viewWrongCount: 'View Wrong Questions ({count})', aiGuide: 'Open AI Guide', markWrong: 'Toggle Wrong Mark',
+            backConfig: 'Back to Setup', prev: 'Previous', next: 'Next',
+            resultEyebrow: 'RESULT', resultTitle: 'Topic Practice Result', resultDesc: 'The system generates score, wrong-question list, and AI summary from this attempt.',
+            statScore: 'Final Score', statScoreDesc: 'Converted to a percentage score by correct answers.',
+            statAcc: 'Accuracy', statAccDesc: 'A quick view of your current mastery.',
+            statCorrect: 'Correct Answers', statCorrectDesc: 'Number of correctly answered questions in this attempt.',
+            statWrong: 'Wrong Answers', statWrongDesc: 'Wrong answers are automatically saved to topic wrong records.',
+            wrongListTitle: 'Wrong Question List', wrongListDesc: 'Click to review question details.',
+            aiSummaryTitle: 'AI Evaluation Summary',
+            redoWrong: 'Redo Wrong Questions', openWrongBook: 'Open Wrong Book', backTopicHome: 'Back to Topic Home',
+            footerText: 'Circle Geometry Learning © 2026 EBU5315 Coursework',
+            sourceLabel: 'Topic Practice',
+            answerCorrect: 'Correct. ', answerWrong: 'Incorrect, correct answer is {answer}. ',
+            scoreUnit: ' pts',
+            aiTip: 'AI Tip: Focus on center, radius, chord, and tangent relations first, then eliminate options.',
+            markedTip: 'This question has been marked as wrong.',
+            summaryPerfect: 'Great job. Your concept recognition and theorem use are stable. Try higher difficulty next.',
+            summaryNeedWork: 'Good foundation, but some points are still unstable. Redo wrong questions first, then review basics.',
+            noWrongTitle: 'No wrong questions this time', noWrongDesc: 'Keep this state and continue practicing.',
+            belongsTopic: 'Topic', correctAnswer: 'Correct Answer',
+            viewQuestion: 'Review This Question'
+        }
+    };
+
+    function t(key) {
+        const lang = getLang();
+        return (i18n[lang] && i18n[lang][key]) || i18n['zh-CN'][key] || '';
+    }
+
+    const allQs = ((window.QuizQuestionBank && window.QuizQuestionBank.topic) || []).map(q => ({
+        id: q.id,
+        topic: q.topic,
+        topicEn: q.topicEn,
+        difficulty: q.difficulty,
+        mastery: q.mastery,
+        question: q.question,
+        questionEn: q.questionEn,
+        options: q.options,
+        optionsEn: q.optionsEn,
+        answer: q.answer,
+        explanation: q.explanation,
+        explanationEn: q.explanationEn
+    }));
+
+    const s = { i: 0, sel: [], wrong: new Set(), started: false, qs: [] };
+    const loadBook = () => JSON.parse(localStorage.getItem(KEY) || '[]');
+    const saveBook = v => localStorage.setItem(KEY, JSON.stringify(v));
+
+    function getSelectedCount() {
+        const countCard = document.querySelectorAll('#configView .config-grid .card')[2];
+        const activeChip = countCard ? countCard.querySelector('.chip.active') : null;
+        const text = activeChip ? activeChip.textContent : '10';
+        const m = String(text || '').match(/\d+/);
+        const n = m ? parseInt(m[0], 10) : 10;
+        return Number.isFinite(n) && n > 0 ? n : 10;
+    }
+
+    function buildSessionQuestions() {
+        const n = Math.min(getSelectedCount(), allQs.length);
+        s.qs = allQs.slice(0, n);
+        s.sel = Array(s.qs.length).fill(null);
+        s.wrong = new Set();
+        s.i = 0;
+    }
+
+    function syncWrong(index) {
+        const raw = s.qs[index];
+        if (!raw) return;
+        const id = raw.id;
+        const data = loadBook().filter(item => item.id !== id);
+        data.push({
+            id,
+            source: 'topic',
+            sourceLabel: t('sourceLabel'),
+            topic: getLang() === 'en' ? (raw.topicEn || raw.topic) : raw.topic,
+            question: getLang() === 'en' ? (raw.questionEn || raw.question) : raw.question,
+            answer: String.fromCharCode(65 + raw.answer),
+            explanation: getLang() === 'en' ? (raw.explanationEn || raw.explanation) : raw.explanation,
+            savedAt: new Date().toLocaleString(getLocale())
+        });
+        saveBook(data);
+    }
+
+    function stars(n) {
+        const v = Number(n) || 0;
+        return '★★★★★'.slice(0, v) + '☆☆☆☆☆'.slice(0, 5 - v);
+    }
+
+    function show(id) {
+        ['configView', 'quizView', 'resultView'].forEach(v => {
+            document.getElementById(v).classList.add('hidden');
+        });
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function applyLangStatic() {
+        document.title = t('docTitle');
+        const quizReturn = document.querySelector('.quiz-return');
+        if (quizReturn) quizReturn.textContent = t('returnHome');
+
+        const navHome = document.getElementById('navHome');
+        const navGame = document.getElementById('navGame');
+        const navQuiz = document.getElementById('navQuiz');
+        if (navHome) navHome.textContent = t('navHome');
+        if (navGame) navGame.textContent = t('navGame');
+        if (navQuiz) navQuiz.textContent = t('navQuiz');
+
+        const menuLinks = document.querySelectorAll('.menu-list a');
+        if (menuLinks[0]) menuLinks[0].textContent = t('menuGuide');
+        if (menuLinks[1]) menuLinks[1].textContent = t('menuTopic');
+        if (menuLinks[2]) menuLinks[2].textContent = t('menuComp');
+        if (menuLinks[3]) menuLinks[3].textContent = t('menuDaily');
+
+        const configView = document.getElementById('configView');
+        if (configView) {
+            const cfgEyebrow = configView.querySelector('.eyebrow');
+            const cfgTitle = configView.querySelector('.title');
+            const cfgDesc = configView.querySelector('.desc');
+            if (cfgEyebrow) cfgEyebrow.textContent = t('cfgEyebrow');
+            if (cfgTitle) cfgTitle.textContent = t('cfgTitle');
+            if (cfgDesc) cfgDesc.textContent = t('cfgDesc');
+
+            const cards = configView.querySelectorAll('.config-grid .card');
+            if (cards[0]) {
+                const h2 = cards[0].querySelector('h2');
+                if (h2) h2.textContent = t('chooseTopic');
+                cards[0].querySelectorAll('.chip').forEach((chip, i) => {
+                    chip.textContent = t('topicChips')[i] || chip.textContent;
+                });
+            }
+            if (cards[1]) {
+                const h2 = cards[1].querySelector('h2');
+                if (h2) h2.textContent = t('chooseDifficulty');
+                cards[1].querySelectorAll('.chip').forEach((chip, i) => {
+                    chip.textContent = t('diffChips')[i] || chip.textContent;
+                });
+            }
+            if (cards[2]) {
+                const h2 = cards[2].querySelector('h2');
+                if (h2) h2.textContent = t('chooseCount');
+                cards[2].querySelectorAll('.chip').forEach((chip, i) => {
+                    chip.textContent = t('countChips')[i] || chip.textContent;
+                });
+            }
+        }
+
+        const quizView = document.getElementById('quizView');
+        if (quizView) {
+            const topEyebrow = quizView.querySelector('.head .eyebrow');
+            const topTitle = quizView.querySelector('.head .title');
+            const topDesc = quizView.querySelector('.head .desc');
+            if (topEyebrow) topEyebrow.textContent = t('quizEyebrow');
+            if (topTitle) topTitle.textContent = t('quizTitle');
+            if (topDesc) topDesc.textContent = t('quizDesc');
+
+            const listTitle = quizView.querySelector('.list-card h2');
+            if (listTitle) listTitle.textContent = t('questionList');
+        }
+
+        const resultView = document.getElementById('resultView');
+        if (resultView) {
+            const rb = resultView.querySelector('.eyebrow');
+            const rt = resultView.querySelector('.title');
+            const rd = resultView.querySelector('.desc');
+            if (rb) rb.textContent = t('resultEyebrow');
+            if (rt) rt.textContent = t('resultTitle');
+            if (rd) rd.textContent = t('resultDesc');
+
+            const statCards = resultView.querySelectorAll('.stat-card');
+            const statKeys = [
+                ['statScore', 'statScoreDesc'],
+                ['statAcc', 'statAccDesc'],
+                ['statCorrect', 'statCorrectDesc'],
+                ['statWrong', 'statWrongDesc']
+            ];
+            statCards.forEach((card, i) => {
+                const span = card.querySelector('span');
+                const p = card.querySelector('p');
+                if (span) span.textContent = t(statKeys[i][0]);
+                if (p) p.textContent = t(statKeys[i][1]);
+            });
+
+            const wrongCardTitle = resultView.querySelector('.wrong-card h2');
+            const wrongCardDesc = resultView.querySelector('.wrong-card p');
+            if (wrongCardTitle) wrongCardTitle.textContent = t('wrongListTitle');
+            if (wrongCardDesc) wrongCardDesc.textContent = t('wrongListDesc');
+
+            const aiCardTitle = resultView.querySelector('.ai-card h2');
+            if (aiCardTitle) aiCardTitle.textContent = t('aiSummaryTitle');
+        }
+
+        const startBtn = document.getElementById('startBtn');
+        const finishBtn = document.getElementById('finishBtn');
+        const aiBtn = document.getElementById('aiBtn');
+        const markBtn = document.getElementById('markBtn');
+        const backBtn = document.getElementById('backBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const redoBtn = document.getElementById('redoBtn');
+        const openWrongBookBtn = document.getElementById('openWrongBookBtn');
+        const resultHomeBtn = document.getElementById('resultHomeBtn');
+        if (startBtn) startBtn.textContent = t('startPractice');
+        if (finishBtn) finishBtn.textContent = t('finish');
+        if (aiBtn) aiBtn.textContent = t('aiGuide');
+        if (markBtn) markBtn.textContent = t('markWrong');
+        if (backBtn) backBtn.textContent = t('backConfig');
+        if (prevBtn) prevBtn.textContent = t('prev');
+        if (nextBtn) nextBtn.textContent = t('next');
+        if (redoBtn) redoBtn.textContent = t('redoWrong');
+        if (openWrongBookBtn) openWrongBookBtn.textContent = t('openWrongBook');
+        if (resultHomeBtn) resultHomeBtn.textContent = t('backTopicHome');
+
+        const footer = document.querySelector('.page-footer p');
+        if (footer) footer.textContent = t('footerText');
+    }
+
+    function grid() {
+        const g = document.getElementById('grid');
+        g.innerHTML = '';
+        s.qs.forEach((q, i) => {
+            const answered = s.sel[i] !== null;
+            const b = document.createElement('button');
+            b.className = 'num' + (answered ? ' done' : '') + (i === s.i ? ' current' : '') + (s.wrong.has(i) ? ' wrong' : '');
+            b.textContent = i + 1;
+            b.onclick = () => { s.i = i; render(); };
+            g.appendChild(b);
+        });
+    }
+
+    function render() {
+        if (!s.qs.length) return;
+        const lang = getLang();
+        const q = s.qs[s.i];
+        const sel = s.sel[s.i];
+
+        document.getElementById('topicName').textContent = lang === 'en' ? (q.topicEn || q.topic || t('topicDefault')) : (q.topic || t('topicDefault'));
+        document.getElementById('summaryMeta').textContent = tpl(t('progress'), { current: s.i + 1, total: s.qs.length });
+        document.getElementById('qIndex').textContent = s.i + 1;
+        document.getElementById('qTitle').textContent = lang === 'en' ? (q.questionEn || q.question) : q.question;
+
+        const ratingBlocks = document.querySelectorAll('#quizView .ratings > div');
+        if (ratingBlocks[0]) {
+            ratingBlocks[0].innerHTML = `${t('avgDiff')}: <span class="stars" id="diffStars">${stars(q.difficulty)}</span> <span id="diffValue">(${Number(q.difficulty || 0).toFixed(1)})</span>`;
+        }
+        if (ratingBlocks[1]) {
+            ratingBlocks[1].innerHTML = `${t('mastery')}: <span class="stars" id="masterStars">${stars(q.mastery)}</span>`;
+        }
+
+        document.getElementById('prevBtn').disabled = s.i === 0;
+        document.getElementById('nextBtn').disabled = s.i === s.qs.length - 1;
+        document.getElementById('wrongBtn').textContent = tpl(t('viewWrongCount'), { count: s.wrong.size });
+        grid();
+
+        const wrap = document.getElementById('opts');
+        wrap.innerHTML = '';
+        const options = (lang === 'en' && Array.isArray(q.optionsEn) && q.optionsEn.length) ? q.optionsEn : q.options;
+        options.forEach((o, i) => {
+            const b = document.createElement('button');
+            b.className = 'opt' + (sel === i ? ' selected' : '') + (sel !== null && i === q.answer ? ' correct' : '') + (sel !== null && sel === i && sel !== q.answer ? ' wrong' : '');
+            b.innerHTML = `<span class="dot"></span><span>${String.fromCharCode(65 + i)}. ${o}</span>`;
+            b.onclick = () => {
+                s.sel[s.i] = i;
+                if (i !== q.answer) {
+                    s.wrong.add(s.i);
+                    syncWrong(s.i);
+                } else {
+                    s.wrong.delete(s.i);
+                }
+                render();
+            };
+            wrap.appendChild(b);
+        });
+
+        const f = document.getElementById('feedback');
+        if (sel === null) {
+            f.className = 'feedback hidden';
+            f.textContent = '';
+        } else {
+            const ok = sel === q.answer;
+            const explain = lang === 'en' ? (q.explanationEn || q.explanation) : q.explanation;
+            const opts = (lang === 'en' && Array.isArray(q.optionsEn) && q.optionsEn.length) ? q.optionsEn : q.options;
+            f.className = 'feedback ' + (ok ? 'correct' : 'wrong');
+            f.textContent = ok
+                ? `${t('answerCorrect')}${explain}`
+                : `${tpl(t('answerWrong'), { answer: opts[q.answer] })}${explain}`;
+        }
+    }
+
+    function result(shouldSync) {
+        const doSync = shouldSync !== false;
+        const correct = s.sel.filter((a, i) => a === s.qs[i].answer).length;
+        const done = s.sel.filter(v => v !== null).length;
+        const wrong = done - correct;
+        const score = Math.round(correct / s.qs.length * 100);
+
+        document.getElementById('scoreStat').textContent = `${score}${t('scoreUnit')}`;
+        document.getElementById('accuracyStat').textContent = `${Math.round(correct / s.qs.length * 100)}%`;
+        document.getElementById('correctStat').textContent = correct;
+        document.getElementById('wrongStat').textContent = wrong;
+        document.getElementById('aiSummary').textContent = wrong === 0 ? t('summaryPerfect') : t('summaryNeedWork');
+
+        const list = document.getElementById('wrongList');
+        list.innerHTML = '';
+        if (!s.wrong.size) {
+            list.innerHTML = `<div class="wrong-item"><strong>${t('noWrongTitle')}</strong><span>${t('noWrongDesc')}</span></div>`;
+            return;
+        }
+
+        const lang = getLang();
+        Array.from(s.wrong).forEach(i => {
+            if (doSync) syncWrong(i);
+            const question = s.qs[i];
+            const item = document.createElement('div');
+            item.className = 'wrong-item';
+            const qText = lang === 'en' ? (question.questionEn || question.question) : question.question;
+            const qTopic = lang === 'en' ? (question.topicEn || question.topic || t('topicDefault')) : (question.topic || t('topicDefault'));
+            item.innerHTML = `<strong>${qText}</strong><p>${t('belongsTopic')}: ${qTopic}. ${t('correctAnswer')}: ${String.fromCharCode(65 + question.answer)}</p><button class="btn" data-i="${i}">${t('viewQuestion')}</button>`;
+            item.querySelector('button').onclick = () => {
+                s.i = i;
+                show('quizView');
+                render();
+            };
+            list.appendChild(item);
+        });
+    }
+
+    document.querySelectorAll('.choice-grid').forEach(g => {
+        g.addEventListener('click', e => {
+            if (e.target.classList.contains('chip')) {
+                g.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                e.target.classList.add('active');
+            }
+        });
+    });
+
+    document.getElementById('startBtn').onclick = () => {
+        buildSessionQuestions();
+        s.started = true;
+        show('quizView');
+        render();
+    };
+    document.getElementById('backBtn').onclick = () => show('configView');
+    document.getElementById('prevBtn').onclick = () => { if (s.i > 0) { s.i--; render(); } };
+    document.getElementById('nextBtn').onclick = () => { if (s.i < s.qs.length - 1) { s.i++; render(); } };
+    document.getElementById('finishBtn').onclick = () => { result(true); show('resultView'); };
+    document.getElementById('redoBtn').onclick = () => {
+        const keep = Array(s.qs.length).fill(null);
+        Array.from(s.wrong).forEach(i => { keep[i] = null; });
+        s.sel = keep;
+        s.i = s.wrong.size ? Array.from(s.wrong)[0] : 0;
+        show('quizView');
+        render();
+    };
+    document.getElementById('resultHomeBtn').onclick = () => show('configView');
+    document.getElementById('aiBtn').onclick = () => {
+        const f = document.getElementById('feedback');
+        f.className = 'feedback';
+        f.textContent = t('aiTip');
+    };
+    document.getElementById('markBtn').onclick = () => {
+        if (s.wrong.has(s.i)) s.wrong.delete(s.i);
+        else { s.wrong.add(s.i); syncWrong(s.i); }
+        grid();
+        const f = document.getElementById('feedback');
+        f.className = 'feedback';
+        f.textContent = t('markedTip');
+    };
+    document.getElementById('wrongBtn').onclick = () => { window.location.href = 'wrong-book.html'; };
+
+    function applyState() {
+        const theme = localStorage.getItem('appTheme') || 'default';
+        const fs = localStorage.getItem('appFontSize') || '16';
+
+        document.body.classList.remove('eye-mode', 'night-mode');
+        if (theme === 'eye') document.body.classList.add('eye-mode');
+        if (theme === 'night') document.body.classList.add('night-mode');
+        document.documentElement.style.setProperty('--font-size', fs + 'px');
+        document.documentElement.style.fontSize = fs + 'px';
+
+        applyLangStatic();
+        document.documentElement.lang = getLang();
+        if (s.started && s.qs.length) {
+            render();
+            if (!document.getElementById('resultView').classList.contains('hidden')) {
+                result(false);
+            }
+        }
+    }
+
+    window.addEventListener('load', () => {
+        applyState();
+    });
+
+    window.addEventListener('storage', (e) => {
+        if (['appLang', 'appTheme', 'appFontSize'].includes(e.key)) applyState();
+    });
+=======
 (()=>{const KEY="quizWrongBookV1";const qs=((window.QuizQuestionBank&&window.QuizQuestionBank.topic)||[]).map(q=>[q.question,q.options,q.answer,q.explanation,q.difficulty,q.mastery,q.topic]);const s={i:0,sel:Array(qs.length).fill(null),wrong:new Set(),started:false};const loadBook=()=>JSON.parse(localStorage.getItem(KEY)||"[]");const saveBook=v=>localStorage.setItem(KEY,JSON.stringify(v));function syncWrong(index){const raw=(window.QuizQuestionBank&&window.QuizQuestionBank.topic||[])[index],id=raw.id;const data=loadBook().filter(item=>item.id!==id);data.push({id,source:"topic",sourceLabel:"专题练习",topic:raw.topic,question:raw.question,answer:String.fromCharCode(65+raw.answer),explanation:raw.explanation,savedAt:new Date().toLocaleString("zh-CN")});saveBook(data)}document.querySelectorAll(".choice-grid").forEach(g=>g.addEventListener("click",e=>{if(e.target.classList.contains("chip")){g.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));e.target.classList.add("active")}}));const stars=n=>"★★★★★".slice(0,n)+"☆☆☆☆☆".slice(0,5-n);function show(id){["configView","quizView","resultView"].forEach(v=>document.getElementById(v).classList.add("hidden"));document.getElementById(id).classList.remove("hidden")}function grid(){const g=document.getElementById("grid");g.innerHTML="";qs.forEach((q,i)=>{const answered=s.sel[i]!==null;const b=document.createElement("button");b.className="num"+(answered?" done":"")+(i===s.i?" current":"")+(s.wrong.has(i)?" wrong":"");b.textContent=i+1;b.onclick=()=>{s.i=i;render()};g.appendChild(b)})}function render(){const q=qs[s.i],sel=s.sel[s.i];document.getElementById("topicName").textContent=q[6]||"圆的基本性质";document.getElementById("summaryMeta").textContent=`当前进度 ${s.i+1} / ${qs.length}`;document.getElementById("qIndex").textContent=s.i+1;document.getElementById("qTitle").textContent=q[0];document.getElementById("diffStars").textContent=stars(q[4]);document.getElementById("diffValue").textContent=`(${q[4].toFixed(1)})`;document.getElementById("masterStars").textContent=stars(q[5]);document.getElementById("prevBtn").disabled=s.i===0;document.getElementById("nextBtn").disabled=s.i===qs.length-1;document.getElementById("wrongBtn").textContent=`查看错题 (${s.wrong.size})`;grid();const wrap=document.getElementById("opts");wrap.innerHTML="";q[1].forEach((o,i)=>{const b=document.createElement("button");b.className="opt"+(sel===i?" selected":"")+(sel!==null&&i===q[2]?" correct":"")+(sel!==null&&sel===i&&sel!==q[2]?" wrong":"");b.innerHTML=`<span class="dot"></span><span>${String.fromCharCode(65+i)}. ${o}</span>`;b.onclick=()=>{s.sel[s.i]=i;if(i!==q[2]){s.wrong.add(s.i);syncWrong(s.i)}else s.wrong.delete(s.i);render()};wrap.appendChild(b)});const f=document.getElementById("feedback");if(sel===null){f.className="feedback hidden";f.textContent=""}else{const ok=sel===q[2];f.className="feedback "+(ok?"correct":"wrong");f.textContent=ok?`回答正确。${q[3]}`:`回答不正确，正确答案是 ${q[1][q[2]]}。${q[3]}`}}function result(){const correct=s.sel.filter((a,i)=>a===qs[i][2]).length,done=s.sel.filter(v=>v!==null).length,wrong=done-correct,score=Math.round(correct/qs.length*100);document.getElementById("scoreStat").textContent=`${score} 分`;document.getElementById("accuracyStat").textContent=`${Math.round(correct/qs.length*100)}%`;document.getElementById("correctStat").textContent=correct;document.getElementById("wrongStat").textContent=wrong;document.getElementById("aiSummary").textContent=wrong===0?"本次专题练习完成得很好，基础概念和性质判断比较稳定，可以继续挑战更高难度。":"本次专题练习已经具备一定基础，但部分知识点还不够稳定。建议优先重做错题，再回到基础内容继续巩固。";const list=document.getElementById("wrongList");list.innerHTML="";if(!s.wrong.size){list.innerHTML='<div class="wrong-item"><strong>本次没有错题</strong><span>保持这个状态继续练习即可。</span></div>'}else{Array.from(s.wrong).forEach(i=>{syncWrong(i);const item=document.createElement("div");item.className="wrong-item";item.innerHTML=`<strong>${qs[i][0]}</strong><p>所属专题: ${qs[i][6]||"圆的基本性质"}。正确答案: ${String.fromCharCode(65+qs[i][2])}</p><button class="btn" data-i="${i}">查看该题</button>`;item.querySelector("button").onclick=()=>{s.i=i;show("quizView");render()};list.appendChild(item)})}}document.getElementById("startBtn").onclick=()=>{s.started=true;show("quizView");render()};document.getElementById("backBtn").onclick=()=>show("configView");document.getElementById("prevBtn").onclick=()=>{if(s.i>0){s.i--;render()}};document.getElementById("nextBtn").onclick=()=>{if(s.i<qs.length-1){s.i++;render()}};document.getElementById("finishBtn").onclick=()=>{result();show("resultView")};document.getElementById("redoBtn").onclick=()=>{const keep=Array(qs.length).fill(null);Array.from(s.wrong).forEach(i=>keep[i]=null);s.sel=keep;s.i=s.wrong.size?Array.from(s.wrong)[0]:0;show("quizView");render()};document.getElementById("resultHomeBtn").onclick=()=>show("configView");document.getElementById("aiBtn").onclick=()=>{const f=document.getElementById("feedback");f.className="feedback";f.textContent="AI 提示：先抓住圆心、半径、弦、切线之间的关系，再排除错误选项。"};document.getElementById("markBtn").onclick=()=>{s.wrong.has(s.i)?s.wrong.delete(s.i):(s.wrong.add(s.i),syncWrong(s.i));grid();const f=document.getElementById("feedback");f.className="feedback";f.textContent="该题已加入错题标记。"};document.getElementById("wrongBtn").onclick=()=>{window.location.href="wrong-book.html"};function applyState() {
     const t=localStorage.getItem("appTheme")||"default",fs=localStorage.getItem("appFontSize")||"16";
     document.body.classList.remove("eye-mode","night-mode");
@@ -41,7 +519,12 @@ window.addEventListener("load",()=>{
 window.addEventListener("storage", (e) => {
     if (["appTheme", "appFontSize"].includes(e.key)) applyState();
 });
+>>>>>>> main
 })();
 </script>
 </body>
 </html>
+<<<<<<< b
+
+=======
+>>>>>>> main
