@@ -126,14 +126,24 @@
 
         .back-home {
             margin-right: auto;
-            font-family: "Orbitron", sans-serif;
             text-decoration: none;
             font-weight: 800;
-            font-size: 1.2rem;
-            background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            font-size: 0.95rem;
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.08);
+            border: 1px solid rgba(37, 99, 235, 0.18);
+            border-radius: 999px;
+            padding: 10px 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.08);
+            transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        }
+        .back-home:hover {
+            transform: translateY(-1px);
+            background: rgba(37, 99, 235, 0.14);
+            border-color: rgba(37, 99, 235, 0.28);
         }
 
         .coord-axis {
@@ -147,7 +157,10 @@
 </head>
 <body>
     <header class="toolbar">
-        <a href="index.html" class="back-home">DRAWING TOOL</a>
+        <a href="index.html" class="back-home" id="backHomeBtn">
+            <i class="fas fa-arrow-left"></i>
+            <span id="backHomeText">回到主页面</span>
+        </a>
         
         <div class="tool-group">
             <button class="btn active" onclick="setTool('circle')" id="toolCircle">
@@ -209,6 +222,7 @@
     <script>
         const langTexts = {
             'zh-CN': {
+                backHomeText: '回到主页面',
                 labelCircle: '圆',
                 labelLine: '直线',
                 labelDash: '虚线',
@@ -223,6 +237,7 @@
                 notAngle: '这不是一个有效的角，请重新选择。'
             },
             'en': {
+                backHomeText: 'Back To Home',
                 labelCircle: 'Circle',
                 labelLine: 'Line',
                 labelDash: 'Dash',
