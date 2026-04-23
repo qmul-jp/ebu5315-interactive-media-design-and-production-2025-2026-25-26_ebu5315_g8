@@ -135,82 +135,83 @@
             font-size: 0.95rem;
         }
     </style>
+    <script src="../js/common.js" defer></script>
 </head>
 <body>
     <main class="container">
         <section class="hero">
-            <h1>圆几何学习平台使用说明</h1>
-            <p>这是一份面向普通用户的快速指南。你可以按下面的推荐流程，从“看知识点”到“做题巩固”逐步学习。</p>
-            <span class="path">推荐学习路径：主页 → 知识点图示 → 测试中心 → 每日一题</span>
+            <h1 data-i18n="usageGuideTitle">圆几何学习平台使用说明</h1>
+            <p data-i18n="usageGuideDesc">这是一份面向普通用户的快速指南。你可以按下面的推荐流程，从“看知识点”到“做题巩固”逐步学习。</p>
+            <span class="path" data-i18n="recommendedPath">推荐学习路径：主页 → 知识点图示 → 测试中心 → 每日一题</span>
             <div class="btn-row">
-                <a class="btn" href="index.html">返回主页</a>
-                <a class="btn" href="../quiz/test.html">进入测试中心</a>
-                <a class="btn" href="../game/game.html">进入游戏中心</a>
+                <a class="btn" href="index.html" data-i18n="backToHome">返回主页</a>
+                <a class="btn" href="../quiz/test.html" data-i18n="enterTestCenter">进入测试中心</a>
+                <a class="btn" href="../game/game.html" data-i18n="enterGameCenter">进入游戏中心</a>
             </div>
         </section>
 
         <section class="card">
-            <h2 class="section-title">1. 主页能做什么</h2>
+            <h2 class="section-title" data-i18n="homePageFunction">1. 主页能做什么</h2>
             <ul class="list">
-                <li>顶部可以切换语言（中文 / English）。</li>
-                <li>设置菜单可以切换主题（默认 / 护眼 / 夜晚）。</li>
-                <li>字体大小滑块可以全站统一调节字号，方便不同视力需求。</li>
-                <li>中部轮播图可进入 4 个知识点可视化页面（动态演示定理关系）。</li>
-                <li>AI 问答框可输入圆几何问题，快速获得解释。</li>
+                <li data-i18n="homePageLangSwitch">顶部可以切换语言（中文 / English）。</li>
+                <li data-i18n="homePageThemeSwitch">设置菜单可以切换主题（默认 / 护眼 / 夜晚）。</li>
+                <li data-i18n="homePageFontSize">字体大小滑块可以全站统一调节字号，方便不同视力需求。</li>
+                <li data-i18n="homePageCarousel">中部轮播图可进入 4 个知识点可视化页面（动态演示定理关系）。</li>
+                <li data-i18n="homePageAI">AI 问答框可输入圆几何问题，快速获得解释。</li>
             </ul>
         </section>
 
         <section class="card">
-            <h2 class="section-title">2. 知识点图示页面怎么用</h2>
+            <h2 class="section-title" data-i18n="knowledgePageUsage">2. 知识点图示页面怎么用</h2>
             <ul class="list">
-                <li>通过主页轮播图点击进入 `indexPicture01/02/03/05.html`。</li>
-                <li>页面包含拖拽点、角度滑块、图形标注等交互元素，可直观看到定理变化过程。</li>
-                <li>适合先理解概念，再进入练习题巩固。</li>
+                <li data-i18n="knowledgePageAccess">通过主页轮播图点击进入 `indexPicture01/02/03/05.html`。</li>
+                <li data-i18n="knowledgePageInteraction">页面包含拖拽点、角度滑块、图形标注等交互元素，可直观看到定理变化过程。</li>
+                <li data-i18n="knowledgePagePurpose">适合先理解概念，再进入练习题巩固。</li>
             </ul>
         </section>
 
         <section class="card">
-            <h2 class="section-title">3. 测试中心模块说明</h2>
+            <h2 class="section-title" data-i18n="testCenterIntro">3. 测试中心模块说明</h2>
             <ul class="list">
-                <li>`home.html`：测试首页（模块入口）。</li>
-                <li>`test-topic.html`：专题练习，按知识点专项训练。</li>
-                <li>`test-comprehensive.html`：综合练习，混合题目检测整体掌握情况。</li>
-                <li>`daily.html`：每日一题，保持学习节奏。</li>
-                <li>`quiz.html`：答题主页面，含 AI 解析与错题记录逻辑。</li>
-                <li>`test-prep.html`：使用教程与流程说明页。</li>
+                <li data-i18n="testHomePage">`home.html`：测试首页（模块入口）。</li>
+                <li data-i18n="testTopicPage">`test-topic.html`：专题练习，按知识点专项训练。</li>
+                <li data-i18n="testComprehensivePage">`test-comprehensive.html`：综合练习，混合题目检测整体掌握情况。</li>
+                <li data-i18n="testDailyPage">`daily.html`：每日一题，保持学习节奏。</li>
+                <li data-i18n="testQuizPage">`quiz.html`：答题主页面，含 AI 解析与错题记录逻辑。</li>
+                <li data-i18n="testPrepPage">`test-prep.html`：使用教程与流程说明页。</li>
             </ul>
         </section>
 
         <section class="card">
-            <h2 class="section-title">4. 游戏中心模块说明</h2>
+            <h2 class="section-title" data-i18n="gameCenterIntro">4. 游戏中心模块说明</h2>
             <ul class="list">
-                <li>`game.html`：游戏中心入口。</li>
-                <li>`game first version final.html`：圆心角与圆周角配对游戏。</li>
-                <li>`game second version final.html`：直线与圆位置关系判断。</li>
-                <li>`game third version final.html`：弧长与角度关系挑战。</li>
-                <li>每个游戏都支持计时、评分，适合查漏补缺。</li>
+                <li data-i18n="gameHomePage">`game.html`：游戏中心入口。</li>
+                <li data-i18n="gameFirstVersion">`game first version final.html`：圆心角与圆周角配对游戏。</li>
+                <li data-i18n="gameSecondVersion">`game second version final.html`：直线与圆位置关系判断。</li>
+                <li data-i18n="gameThirdVersion">`game third version final.html`：弧长与角度关系挑战。</li>
+                <li data-i18n="gameFeatures">每个游戏都支持计时、评分，适合查漏补缺。</li>
             </ul>
         </section>
 
         <section class="card">
-            <h2 class="section-title">5. 建议的学习顺序</h2>
+            <h2 class="section-title" data-i18n="recommendedOrder">5. 建议的学习顺序</h2>
             <ul class="list">
-                <li>先看知识点图示，理解“图形变化与定理关系”。</li>
-                <li>进入专题练习做针对性训练。</li>
-                <li>再做综合练习，检验迁移能力。</li>
-                <li>每天完成每日一题，保持稳定进步。</li>
-                <li>最后用游戏中心做轻量复习，提升学习兴趣。</li>
+                <li data-i18n="learnStep1">先看知识点图示，理解“图形变化与定理关系”。</li>
+                <li data-i18n="learnStep2">进入专题练习做针对性训练。</li>
+                <li data-i18n="learnStep3">再做综合练习，检验迁移能力。</li>
+                <li data-i18n="learnStep4">每天完成每日一题，保持稳定进步。</li>
+                <li data-i18n="learnStep5">最后用游戏中心做轻量复习，提升学习兴趣。</li>
             </ul>
         </section>
 
         <section class="card">
-            <h2 class="section-title">6. 常见问题</h2>
+            <h2 class="section-title" data-i18n="commonQuestions">6. 常见问题</h2>
             <ul class="list">
-                <li>页面字体太小：请回到主页右上角设置里调大字体。</li>
-                <li>夜间看得累：切换夜晚模式或护眼模式。</li>
-                <li>内容显示为英文：在右上角切回“简体中文”。</li>
+                <li data-i18n="faqFontSize">页面字体太小：请回到主页右上角设置里调大字体。</li>
+                <li data-i18n="faqNightMode">夜间看得累：切换夜晚模式或护眼模式。</li>
+                <li data-i18n="faqLanguage">内容显示为英文：在右上角切回“简体中文”。</li>
             </ul>
-            <p class="tips">提示：平台的语言、主题、字号会自动保存，下次打开仍然生效。</p>
+            <p class="tips" data-i18n="autoSaveTip">提示：平台的语言、主题、字号会自动保存，下次打开仍然生效。</p>
         </section>
     </main>
 
@@ -227,9 +228,137 @@
             document.documentElement.style.fontSize = fontSize + 'px';
         }
 
-        window.addEventListener('load', applyGlobalState);
+        function getAppLang() {
+            try {
+                let lang = localStorage.getItem('appLang');
+                if (!lang) {
+                    try {
+                        const raw = (window.name || '').trim();
+                        if (raw) {
+                            const parsed = JSON.parse(raw);
+                            if (parsed && typeof parsed.appLang === 'string') lang = parsed.appLang;
+                        }
+                    } catch (e) {}
+                }
+                if (!lang) lang = 'zh-CN';
+                return lang === 'en' ? 'en' : 'zh-CN';
+            } catch (e) {
+                return 'zh-CN';
+            }
+        }
+
+        const appTexts = {
+            'zh-CN': {
+                usageGuideTitle: '圆几何学习平台使用说明',
+                usageGuideDesc: '这是一份面向普通用户的快速指南。你可以按下面的推荐流程，从“看知识点”到“做题巩固”逐步学习。',
+                recommendedPath: '推荐学习路径：主页 → 知识点图示 → 测试中心 → 每日一题',
+                backToHome: '返回主页',
+                enterTestCenter: '进入测试中心',
+                enterGameCenter: '进入游戏中心',
+                homePageFunction: '1. 主页能做什么',
+                homePageLangSwitch: '顶部可以切换语言（中文 / English）。',
+                homePageThemeSwitch: '设置菜单可以切换主题（默认 / 护眼 / 夜晚）。',
+                homePageFontSize: '字体大小滑块可以全站统一调节字号，方便不同视力需求。',
+                homePageCarousel: '中部轮播图可进入 4 个知识点可视化页面（动态演示定理关系）。',
+                homePageAI: 'AI 问答框可输入圆几何问题，快速获得解释。',
+                knowledgePageUsage: '2. 知识点图示页面怎么用',
+                knowledgePageAccess: '通过主页轮播图点击进入 `indexPicture01/02/03/05.html`。',
+                knowledgePageInteraction: '页面包含拖拽点、角度滑块、图形标注等交互元素，可直观看到定理变化过程。',
+                knowledgePagePurpose: '适合先理解概念，再进入练习题巩固。',
+                testCenterIntro: '3. 测试中心模块说明',
+                testHomePage: '`home.html`：测试首页（模块入口）。',
+                testTopicPage: '`test-topic.html`：专题练习，按知识点专项训练。',
+                testComprehensivePage: '`test-comprehensive.html`：综合练习，混合题目检测整体掌握情况。',
+                testDailyPage: '`daily.html`：每日一题，保持学习节奏。',
+                testQuizPage: '`quiz.html`：答题主页面，含 AI 解析与错题记录逻辑。',
+                testPrepPage: '`test-prep.html`：使用教程与流程说明页。',
+                gameCenterIntro: '4. 游戏中心模块说明',
+                gameHomePage: '`game.html`：游戏中心入口。',
+                gameFirstVersion: '`game first version final.html`：圆心角与圆周角配对游戏。',
+                gameSecondVersion: '`game second version final.html`：直线与圆位置关系判断。',
+                gameThirdVersion: '`game third version final.html`：弧长与角度关系挑战。',
+                gameFeatures: '每个游戏都支持计时、评分，适合查漏补缺。',
+                recommendedOrder: '5. 建议的学习顺序',
+                learnStep1: '先看知识点图示，理解“图形变化与定理关系”。',
+                learnStep2: '进入专题练习做针对性训练。',
+                learnStep3: '再做综合练习，检验迁移能力。',
+                learnStep4: '每天完成每日一题，保持稳定进步。',
+                learnStep5: '最后用游戏中心做轻量复习，提升学习兴趣。',
+                commonQuestions: '6. 常见问题',
+                faqFontSize: '页面字体太小：请回到主页右上角设置里调大字体。',
+                faqNightMode: '夜间看得累：切换夜晚模式或护眼模式。',
+                faqLanguage: '内容显示为英文：在右上角切回“简体中文”。',
+                autoSaveTip: '提示：平台的语言、主题、字号会自动保存，下次打开仍然生效。'
+            },
+            'en': {
+                usageGuideTitle: 'Circle Geometry Learning Platform - User Guide',
+                usageGuideDesc: 'This is a quick guide for general users. You can follow the recommended process below, from "viewing knowledge points" to "practicing with questions" to learn step by step.',
+                recommendedPath: 'Recommended learning path: Home → Knowledge Point Diagrams → Test Center → Daily Question',
+                backToHome: 'Back to Home',
+                enterTestCenter: 'Enter Test Center',
+                enterGameCenter: 'Enter Game Center',
+                homePageFunction: '1. What can the home page do',
+                homePageLangSwitch: 'You can switch languages (Chinese / English) at the top.',
+                homePageThemeSwitch: 'The settings menu allows you to switch themes (default / eye-friendly / night).',
+                homePageFontSize: 'The font size slider can adjust the font size uniformly across the site, convenient for different vision needs.',
+                homePageCarousel: 'The middle carousel can access 4 knowledge point visualization pages (dynamically demonstrating theorem relationships).',
+                homePageAI: 'The AI Q&A box allows you to input circle geometry questions and get quick explanations.',
+                knowledgePageUsage: '2. How to use the knowledge point diagram pages',
+                knowledgePageAccess: 'Access via the home page carousel by clicking on `indexPicture01/02/03/05.html`.',
+                knowledgePageInteraction: 'The pages include interactive elements such as draggable points, angle sliders, and graphic annotations, allowing you to intuitively see the theorem change process.',
+                knowledgePagePurpose: 'Suitable for understanding concepts first, then moving on to practice questions for reinforcement.',
+                testCenterIntro: '3. Test Center module description',
+                testHomePage: '`home.html`: Test home page (module entry).',
+                testTopicPage: '`test-topic.html`: Topic practice, specialized training by knowledge point.',
+                testComprehensivePage: '`test-comprehensive.html`: Comprehensive practice, mixed questions to test overall mastery.',
+                testDailyPage: '`daily.html`: Daily question, maintaining learning rhythm.',
+                testQuizPage: '`quiz.html`: Main answer page, including AI analysis and wrong question recording logic.',
+                testPrepPage: '`test-prep.html`: Usage tutorial and process explanation page.',
+                gameCenterIntro: '4. Game Center module description',
+                gameHomePage: '`game.html`: Game center entry.',
+                gameFirstVersion: '`game first version final.html`: Central angle and inscribed angle matching game.',
+                gameSecondVersion: '`game second version final.html`: Straight line and circle position relationship judgment.',
+                gameThirdVersion: '`game third version final.html`: Arc length and angle relationship challenge.',
+                gameFeatures: 'Each game supports timing and scoring, suitable for identifying knowledge gaps.',
+                recommendedOrder: '5. Recommended learning order',
+                learnStep1: 'First, look at the knowledge point diagrams to understand "graphic changes and theorem relationships."',
+                learnStep2: 'Enter topic practice for targeted training.',
+                learnStep3: 'Then do comprehensive practice to test transfer ability.',
+                learnStep4: 'Complete the daily question every day to maintain steady progress.',
+                learnStep5: 'Finally, use the game center for lightweight review to enhance learning interest.',
+                commonQuestions: '6. Common questions',
+                faqFontSize: 'The page font is too small: Please go back to the settings in the upper right corner of the home page to increase the font size.',
+                faqNightMode: 'Tired of looking at night: Switch to night mode or eye-friendly mode.',
+                faqLanguage: 'Content is displayed in English: Switch back to "Simplified Chinese" in the upper right corner.',
+                autoSaveTip: 'Tip: The platform\'s language, theme, and font size are automatically saved and will still be effective when you open it next time.'
+            }
+        };
+
+        function applyI18n() {
+            const lang = getAppLang();
+            const texts = appTexts[lang] || appTexts['zh-CN'];
+            document.documentElement.setAttribute('lang', lang);
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (texts[key]) {
+                    el.textContent = texts[key];
+                }
+            });
+        }
+
+        window.addEventListener('load', () => {
+            applyGlobalState();
+            applyI18n();
+        });
+
         window.addEventListener('storage', (e) => {
-            if (['appTheme', 'appFontSize'].includes(e.key)) applyGlobalState();
+            if (['appTheme', 'appFontSize'].includes(e.key)) {
+                applyGlobalState();
+            }
+            if (e.key === 'appLang') {
+                applyI18n();
+            }
         });
     </script>
 </body>

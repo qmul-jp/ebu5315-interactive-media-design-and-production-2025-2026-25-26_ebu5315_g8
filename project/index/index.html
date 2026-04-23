@@ -1564,7 +1564,7 @@
                 </button>
             </div>
             <div class="ad-tip">
-                <a href="https://m.zhuanzhuan.com/" class="ad-link" id="adLink">关于广告</a>
+                <span class="ad-link" id="adLink" style="cursor: pointer;">关于广告</span>
             </div>
         </div>
     </header>
@@ -1661,6 +1661,26 @@
         </div>
     </div>
 
+    <!-- 广告合作弹窗 -->
+    <div class="contact-modal" id="adModal">
+        <div class="contact-modal-content">
+            <span class="modal-close" id="adModalClose">&times;</span>
+            <h4 class="contact-title" id="adTitle">广告合作</h4>
+            <div class="contact-info" id="adInfo">
+                <p data-i18n="adCooperationTitle">广告合作注意事项</p>
+                <ul class="ad-list" data-i18n="adCooperationList">
+                    <li>广告内容必须符合相关法律法规</li>
+                    <li>广告投放需提前一周申请</li>
+                    <li>广告素材需符合平台风格</li>
+                    <li>广告位置和价格可协商</li>
+                </ul>
+                <p data-i18n="adContactTitle">联系方式</p>
+                <p data-i18n="adEmail">邮箱：<strong>3058168199@qq.com</strong></p>
+                <p data-i18n="adPhone">手机：<strong>18066972658</strong></p>
+            </div>
+        </div>
+    </div>
+
     <!-- 核心JS：轮播/模式/AI接口/弹窗，全部嵌入 -->
     <script>
         // ********** 语言文本映射表 **********
@@ -1686,6 +1706,12 @@
                 modalTitle: 'AI知识点解答',
                 contactTitle: '联系我们',
                 contactInfo: '如果遇到问题，请联系我们的邮箱：<br><strong>3058168199@qq.com</strong>',
+                adTitle: '广告合作',
+                adCooperationTitle: '广告合作注意事项',
+                adCooperationList: '广告合作注意事项列表',
+                adContactTitle: '联系方式',
+                adEmail: '邮箱：<strong>3058168199@qq.com</strong>',
+                adPhone: '手机：<strong>18066972658</strong>',
                 errorEmpty: '请输入圆几何相关的查询问题！',
                 loading: 'AI正在为你查询，请稍候...',
                 errorNoAnswer: 'AI查询失败：响应中无文本回答！',
@@ -1832,6 +1858,12 @@
                 modalTitle: 'AI Knowledge Answer',
                 contactTitle: 'Contact Us',
                 contactInfo: 'If you encounter problems, please contact our email:<br><strong>3058168199@qq.com</strong>',
+                adTitle: 'Advertising Cooperation',
+                adCooperationTitle: 'Advertising Cooperation Notes',
+                adCooperationList: 'Advertising Cooperation Notes List',
+                adContactTitle: 'Contact Information',
+                adEmail: 'Email: <strong>3058168199@qq.com</strong>',
+                adPhone: 'Phone: <strong>18066972658</strong>',
                 errorEmpty: 'Please enter a query related to circle geometry!',
                 loading: 'AI is querying for you, please wait...',
                 errorNoAnswer: 'AI query failed: No text answer in response!',
@@ -1968,6 +2000,9 @@
         const contactUs = document.getElementById('contactUs');
         const contactModal = document.getElementById('contactModal');
         const contactModalClose = document.getElementById('contactModalClose');
+        const adLink = document.getElementById('adLink');
+        const adModal = document.getElementById('adModal');
+        const adModalClose = document.getElementById('adModalClose');
         const backToTopBtn = document.getElementById('backToTopBtn');
         const examCountdown = document.getElementById('examCountdown');
         const examCountdownText = document.getElementById('examCountdownText');
@@ -2557,6 +2592,26 @@
             document.getElementById('modalTitle').textContent = texts.modalTitle;
             document.getElementById('contactTitle').textContent = texts.contactTitle;
             document.getElementById('contactInfo').innerHTML = texts.contactInfo;
+            document.getElementById('adTitle').textContent = texts.adTitle;
+            document.querySelector('#adInfo p[data-i18n="adCooperationTitle"]').textContent = texts.adCooperationTitle;
+            document.querySelector('#adInfo p[data-i18n="adContactTitle"]').textContent = texts.adContactTitle;
+            document.querySelector('#adInfo p[data-i18n="adEmail"]').innerHTML = texts.adEmail;
+            document.querySelector('#adInfo p[data-i18n="adPhone"]').innerHTML = texts.adPhone;
+            if (lang === 'en') {
+                document.querySelector('#adInfo ul[data-i18n="adCooperationList"]').innerHTML = `
+                    <li>Advertising content must comply with relevant laws and regulations</li>
+                    <li>Advertising placement requires advance application one week in advance</li>
+                    <li>Advertising materials must match the platform style</li>
+                    <li>Advertising positions and prices are negotiable</li>
+                `;
+            } else {
+                document.querySelector('#adInfo ul[data-i18n="adCooperationList"]').innerHTML = `
+                    <li>广告内容必须符合相关法律法规</li>
+                    <li>广告投放需提前一周申请</li>
+                    <li>广告素材需符合平台风格</li>
+                    <li>广告位置和价格可协商</li>
+                `;
+            }
             
             // 更新新增模块文本
             document.getElementById('moduleCultureTitle').textContent = texts.moduleCultureTitle;
@@ -2719,6 +2774,22 @@
         contactModal.addEventListener('click', (e) => {
             if (e.target === contactModal) {
                 contactModal.style.display = 'none';
+            }
+        });
+
+        // ********** 9. 广告合作弹窗控制 **********
+        adLink.addEventListener('click', () => {
+            adModal.style.display = 'flex';
+        });
+
+        adModalClose.addEventListener('click', () => {
+            adModal.style.display = 'none';
+        });
+
+        // 点击遮罩层关闭广告弹窗
+        adModal.addEventListener('click', (e) => {
+            if (e.target === adModal) {
+                adModal.style.display = 'none';
             }
         });
 
