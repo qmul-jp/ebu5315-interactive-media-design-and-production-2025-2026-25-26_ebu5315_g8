@@ -139,6 +139,7 @@ body.eye-mode .quiz-return{background:rgba(247,251,242,.88)}
         topic: q.topic,
         topicEn: q.topicEn,
         difficulty: q.difficulty,
+        qType: q.qType || 'mixed',
         mastery: q.mastery,
         question: q.question,
         questionEn: q.questionEn,
@@ -157,6 +158,20 @@ body.eye-mode .quiz-return{background:rgba(247,251,242,.88)}
         try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {}
     };
 
+    function getActiveChipIndex(cardIndex, fallback) {
+        const cards = document.querySelectorAll('#configView .config-grid .card');
+        const card = cards[cardIndex];
+        if (!card) return fallback;
+        const chips = Array.from(card.querySelectorAll('.chip'));
+        const index = chips.findIndex(chip => chip.classList.contains('active'));
+        return index >= 0 ? index : fallback;
+    }
+
+    function getSelectedDifficultyKey() {
+        const keys = ['basic', 'intermediate', 'advanced'];
+        return keys[getActiveChipIndex(0, 0)] || keys[0];
+    }
+
     function getSelectedCount() {
         const countCard = document.querySelectorAll('#configView .config-grid .card')[1];
         const activeChip = countCard ? countCard.querySelector('.chip.active') : null;
@@ -166,9 +181,84 @@ body.eye-mode .quiz-return{background:rgba(247,251,242,.88)}
         return Number.isFinite(n) && n > 0 ? n : 10;
     }
 
+    function difficultyMatch(difficulty, key) {
+        const d = Number(difficulty || 3);
+        if (key === 'basic') return d <= 2;
+        if (key === 'intermediate') return d === 3;
+        return d >= 4;
+    }
+
+    function shuffle(arr) {
+        const copy = arr.slice();
+        for (let i = copy.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const temp = copy[i];
+            copy[i] = copy[j];
+            copy[j] = temp;
+        }
+        return copy;
+    }
+
+    function uniqueById(arr) {
+        const seen = new Set();
+        return arr.filter(item => {
+            if (!item || !item.id || seen.has(item.id)) return false;
+            seen.add(item.id);
+            return true;
+        });
+    }
+
+    function pickBalanced(pool, count) {
+        const remaining = shuffle(uniqueById(pool));
+        const picked = [];
+        const typeCount = {};
+        const topicCount = {};
+
+        while (picked.length < count && remaining.length) {
+            let bestIdx = 0;
+            let bestScore = Infinity;
+
+            for (let i = 0; i < remaining.length; i++) {
+                const q = remaining[i];
+                const type = String(q.qType || 'mixed');
+                const topic = String(q.topic || '');
+                const prev = picked[picked.length - 1];
+
+                let score = (typeCount[type] || 0) * 2 + (topicCount[topic] || 0) * 1.2;
+                if (prev && String(prev.qType || 'mixed') === type) score += 4;
+                if (prev && String(prev.topic || '') === topic) score += 2.5;
+                score += Math.random() * 0.3;
+
+                if (score < bestScore) {
+                    bestScore = score;
+                    bestIdx = i;
+                }
+            }
+
+            const chosen = remaining.splice(bestIdx, 1)[0];
+            picked.push(chosen);
+            const type = String(chosen.qType || 'mixed');
+            const topic = String(chosen.topic || '');
+            typeCount[type] = (typeCount[type] || 0) + 1;
+            topicCount[topic] = (topicCount[topic] || 0) + 1;
+        }
+
+        return picked;
+    }
+
     function buildSessionQuestions() {
         const n = Math.min(getSelectedCount(), allQs.length);
-        s.qs = allQs.slice(0, n);
+        const difficultyKey = getSelectedDifficultyKey();
+        const preferred = allQs.filter(q => difficultyMatch(q.difficulty, difficultyKey));
+
+        let candidate = preferred.slice();
+        if (candidate.length < n) {
+            const rest = allQs.filter(q => !candidate.some(x => x.id === q.id));
+            candidate = candidate.concat(shuffle(rest));
+        }
+
+        s.qs = pickBalanced(candidate, n);
+        if (!s.qs.length) s.qs = pickBalanced(allQs, n);
         s.sel = Array(s.qs.length).fill(null);
         s.wrong = new Set();
         s.i = 0;
